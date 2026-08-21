@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+════════════════════════════════════════════════════════════
+  Flash 课件在线播放器
+  版权所有 © 2026 常州市武进区横山桥高级中学地理教研组
+  仅限课堂教学使用，非商业用途。未经许可不得二次分发。
+════════════════════════════════════════════════════════════
+-->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flash 课件在线播放器</title>
+<script src="ruffle/ruffle.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 18px;
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .topbar .title {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .btn {
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    padding: 6px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all .2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn:hover { background: rgba(255,255,255,0.25); }
+  #stage {
+    flex: 1;
+    position: relative;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #stage ruffle-player, #stage embed, #stage object, #stage > div { width: 100%; height: 100%; display: block; }
+  .loading-tip {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #8899aa; font-size: 15px; letter-spacing: 2px;
+  }
+  .error-tip {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #cc3344; font-size: 14px; gap: 14px; padding: 30px; text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <span class="title" id="pageTitle">🎬 Flash 课件</span>
+  <a class="btn" href="index.html">← 返回工作台</a>
+  <button class="btn" onclick="toggleFull()">⛶ 全屏</button>
+</div>
+<div id="stage">
+  <div class="loading-tip" id="tip">正在加载课件，请稍候…</div>
+</div>
+<script>
+const params = new URLSearchParams(location.search);
+const swf = params.get('swf') || '';
+const names = {
+  'swf/sunrise_0.swf': '太阳周日视运动演示动画',
+  'swf/gongzhuan_0.swf': '公转的意义',
+  'swf/diqiuyundong_0.swf': '地球的运动 Flash 课件',
+  'swf/yuexiang_0.swf': '月相变化演示',
+};
+if (names[swf]) document.getElementById('pageTitle').textContent = '🎬 ' + names[swf];
+
+function toggleFull() {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen().catch(()=>{});
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (!swf) {
+    document.getElementById('tip').innerHTML =
+      '<div class="error-tip">缺少课件参数：请从工作台进入</div>';
+    return;
+  }
+  const ruffle = window.RufflePlayer && window.RufflePlayer.newest();
+  if (!ruffle) {
+    document.getElementById('tip').innerHTML =
+      '<div class="error-tip">播放器组件加载失败，请刷新重试</div>';
+    return;
+  }
+  const player = ruffle.createPlayer();
+  const stage = document.getElementById('stage');
+  stage.appendChild(player);
+  player.addEventListener('loadedmetadata', () => {
+    document.getElementById('tip').style.display = 'none';
+  });
+  player.addEventListener('error', (e) => {
+    document.getElementById('tip').innerHTML =
+      '<div class="error-tip">😥 该课件暂不支持在线播放（Flash 动画兼容问题），建议下载原 exe 使用</div>';
+  });
+  player.load({ url: swf, autoplay: 'on' });
+});
+</script>
+</body>
+</html>

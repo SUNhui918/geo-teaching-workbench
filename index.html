@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<!--
+════════════════════════════════════════════════════════════
+  地理教师智能化教学工作台
+  版权所有 © 2026 常州市武进区横山桥高级中学地理教研组
+────────────────────────────────────────────────────────────
+  本页面为原创教学资源，仅限课堂教学使用，非商业用途。
+  未经许可不得二次分发。
+  请保留本版权声明。
+════════════════════════════════════════════════════════════
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地理教师智能化教学工作台</title>
+    <style>
+        :root {
+            --bg: #0f1923;
+            --bg-card: #1a2734;
+            --bg-card-hover: #21303f;
+            --border: rgba(78, 205, 196, 0.15);
+            --border-hover: rgba(78, 205, 196, 0.4);
+            --text: #e8eef3;
+            --text-muted: #8a9ba8;
+            --accent: #4ecdc4;
+            --accent-glow: rgba(78, 205, 196, 0.2);
+            --accent2: #ff6b6b;
+            --accent3: #feca57;
+            --accent4: #54a0ff;
+            --accent5: #5f27cd;
+            --accent6: #48dbfb;
+            --radius: 14px;
+            --shadow: 0 4px 24px rgba(0,0,0,0.3);
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse at 20% 0%, rgba(78, 205, 196, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(84, 160, 255, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(95, 39, 205, 0.04) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header */
+        .top-banner {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            text-align: center;
+            padding: 14px 24px;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .top-banner .school-name {
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+
+        .top-banner .school-sub {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 3px;
+        }
+
+        header {
+            padding: 48px 0 32px;
+            text-align: center;
+        }
+
+        .header-icon {
+            font-size: 52px;
+            margin-bottom: 12px;
+            display: inline-block;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), var(--accent4));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-num {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Search */
+        .search-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(15, 25, 35, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 16px 0;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 20px 14px 48px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 0.95rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Category tabs */
+        .categories {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+
+        .cat-btn {
+            padding: 8px 18px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .cat-btn:hover {
+            border-color: var(--border-hover);
+            color: var(--text);
+        }
+
+        .cat-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #0f1923;
+            font-weight: 600;
+        }
+
+        .cat-btn .count {
+            margin-left: 4px;
+            opacity: 0.7;
+            font-size: 0.8em;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-icon {
+            font-size: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .section-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        /* Card */
+        .card {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-decoration: none;
+            color: var(--text);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--card-accent, var(--accent));
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-hover);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .card-icon {
+            font-size: 1.8rem;
+            line-height: 1;
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: rgba(78, 205, 196, 0.1);
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-top: 4px;
+        }
+
+        .card-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 12px;
+            flex-grow: 1;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .card-url {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            word-break: break-all;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .card-link {
+            font-size: 0.75rem;
+            color: var(--card-accent, var(--accent));
+            font-weight: 600;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .card:hover .card-link {
+            text-decoration: underline;
+        }
+
+        .card-tag {
+            display: inline-block;
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(78, 205, 196, 0.12);
+            color: var(--accent);
+            margin-right: 4px;
+        }
+
+        .local-card {
+            border-style: dashed;
+        }
+
+        .local-tag {
+            background: rgba(255, 107, 107, 0.15);
+            color: #ff6b6b;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
+        .cloud-card {
+            background: linear-gradient(135deg, rgba(78, 205, 196, 0.06), rgba(9, 132, 227, 0.06));
+            border-style: solid;
+        }
+
+        .cloud-tag {
+            background: rgba(0, 184, 148, 0.15);
+            color: #00b894;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
+        .cloud-note {
+            font-size: 0.75rem;
+            color: #e17055;
+            background: rgba(225, 112, 85, 0.08);
+            border-radius: 6px;
+            padding: 6px 10px;
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+
+        .local-open {
+            flex-shrink: 0;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(78, 205, 196, 0.1);
+            transition: var(--transition);
+        }
+
+        .local-open:hover {
+            background: rgba(78, 205, 196, 0.25);
+        }
+
+        /* No results */
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+            display: none;
+        }
+
+        .no-results.show {
+            display: block;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--bg-card-hover);
+            border: 1px solid var(--border-hover);
+            color: var(--text);
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            transition: var(--transition);
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* 版权水印 */
+        .copyright-wm {
+            position: fixed;
+            right: 10px;
+            bottom: 6px;
+            z-index: 9999;
+            font-size: 11px;
+            color: rgba(232, 238, 243, 0.16);
+            pointer-events: none;
+            user-select: none;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 0 30px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            header h1 {
+                font-size: 1.6rem;
+            }
+            .stats {
+                gap: 20px;
+            }
+        }
+
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(78, 205, 196, 0.2);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(78, 205, 196, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- 学校标识横幅 -->
+    <div class="top-banner">
+        <div class="school-name">🏫 常州市武进区横山桥高级中学地理教研组</div>
+        <div class="school-sub">仅限课堂教学使用，非商业用途</div>
+    </div>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="header-icon">🌍</div>
+            <h1>地理教师智能化教学工作台</h1>
+            <p>一站式地理教学资源平台 · 让地理课堂更智能、更生动</p>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-num" id="totalNum">0</div>
+                    <div class="stat-label">资源网站</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-num">6</div>
+                    <div class="stat-label">资源分类</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-num">∞</div>
+                    <div class="stat-label">教学可能</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search -->
+        <div class="search-bar">
+            <div class="search-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索网站名称、关键词..." oninput="handleSearch()">
+            </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="categories" id="categories"></div>
+
+        <!-- Content -->
+        <div id="content"></div>
+
+        <!-- No results -->
+        <div class="no-results" id="noResults">
+            <div style="font-size: 3rem; margin-bottom: 16px;">🗺️</div>
+            <p>未找到匹配的资源，试试其他关键词？</p>
+        </div>
+
+        <!-- Toast -->
+        <div class="toast" id="toast"></div>
+
+        <footer>
+            <p>地理教师智能化教学工作台 · 汇集优质地理教学资源 · 助力高效课堂</p>
+            <p style="margin-top:4px; opacity:0.6;">仅课堂教学使用，非商业用途</p>
+            <p style="margin-top:6px; opacity:0.45; font-size:0.85em;">© 2026 常州市武进区横山桥高级中学地理教研组 · 未经许可不得二次分发</p>
+        </footer>
+
+        <!-- 版权水印 -->
+        <div class="copyright-wm" aria-hidden="true">常州市武进区横山桥高级中学地理教研组</div>
+    </div>
+
+    <script>
+        // Data
+        const categories = [
+            {
+                id: 'astronomy',
+                name: '天文与地球运动',
+                icon: '🔭',
+                color: '#feca57',
+                desc: '地球运动、星空、天文教具',
+                sites: [
+                    { title: '太阳视运动模拟器', url: 'file:///D:/360MoveData/Users/29621/Desktop/EarthMotion_Windows_v1.0.exe', icon: '☀️', desc: '太阳视运动模拟器（网页版），可控制纬度、日期、时间，采用高中地理常考的侧视图与地平圈俯视图双视图，直观展示日出日落方位、正午太阳高度与昼夜长短变化，讲解地球运动必备工具。', local: true, cloud: 'earthmotion.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\EarthMotion_Windows_v1.0.exe' },
+                    { title: '太阳周日视运动演示动画', url: 'file:///E:/课件、教材、教学设计/自然地理视频与动画/sunrisecn/20210820 太阳周日视运动演示动画.exe', icon: '🌅', desc: '太阳周日视运动演示动画，生动演示太阳一日内的东升西落运动轨迹，课堂演示必备工具。', local: true, cloud: 'player.html?swf=swf/sunrise_0.swf', path: 'E:\\课件、教材、教学设计\\自然地理视频与动画\\sunrisecn\\20210820 太阳周日视运动演示动画.exe' },
+                    { title: '太阳视运动轨迹与杆影', url: 'file:///D:/360MoveData/Users/29621/Desktop/太阳视运动轨迹与杆影v.60版.html', icon: '🕰️', desc: '太阳视运动轨迹与杆影变化模拟，动态展示不同纬度、不同季节的太阳运行轨迹与日影变化规律，辅助正午太阳高度教学。', local: true, kind: 'html', cloud: '太阳视运动轨迹与杆影.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\太阳视运动轨迹与杆影v.60版.html' },
+                    { title: '月相演示', url: 'file:///E:/课件、教材、教学设计/自然地理视频与动画/月相/月相(分亏凸月盈凸月峨眉月残月)2025.4.18.exe', icon: '🌙', desc: '月相演示动画，分步展示亏凸月、盈凸月、峨眉月、残月等月相变化过程，讲解月相成因必备工具。', local: true, cloud: 'player.html?swf=swf/yuexiang_0.swf', path: 'E:\\课件、教材、教学设计\\自然地理视频与动画\\月相\\月相(分亏凸月盈凸月峨眉月残月)2025.4.18.exe' },
+                    { title: '公转的意义', url: 'file:///E:/课件、教材、教学设计/自然地理视频与动画/地球运动/公转的意义.exe', icon: '🔄', desc: '地球公转的意义flash演示，直观展示公转带来的四季更替、昼夜长短变化与五带划分。', local: true, cloud: 'player.html?swf=swf/gongzhuan_0.swf', path: 'E:\\课件、教材、教学设计\\自然地理视频与动画\\地球运动\\公转的意义.exe' },
+                    { title: '地球运动flash课件', url: 'file:///E:/课件、教材、教学设计/自然地理视频与动画/地球运动/地球的运动flash课件.exe', icon: '🌍', desc: '地球运动flash课件，系统讲解自转与公转的规律、周期、速度及其地理意义。', local: true, cloud: 'player.html?swf=swf/diqiuyundong_0.swf', path: 'E:\\课件、教材、教学设计\\自然地理视频与动画\\地球运动\\地球的运动flash课件.exe' },
+                    { title: '10万颗星星', url: 'http://stars.chromeexperiments.com/', icon: '✨', desc: '谷歌星球实验项目，缩放浏览10万颗近真实星星，感受宇宙浩瀚。' },
+                    { title: '人造天体过境', url: 'http://www.heavens-above.com/', icon: '🛰️', desc: '查询人造卫星、国际空间站等天体过境时间和方位，天文观测利器。' },
+                    { title: '空间环境研究预报中心', url: 'http://www.sepc.ac.cn/', icon: '🌌', desc: '空间天气预报、太阳活动监测，了解空间环境变化。' },
+                ]
+            },
+            {
+                id: 'geology',
+                name: '地质与地貌',
+                icon: '⛰️',
+                color: '#e17055',
+                desc: '地质、地貌、板块运动',
+                sites: [
+                    { title: '板块运动', url: 'https://dinosaurpictures.org/ancient-earth#260', icon: '🧩', desc: '可拖动时间轴查看地球各时期大陆漂移面貌，直观展示板块运动。' },
+                    { title: '古生物图谱', url: 'file:///J:/C-地质专业课件/古生物学/古生物图谱.exe', icon: '🦕', desc: '古生物图谱电子书，收录276种古生物图文资料（三叶虫、恐龙、猛犸象等），附化石复原图与文字介绍，讲解地球历史与生物演化必备资料。', local: true, cloud: 'gushengwutupu/gushengwutupu.html', path: 'J:\\C-地质专业课件\\古生物学\\古生物图谱.exe' },
+                    { title: '岩石图谱', url: 'file:///D:/360MoveData/Users/29621/Desktop/新建文件夹/沉积岩', icon: '🪨', desc: '岩石图谱在线版，收录24种常见岩石手标本图文资料，按沉积岩（10种）、岩浆岩（8种）、变质岩（6种）三大类分类，含标本照片与岩石属性信息卡（颜色、结构、构造、矿物成分、产地等），岩石识别与三大岩类教学必备资料。', local: true, cloud: 'yanshitupu/yanshitupu.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\新建文件夹' },
+                ]
+            },
+            {
+                id: 'weather',
+                name: '气象与气候',
+                icon: '🌤️',
+                color: '#54a0ff',
+                desc: '天气、风场、卫星云图',
+                sites: [
+                    { title: '全球气象平台 Ventusky', url: 'https://www.ventusky.com/', icon: '🌡️', desc: '全球气象可视化平台，实时展示温度、降水、风场等多维气象数据。' },
+                    { title: '全球风、气象、海洋状况', url: 'https://earth.nullschool.net/', icon: '🌀', desc: '全球风场、气象与海洋状况实时可视化，可切换不同高度层与数据集，直观展示大气与海洋环流。' },
+                    { title: '风云四号卫星天气应用平台', url: 'http://rsapp.nsmc.org.cn/geofy/?i=0&isPlay=true&speed=2&sat=fy-4a&pro=geos&type=full_disk&band=1', icon: '🛰️', desc: '国产风云四号气象卫星云图实时展示，可动画播放查看天气系统演变。' },
+                ]
+            },
+            {
+                id: 'environment',
+                name: '环境与生态',
+                icon: '🌿',
+                color: '#1dd1a1',
+                desc: '空气质量、光污染、潮汐',
+                sites: [
+                    { title: '真气网空气质量在线监测', url: 'https://www.aqistudy.cn/', icon: '🌫️', desc: '全国城市空气质量实时监测与历史数据查询，AQI指数可视化。' },
+                    { title: '真气网气象风场地图', url: 'https://map.zq12369.com/', icon: '🌬️', desc: '结合空气质量与风场的可视化地图，分析污染物扩散方向。' },
+                    { title: '世界实时空气质量指数', url: 'http://waqi.info/', icon: '🌍', desc: '全球空气质量实时指数，覆盖世界主要城市，对比全球大气环境。' },
+                    { title: '全球光污染地图', url: 'https://www.lightpollutionmap.info/', icon: '💡', desc: '全球光污染分布可视化，分析人类活动对夜空环境的影响。' },
+                ]
+            },
+            {
+                id: 'water',
+                name: '水',
+                icon: '🌊',
+                color: '#0984e3',
+                desc: '潮汐、海洋、水体运动',
+                sites: [
+                    { title: '全球潮汐-潮流预报', url: 'http://global-tide.nmdis.org.cn/', icon: '🌊', desc: '全球潮汐潮流预报服务平台，查询潮汐变化规律。' },
+                    { title: '地球 NullSchool 洋流地图', url: 'https://earth.nullschool.net/#current/ocean/surface/currents/orthographic', icon: '🌐', desc: '全球海洋洋流实时可视化，展示表层洋流运动方向与速度，直观理解洋流分布规律。' },
+                    { title: 'NowCoast 实时海岸观测', url: 'https://nowcoast.noaa.gov/', icon: '🗺️', desc: '美国NOAA实时海岸观测平台，集成海面温度、风场、波浪、海流等海洋实况数据，了解海洋环境监测。' },
+                ]
+            },
+            {
+                id: 'population',
+                name: '人口与社会',
+                icon: '👥',
+                color: '#ff6b6b',
+                desc: '人口、迁徙、位置大数据',
+                sites: [
+                    { title: '世界人口时钟', url: 'https://countrymeters.info/cn/World', icon: '⏰', desc: '全球及各国人口实时变动数据，直观展示人口增长趋势。' },
+                    { title: '百度迁徙', url: 'http://qianxi.baidu.com/', icon: '🚂', desc: '百度大数据迁徙地图，展示人口流动方向与规模，人口迁移教学利器。' },
+                    { title: '腾讯位置大数据', url: 'https://heat.qq.com/', icon: '📊', desc: '腾讯位置服务热力图数据，展示人口活动空间分布与密度。' },
+                ]
+            },
+            {
+                id: 'maps',
+                name: '地图与地理空间',
+                icon: '🗺️',
+                color: '#5f27cd',
+                desc: '标准地图、街景、地理空间数据',
+                sites: [
+                    { title: '标准地图服务系统', url: 'http://bzdt.ch.mnr.gov.cn/index.html', icon: '📐', desc: '自然资源部官方标准地图服务，下载中国及世界标准地图，教学首选。' },
+                    { title: '发现中国', url: 'https://www.ageeye.cn/', icon: '🇨🇳', desc: '中国历史地理知识地图平台，叠加历史地图与现代地图。' },
+                    { title: 'Geo中国地图集网', url: 'https://www.osgeo.cn/map/m046d', icon: '🗺️', desc: '中国地图集在线浏览，多专题多尺度地图资源。' },
+                    { title: '谷歌地球在线', url: 'https://www.earthol.com/', icon: '🌐', desc: '在线谷歌地球浏览，全球卫星影像查看。' },
+                    { title: '世界免费专业地图下载', url: 'https://www.d-maps.com/', icon: '📋', desc: '海量世界及区域专业地图免费下载，涵盖多种投影方式。' },
+                    { title: '地理空间数据云', url: 'http://www.gscloud.cn/', icon: '☁️', desc: '中科院遥感卫星数据云平台，获取遥感影像与地理空间数据。' },
+                ]
+            },
+            {
+                id: 'database',
+                name: '专业数据库',
+                icon: '🗄️',
+                color: '#48dbfb',
+                desc: '气象、土壤、农业、水利等权威数据',
+                sites: [
+                    { title: '中国气象数据网', url: 'http://data.cma.cn/', icon: '🌤️', desc: '中国气象局官方气象数据平台，提供历史气象观测与预报数据。' },
+                    { title: '中国天气网', url: 'http://www.weather.com.cn/', icon: '🌦️', desc: '中国气象局主办天气预报门户，实时全国天气查询。' },
+                    { title: '中央气象台', url: 'http://www.nmc.cn/', icon: '📡', desc: '中央气象台官方网站，提供权威天气预报与气象灾害预警。' },
+                    { title: '中国海洋预报网', url: 'https://www.oceanguide.org.cn/IndexHome', icon: '🌊', desc: '海洋环境预报服务，海浪、海温、潮汐等海洋数据查询。' },
+                    { title: '中国自然资源数据库', url: 'http://www.data.ac.cn/', icon: '🏞️', desc: '自然资源科学数据库，涵盖土地、水、矿产等多类资源数据。' },
+                    { title: '中国土壤数据库', url: 'http://vdb3.soil.csdb.cn/', icon: '🟤', desc: '中国土壤科学数据库，土壤类型与理化性质数据查询。' },
+                    { title: '中国动物主题数据库', url: 'http://www.zoology.csdb.cn/', icon: '🐼', desc: '中国动物物种数据库，生物多样性教学资源。' },
+                    { title: '国家农业科学数据中心', url: 'http://www.agridata.cn/', icon: '🌾', desc: '农业科学数据共享平台，涵盖农业各领域专业数据。' },
+                    { title: '日梭万年历', url: 'https://www.nongli114.com/', icon: '📅', desc: '万年历查询工具，农历、节气、日出日落时间一应俱全。' },
+                    { title: '中国环境监测总站', url: 'http://www.cnemc.cn/', icon: '🏭', desc: '全国环境质量监测数据发布平台，水、大气、噪声等环境数据。' },
+                    { title: '水利部数据', url: 'http://www.mwr.gov.cn/sj/', icon: '💧', desc: '水利部水资源数据公开，江河湖泊水文数据查询。' },
+                    { title: '国家减灾网', url: 'http://www.ndrcc.org.cn/', icon: '⚠️', desc: '国家减灾中心，自然灾害监测预警与灾情数据。' },
+                    { title: '探月工程数据服务', url: 'http://moon.bao.ac.cn/', icon: '🌕', desc: '中国探月工程科学数据发布与信息服务系统，月球探测数据。' },
+                    { title: '联合国粮农组织数据库', url: 'http://www.fao.org/statistics/zh/', icon: '🌍', desc: 'FAOSTAT全球粮食与农业统计数据库，国际比较教学数据源。' },
+                    { title: '北大西洋涛动指数(NAO)', url: 'https://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/nao.shtml', icon: '🌬️', desc: '美国气候预测中心NAO指数，大气环流异常教学数据。' },
+                    { title: '国家人口健康科学数据中心', url: 'http://www.phsciencedata.cn/Share/index.jsp', icon: '🏥', desc: '人口健康科学数据共享平台，人口与健康交叉数据。' },
+                    { title: '中科院资源环境数据平台', url: 'http://www.resdc.cn/', icon: '🗺️', desc: '中科院资源环境科学与数据中心，土地利用、植被等多类数据。' },
+                ]
+            },
+        ];
+
+        let activeCategory = 'all';
+
+        // Render categories
+        function renderCategories() {
+            const container = document.getElementById('categories');
+            let total = 0;
+            categories.forEach(c => total += c.sites.length);
+
+            let html = `<div class="cat-btn active" onclick="selectCategory('all')" data-cat="all">全部 <span class="count">${total}</span></div>`;
+            categories.forEach(c => {
+                html += `<div class="cat-btn" onclick="selectCategory('${c.id}')" data-cat="${c.id}">${c.icon} ${c.name} <span class="count">${c.sites.length}</span></div>`;
+            });
+            container.innerHTML = html;
+            document.getElementById('totalNum').textContent = total;
+        }
+
+        // Render content
+        function renderContent(filterText = '', catFilter = 'all') {
+            const container = document.getElementById('content');
+            const noResults = document.getElementById('noResults');
+            let html = '';
+            let hasResults = false;
+
+            categories.forEach(cat => {
+                if (catFilter !== 'all' && catFilter !== cat.id) return;
+
+                let filteredSites = cat.sites.filter(s => {
+                    if (!filterText) return true;
+                    return s.title.toLowerCase().includes(filterText.toLowerCase()) ||
+                           s.desc.toLowerCase().includes(filterText.toLowerCase());
+                });
+
+                if (filteredSites.length === 0) return;
+                hasResults = true;
+
+                html += `<div class="section" data-category="${cat.id}">`;
+                html += `<div class="section-header">`;
+                html += `<span class="section-icon">${cat.icon}</span>`;
+                html += `<span class="section-title">${cat.name}</span>`;
+                html += `<span class="section-desc">${cat.desc}</span>`;
+                html += `</div>`;
+                html += `<div class="grid">`;
+
+                filteredSites.forEach(site => {
+                    const isCloudEnv = location.protocol !== 'file:';
+                    if (isCloudEnv && site.cloud) {
+                        // 云端环境：本地资源有在线版 → 渲染为可点击的在线卡片
+                        const tagText = site.cloud.indexOf('player.html') === 0 ? '在线课件' : '在线演示';
+                        html += `<a href="${site.cloud}" target="_blank" class="card cloud-card" style="--card-accent: ${cat.color}">`;
+                        html += `<div class="card-header">`;
+                        html += `<div class="card-icon" style="background: ${cat.color}1a">${site.icon}</div>`;
+                        html += `<div class="card-title">${site.title}<span class="card-tag cloud-tag">${tagText}</span></div>`;
+                        html += `</div>`;
+                        html += `<div class="card-desc">${site.desc}</div>`;
+                        html += `<div class="card-footer">`;
+                        html += `<span class="card-url">🌐 云端在线播放，无需安装</span>`;
+                        html += `<span class="card-link" style="color: ${cat.color}">开始播放 →</span>`;
+                        html += `</div>`;
+                        html += `</a>`;
+                    } else if (site.local) {
+                        // 本地资源卡片（本机环境，或云端但无在线版）
+                        const isHtml = site.kind === 'html';
+                        const tagText = isHtml ? '本地网页' : '本地应用';
+                        const openText = isHtml ? '打开' : '打开应用';
+                        html += `<div class="card local-card" style="--card-accent: ${cat.color}" data-path="${site.path}">`;
+                        html += `<div class="card-header">`;
+                        html += `<div class="card-icon" style="background: ${cat.color}1a">${site.icon}</div>`;
+                        html += `<div class="card-title">${site.title}<span class="card-tag local-tag">${tagText}</span></div>`;
+                        html += `</div>`;
+                        html += `<div class="card-desc">${site.desc}</div>`;
+                        if (isCloudEnv) {
+                            html += `<div class="cloud-note">⚠️ 该课件体积较大，暂未上线云端，仅限本机运行</div>`;
+                        }
+                        html += `<div class="card-footer">`;
+                        html += `<span class="card-url" title="点击复制路径" style="cursor: pointer;" onclick="copyPath(event, '${site.path.replace(/\\/g, '\\\\')}')">${site.path}</span>`;
+                        html += `<span class="card-link local-open" style="color: ${cat.color}; cursor: pointer;" onclick="openLocalApp(event, '${site.path.replace(/\\/g, '\\\\')}')">${openText}</span>`;
+                        html += `</div>`;
+                        html += `</div>`;
+                    } else {
+                        const domain = site.url.replace(/^https?:\/\//, '').split('/')[0];
+                        html += `<a href="${site.url}" target="_blank" class="card" style="--card-accent: ${cat.color}">`;
+                        html += `<div class="card-header">`;
+                        html += `<div class="card-icon" style="background: ${cat.color}1a">${site.icon}</div>`;
+                        html += `<div class="card-title">${site.title}</div>`;
+                        html += `</div>`;
+                        html += `<div class="card-desc">${site.desc}</div>`;
+                        html += `<div class="card-footer">`;
+                        html += `<span class="card-url">${domain}</span>`;
+                        html += `<span class="card-link" style="color: ${cat.color}">访问 →</span>`;
+                        html += `</div>`;
+                        html += `</a>`;
+                    }
+                });
+
+                html += `</div></div>`;
+            });
+
+            container.innerHTML = html;
+            noResults.classList.toggle('show', !hasResults);
+        }
+
+        // Select category
+        function selectCategory(catId) {
+            activeCategory = catId;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.cat === catId);
+            });
+            const searchText = document.getElementById('searchInput').value.trim();
+            renderContent(searchText, catId);
+        }
+
+        // Search
+        function handleSearch() {
+            const searchText = document.getElementById('searchInput').value.trim();
+            renderContent(searchText, activeCategory);
+        }
+
+        // 打开本地应用程序
+        function openLocalApp(event, path) {
+            event.stopPropagation();
+            // 尝试通过 file:// 协议打开本地文件（exe 或 html），encodeURI 处理中文与空格
+            const fileUrl = 'file:///' + path.replace(/\\/g, '/');
+            window.open(encodeURI(fileUrl), '_blank');
+            if (path.toLowerCase().endsWith('.html')) {
+                showToast('正在打开本地网页…<br>若未弹出，请点击上方路径复制后粘贴到浏览器地址栏');
+            } else {
+                showToast('正在尝试打开本地应用…<br>若浏览器拦截，请点击上方路径复制后，粘贴到资源管理器地址栏打开');
+            }
+        }
+
+        // 复制路径到剪贴板
+        function copyPath(event, path) {
+            event.stopPropagation();
+            const realPath = path.replace(/\\\\/g, '\\');
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(realPath).then(() => {
+                    showToast('✅ 路径已复制到剪贴板：<br>' + realPath);
+                }).catch(() => {
+                    fallbackCopy(realPath);
+                });
+            } else {
+                fallbackCopy(realPath);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showToast('✅ 路径已复制到剪贴板：<br>' + text);
+            } catch (e) {
+                showToast('复制失败，请手动复制路径：<br>' + text);
+            }
+            document.body.removeChild(ta);
+        }
+
+        // Toast 提示
+        let toastTimer = null;
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = msg;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        // Init
+        renderCategories();
+        renderContent();
+    </script>
+</body>
+</html>

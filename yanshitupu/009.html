@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>009 粉砂岩 - 岩石图谱</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #f4f6f8;
+  color: #26313b;
+  font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  padding: 24px 16px 60px;
+}
+.wrap { max-width: 860px; margin: 0 auto; }
+.head {
+  display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+  padding: 14px 18px;
+  background: #fff;
+  border-radius: 12px;
+  border-left: 5px solid #4a7d5c;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  margin-bottom: 22px;
+}
+.head .no {
+  font-size: 15px; color: #4a7d5c; font-weight: 700;
+  font-family: Consolas, monospace;
+}
+.head .cat {
+  font-size: 12px; color: #fff; background: #4a7d5c;
+  padding: 3px 10px; border-radius: 20px;
+}
+.head h1 { font-size: 24px; color: #1f2a33; letter-spacing: 1px; }
+.head .total { margin-left: auto; font-size: 12px; color: #8a9ba8; }
+figure {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  overflow: hidden;
+  margin-bottom: 22px;
+}
+figure .pnum {
+  padding: 10px 16px; font-size: 13px; font-weight: 600;
+  color: #4a7d5c; border-bottom: 1px solid #eef1f4;
+  background: #fafbfc;
+}
+figure img {
+  display: block; width: 100%; height: auto; cursor: zoom-in;
+}
+figure figcaption {
+  padding: 8px 16px; font-size: 12px; color: #8a9ba8;
+  border-top: 1px solid #eef1f4;
+}
+/* 信息卡文字版 */
+.infocard {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  overflow: hidden;
+  margin-bottom: 22px;
+}
+.infocard .ictitle {
+  padding: 12px 16px; font-size: 14px; font-weight: 700;
+  color: #4a7d5c; border-bottom: 1px solid #eef1f4;
+  background: #fafbfc;
+  display: flex; align-items: center; gap: 8px;
+}
+.infocard table { width: 100%; border-collapse: collapse; }
+.infocard td {
+  padding: 9px 14px; font-size: 13.5px; line-height: 1.6;
+  border-bottom: 1px solid #f2f4f7; vertical-align: top;
+}
+.infocard td.k {
+  width: 96px; color: #6b7a86; font-weight: 600; white-space: nowrap;
+  background: #f8fafb;
+}
+.infocard tr:last-child td { border-bottom: none; }
+.infocard .note {
+  padding: 8px 16px; font-size: 11.5px; color: #a0aab3;
+  border-top: 1px solid #eef1f4; background: #fafbfc;
+}
+/* 全屏查看 */
+.overlay {
+  position: fixed; inset: 0; background: rgba(15,20,25,0.94);
+  display: none; align-items: center; justify-content: center;
+  z-index: 99; cursor: zoom-out; padding: 20px;
+}
+.overlay img { max-width: 100%; max-height: 100%; }
+.overlay.show { display: flex; }
+.tip { text-align: center; color: #8a9ba8; font-size: 13px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <span class="no">009</span>
+    <span class="cat">沉积岩</span>
+    <h1>粉砂岩</h1>
+    <span class="total">共 2 页</span>
+  </div>
+  <figure><div class="pnum">第 1 页</div><img src="pages/p009_1.jpg" alt="粉砂岩" loading="lazy"><figcaption>第 1 页 · 点击图片可放大</figcaption></figure>
+<figure><div class="pnum">第 2 页</div><img src="pages/p009_2.jpg" alt="粉砂岩" loading="lazy"><figcaption>第 2 页 · 点击图片可放大</figcaption></figure>
+  <div class="infocard"><div class="ictitle">📋 粉砂岩 · 岩石信息卡（文字版）</div><table><tr><td class="k">岩石名称</td><td>粉砂岩</td></tr>
+<tr><td class="k">英文名称</td><td>Siltstone</td></tr>
+<tr><td class="k">颜色</td><td>淡灰褐</td></tr>
+<tr><td class="k">构造</td><td>纹层状构造</td></tr>
+<tr><td class="k">结构</td><td>粉砂结构</td></tr>
+<tr><td class="k">主要成分</td><td>粉砂级碎屑，泥质</td></tr>
+<tr><td class="k">所属岩类</td><td>沉积岩\陆源碎屑岩\粉砂岩</td></tr>
+<tr><td class="k">鉴定依据</td><td>具粉砂结构</td></tr>
+<tr><td class="k">成因</td><td>任何低能水环境</td></tr>
+<tr><td class="k">产地</td><td>山西大同</td></tr>
+<tr><td class="k">采集</td><td>张平</td></tr>
+<tr><td class="k">收藏</td><td>地大岩矿教研室</td></tr>
+<tr><td class="k">藏号</td><td>251</td></tr>
+<tr><td class="k">描述</td><td>邬金华</td></tr>
+<tr><td class="k">数字化</td><td>邬金华</td></tr></table><div class="note">以上文字由图片自动识别（OCR）生成，个别字符可能有误，请以图片原卡为准。</div></div>
+  <p class="tip">← → 键切换上一块 / 下一块岩石</p>
+</div>
+
+<div class="overlay" id="ov"><img id="ovImg" src="" alt=""></div>
+<script>
+(function () {
+  var ov = document.getElementById('ov'), ovImg = document.getElementById('ovImg');
+  document.querySelectorAll('figure img').forEach(function (im) {
+    im.addEventListener('click', function () {
+      ovImg.src = im.src;
+      ov.classList.add('show');
+    });
+  });
+  ov.addEventListener('click', function () { ov.classList.remove('show'); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') ov.classList.remove('show');
+  });
+})();
+</script>
+</body>
+</html>

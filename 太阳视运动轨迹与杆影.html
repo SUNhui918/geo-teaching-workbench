@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>直立杆子影子模拟器 - 东升西落 | 连续时间流逝 | 精准方位</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Microsoft YaHei', 'Segoe UI', Roboto, sans-serif;
+            background-color: #eef2f5;
+            touch-action: pan-x pan-y;
+        }
+        /* 原顶部 info 区块已完全移除，不再显示任何文字 */
+        #stats-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(8px);
+            padding: 12px 20px;
+            border-radius: 16px;
+            color: #1e2a3a;
+            font-family: monospace;
+            font-size: 14px;
+            text-align: left;
+            border-right: 3px solid #ff5555;
+            pointer-events: none;
+            z-index: 10;
+            line-height: 1.5;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            font-weight: 500;
+        }
+        #stats-panel h4 {
+            margin: 0 0 8px 0;
+            color: #ff5533;
+            text-align: center;
+        }
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.94);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: 16px 28px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            z-index: 20;
+            color: #1e2a3a;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+            pointer-events: auto;
+            font-family: monospace;
+            padding-bottom: 74px;
+        }
+        body.controls-collapsed #controls {
+            display: none;
+        }
+        #collapsed-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: transparent;
+            padding: 0;
+            z-index: 20;
+            pointer-events: auto;
+        }
+        body.controls-collapsed #collapsed-controls {
+            display: flex;
+        }
+        #collapsed-controls button {
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            border: 2px solid rgba(30,42,58,0.14);
+            background: rgba(255,255,255,0.92);
+            color: #2c3e4e;
+            box-shadow: 0 5px 18px rgba(0,0,0,0.18);
+            backdrop-filter: blur(10px);
+        }
+        #expandControlsBtn {
+            background: rgba(255,255,255,0.94);
+            color: #2c3e4e;
+        }
+        #collapsed-controls #collapsedPlayBtn,
+        #collapsed-controls #collapsedPauseBtn {
+            width: 50px;
+            height: 50px;
+            border: none;
+            color: #ffffff;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.24);
+        }
+        #collapsed-controls #collapsedPlayBtn {
+            background: #16a76a;
+        }
+        #collapsed-controls #collapsedPlayBtn::before {
+            content: "";
+            width: 0;
+            height: 0;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            border-left: 18px solid #ffffff;
+            margin-left: 4px;
+        }
+        #collapsed-controls #collapsedPauseBtn {
+            background: #ff9f1c;
+        }
+        #collapsed-controls #collapsedPauseBtn::before,
+        #collapsed-controls #collapsedPauseBtn::after {
+            content: "";
+            width: 7px;
+            height: 24px;
+            background: #ffffff;
+            border-radius: 3px;
+        }
+        #collapsed-controls #collapsedPauseBtn::before {
+            margin-right: 4px;
+        }
+        #collapsed-controls #collapsedPauseBtn::after {
+            margin-left: 4px;
+        }
+        #collapsed-controls button:hover {
+            transform: scale(1.06);
+        }
+        #expandControlsBtn:hover {
+            background: #ffffff;
+        }
+        #collapsed-controls #collapsedPlayBtn:hover {
+            background: #21c47d;
+        }
+        #collapsed-controls #collapsedPauseBtn:hover {
+            background: #ffb33f;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0,0,0,0.04);
+            padding: 6px 18px;
+            border-radius: 48px;
+        }
+        .control-group span {
+            white-space: nowrap;
+        }
+        .control-group label {
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: #2c3e4e;
+        }
+        input {
+            cursor: pointer;
+            background: #ffffff;
+            border: 1px solid #ccc;
+            color: #1e2a3a;
+            padding: 6px 12px;
+            border-radius: 32px;
+            font-weight: normal;
+        }
+        input[type="range"].time-slider {
+            width: 260px;
+            background: #e9ecef;
+        }
+        input[type="range"] {
+            width: 150px;
+            background: #e9ecef;
+        }
+        input[type="number"] {
+            width: 80px;
+            text-align: center;
+            background: #f8f9fa;
+        }
+        input[type="number"].date-part-input {
+            width: 48px;
+            padding: 6px 8px;
+        }
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            padding: 0;
+        }
+        .value-display {
+            min-width: 60px;
+            text-align: center;
+            background: #e9ecef;
+            padding: 4px 12px;
+            border-radius: 32px;
+            color: #1e2a3a;
+        }
+        button {
+            background: #ffaa33;
+            border: none;
+            padding: 6px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #2c3e4e;
+        }
+        button:hover {
+            background: #ffcc55;
+            transform: scale(1.02);
+        }
+        #collapseControlsBtn {
+            position: absolute;
+            right: 28px;
+            bottom: 18px;
+            min-width: 116px;
+            height: 46px;
+            padding: 8px 22px;
+            font-size: 15px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.16);
+        }
+        .solar-term-buttons {
+            display: flex;
+            gap: 8px;
+            background: rgba(0,0,0,0.04);
+            padding: 4px 12px;
+            border-radius: 48px;
+        }
+        .solar-term-buttons button {
+            background: #88aadd;
+            color: white;
+            padding: 4px 12px;
+            font-size: 12px;
+        }
+        .solar-term-buttons button:hover {
+            background: #aaccff;
+        }
+        .time-control-buttons {
+            display: flex;
+            gap: 8px;
+            background: rgba(0,0,0,0.04);
+            padding: 4px 12px;
+            border-radius: 48px;
+        }
+        .time-control-buttons button {
+            background: #66bb99;
+            color: white;
+            padding: 6px 18px;
+            font-size: 14px;
+        }
+        .time-control-buttons button.pause-btn {
+            background: #aa8866;
+        }
+        .time-control-buttons button.speed-btn {
+            background: #88aadd;
+            padding: 6px 10px;
+        }
+        .time-control-buttons button.speed-btn.active {
+            background: #2266cc;
+            color: #ffffff;
+        }
+        .time-control-buttons button:hover {
+            background: #88ddbb;
+        }
+        .time-control-buttons button.pause-btn:hover {
+            background: #ccaa88;
+        }
+        .time-control-buttons button.speed-btn:hover {
+            background: #6699ee;
+        }
+        .time-control-buttons .night-boost-control,
+        .time-control-buttons .path-label-control,
+        .time-control-buttons .underground-sun-control,
+        .time-control-buttons .seasonal-sun-path-control,
+        .time-control-buttons .cone-surface-control {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #2c3e4e;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 32px;
+            background: rgba(255,255,255,0.45);
+            white-space: nowrap;
+        }
+        .signature {
+            font-size: 13px;
+            color: #5a6e7c;
+            background: rgba(0,0,0,0.05);
+            padding: 6px 16px;
+            border-radius: 40px;
+            letter-spacing: 1px;
+            font-family: 'KaiTi', 'Microsoft YaHei', monospace;
+            white-space: nowrap;
+        }
+        @media (max-width: 1000px) {
+            #controls { left: 12px; right: 12px; bottom: 12px; padding: 14px 18px 74px; max-height: 58vh; overflow-y: auto; justify-content: center; }
+            #collapsed-controls { bottom: 12px; }
+            #collapseControlsBtn { right: 18px; bottom: 16px; min-width: 108px; height: 44px; }
+            .control-group { padding: 6px 12px; gap: 8px; flex-wrap: wrap; justify-content: center; }
+            input[type="range"].time-slider { width: 180px; }
+            input[type="range"] { width: 110px; }
+            input[type="number"] { width: 72px; }
+            input[type="number"].date-part-input { width: 42px; }
+            .value-display { min-width: 50px; font-size: 12px; }
+            .signature { font-size: 10px; padding: 4px 12px; }
+            .solar-term-buttons button { padding: 2px 8px; font-size: 10px; }
+            .time-control-buttons { flex-wrap: wrap; justify-content: center; }
+            .time-control-buttons button { padding: 4px 12px; font-size: 12px; }
+        }
+        @media (max-width: 640px) {
+            #stats-panel {
+                top: 8px;
+                right: 8px;
+                max-width: calc(100vw - 24px);
+                padding: 8px 10px;
+                border-radius: 12px;
+                font-size: 11px;
+                line-height: 1.35;
+                text-align: left;
+                border-right-width: 2px;
+            }
+            #stats-panel h4 {
+                margin-bottom: 4px;
+                font-size: 12px;
+            }
+            #controls {
+                left: 8px;
+                right: 8px;
+                bottom: 8px;
+                max-height: min(66vh, 520px);
+                padding: 12px 12px 72px;
+                border-radius: 20px;
+                gap: 8px;
+                align-content: flex-start;
+                font-size: 12px;
+            }
+            #collapsed-controls {
+                bottom: max(10px, env(safe-area-inset-bottom));
+                gap: 10px;
+            }
+            #collapsed-controls button {
+                width: 42px;
+                height: 42px;
+                font-size: 17px;
+            }
+            #collapsed-controls #collapsedPlayBtn,
+            #collapsed-controls #collapsedPauseBtn {
+                width: 52px;
+                height: 52px;
+            }
+            #collapsed-controls #collapsedPlayBtn::before {
+                border-top-width: 13px;
+                border-bottom-width: 13px;
+                border-left-width: 20px;
+            }
+            #collapsed-controls #collapsedPauseBtn::before,
+            #collapsed-controls #collapsedPauseBtn::after {
+                width: 8px;
+                height: 26px;
+            }
+            .control-group,
+            .time-control-buttons,
+            .solar-term-buttons {
+                width: 100%;
+                box-sizing: border-box;
+                justify-content: center;
+                gap: 6px;
+                padding: 8px 10px;
+                border-radius: 18px;
+            }
+            .control-group span:first-child {
+                width: 100%;
+                text-align: center;
+            }
+            input[type="range"],
+            input[type="range"].time-slider {
+                width: min(100%, 230px);
+                flex: 1 1 150px;
+            }
+            input[type="number"] {
+                width: 64px;
+                padding: 5px 8px;
+            }
+            input[type="number"].date-part-input {
+                width: 44px;
+            }
+            .value-display {
+                min-width: 52px;
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+            button {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+            #collapseControlsBtn {
+                right: 14px;
+                bottom: 14px;
+                min-width: 104px;
+                height: 44px;
+                font-size: 14px;
+            }
+            .time-control-buttons button {
+                flex: 1 1 64px;
+                padding: 6px 8px;
+            }
+            .time-control-buttons button.speed-btn {
+                flex: 0 1 50px;
+            }
+            .time-control-buttons .night-boost-control,
+            .time-control-buttons .path-label-control,
+            .time-control-buttons .underground-sun-control,
+            .time-control-buttons .seasonal-sun-path-control,
+            .time-control-buttons .cone-surface-control {
+                width: 100%;
+                justify-content: center;
+                white-space: normal;
+                text-align: center;
+                font-size: 11px;
+            }
+            .solar-term-buttons {
+                flex-wrap: wrap;
+            }
+            .solar-term-buttons button {
+                flex: 1 1 68px;
+                padding: 5px 8px;
+                font-size: 11px;
+            }
+            .signature {
+                width: 100%;
+                box-sizing: border-box;
+                text-align: center;
+                font-size: 10px;
+                padding: 5px 10px;
+            }
+        }
+        @media (max-width: 420px) {
+            #stats-panel {
+                font-size: 10px;
+                max-width: 168px;
+            }
+            #controls {
+                font-size: 11px;
+            }
+            .control-group {
+                padding: 7px 8px;
+            }
+            input[type="range"],
+            input[type="range"].time-slider {
+                flex-basis: 130px;
+            }
+            input[type="number"] {
+                width: 58px;
+            }
+            button {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 已删除原info区块，页面顶部不再有任何说明文字 -->
+    <div id="stats-panel">
+        <h4>📊 实时参数</h4>
+        <div>📅 日期: <span id="statDate">6月21日</span> <span id="solarTerm" style="color:#ff8844;"></span></div>
+        <div>⏱️ 时间: <span id="statLocalTime">00:00</span></div>
+        <div>🕒 真太阳时: <span id="statSolarTime">00:00</span></div>
+        <div>🌞 太阳直射: <span id="statDeclination">--</span></div>
+        <div>📐 太阳高度: <span id="statAlt">--</span>°</div>
+        <div>🧭 太阳方位: <span id="statAz">--</span>°</div>
+        <div>📏 影长: <span id="statShadowLen">--</span></div>
+        <div>🌅 日出时间: <span id="statSunriseTime">--</span></div>
+        <div>☀️ 正午时间: <span id="statNoonTime">12:00</span></div>
+        <div>🌇 日落时间: <span id="statSunsetTime">--</span></div>
+    </div>
+    <div id="controls">
+        <div class="control-group">
+            <span>🌐 纬度</span>
+            <input type="range" id="latSlider" min="-90" max="90" step="0.1" value="40">
+            <input type="number" id="latNumber" step="0.1" value="40">
+            <span id="latVal" class="value-display">40°N</span>
+        </div>
+        <div class="control-group">
+            <span>📅 日期</span>
+            <input type="range" id="dateSlider" min="0" max="364" step="1" value="172">
+            <input type="number" id="dateNumber" step="1" min="0" max="364" value="172">
+            <input type="number" id="dateMonthNumber" class="date-part-input" step="1" min="1" max="12" value="6" title="月份">
+            <span>月</span>
+            <input type="number" id="dateDayNumber" class="date-part-input" step="1" min="1" max="31" value="21" title="日期">
+            <span>日</span>
+            <span id="dateVal" class="value-display">6月21日</span>
+            <div class="solar-term-buttons">
+                <button id="springBtn">🌱 春分</button>
+                <button id="summerBtn">☀️ 夏至</button>
+                <button id="autumnBtn">🍂 秋分</button>
+                <button id="winterBtn">❄️ 冬至</button>
+            </div>
+        </div>
+        <div class="control-group">
+            <span>⏱️ 时间（*即平太阳时）</span>
+            <input type="range" id="timeSlider" class="time-slider" min="0" max="24" step="0.01" value="12">
+            <input type="number" id="timeNumber" step="0.01" min="0" max="24" value="12">
+            <span id="timeVal" class="value-display">12:00</span>
+        </div>
+        <div class="control-group">
+            <span>📏 杆高(m)</span>
+            <input type="number" id="heightNumber" step="0.1" min="0.5" max="100" value="2.0">
+        </div>
+        <div class="control-group">
+            <button id="resetViewBtn">🔄 重置视角</button>
+            <button id="exportCsvBtn" title="导出当前日期全天实时参数CSV">⬇ 导出数据</button>
+            <button id="collapseControlsBtn" title="收起设置面板">⚙️ 收起</button>
+        </div>
+        <!-- 新增时间流逝和暂停按钮组 (连续流动) -->
+        <div class="time-control-buttons">
+            <button id="timeFlowBtn" title="时间连续流逝">⏵ 时间流逝</button>
+            <button id="timePauseBtn" class="pause-btn" title="暂停时间流动">⏸ 暂停</button>
+            <button class="speed-btn" data-speed="0.5" title="0.5倍流速">0.5x</button>
+            <button class="speed-btn active" data-speed="1" title="1倍流速">1x</button>
+            <button class="speed-btn" data-speed="2" title="2倍流速">2x</button>
+            <button class="speed-btn" data-speed="4" title="4倍流速">4x</button>
+            <label class="night-boost-control" title="太阳在地平线以下时，时间流逝倍率在当前倍率基础上再乘2">
+                <input type="checkbox" id="nightBoostToggle" checked>
+                夜间时间流逝加快
+            </label>
+            <label class="path-label-control" title="显示太阳轨迹上的日出、日落和整点时间">
+                <input type="checkbox" id="sunTimeLabelsToggle">
+                显示轨迹时间节点
+            </label>
+            <label class="underground-sun-control" title="显示太阳在地平线以下的轨迹">
+                <input type="checkbox" id="undergroundSunToggle">
+                显示地下太阳轨迹
+            </label>
+            <label class="seasonal-sun-path-control" title="显示春分、夏至、秋分、冬至四日太阳轨迹">
+                <input type="checkbox" id="seasonalSunPathsToggle">
+                显示二分二至日太阳轨迹
+            </label>
+            <label class="cone-surface-control" title="显示或隐藏太阳光线圆锥/锥面">
+                <input type="checkbox" id="coneSurfaceToggle">
+                显示圆锥面
+            </label>
+        </div>
+        <div class="signature">杭州二中钟华制作</div>
+    </div>
+    <div id="collapsed-controls">
+        <button id="expandControlsBtn" title="展开设置">⚙️</button>
+        <button id="collapsedPlayBtn" title="时间流逝" aria-label="时间流逝"></button>
+        <button id="collapsedPauseBtn" title="暂停" aria-label="暂停"></button>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+        // --- 初始化场景、相机、渲染器 ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xeef2f5);
+        scene.fog = new THREE.FogExp2(0xeef2f5, 0.00035);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 2000);
+        camera.position.set(180, 140, 200);
+        camera.lookAt(0, 2, 0);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = false;
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.domElement.style.position = 'absolute';
+        renderer.domElement.style.inset = '0';
+        renderer.domElement.style.zIndex = '0';
+        document.body.appendChild(renderer.domElement);
+        
+        const labelRenderer = new CSS2DRenderer();
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.domElement.style.position = 'absolute';
+        labelRenderer.domElement.style.top = '0px';
+        labelRenderer.domElement.style.left = '0px';
+        labelRenderer.domElement.style.zIndex = '5';
+        labelRenderer.domElement.style.pointerEvents = 'none';
+        document.body.appendChild(labelRenderer.domElement);
+        
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.rotateSpeed = 0.8;
+        controls.zoomSpeed = 1.2;
+        controls.panSpeed = 0.8;
+        controls.target.set(0, 2, 0);
+        document.getElementById('resetViewBtn').addEventListener('click', () => {
+            stopAutoTime(); // 重置视角时也暂停时间流逝，避免干扰
+            camera.position.set(180, 140, 200);
+            controls.target.set(0, 2, 0);
+            controls.update();
+        });
+        
+        // --- 大范围地面网格 (半径400) ---
+        const bigGridHelper = new THREE.GridHelper(800, 80, 0xbbccdd, 0xccddee);
+        bigGridHelper.position.y = -0.02;
+        bigGridHelper.material.transparent = true;
+        bigGridHelper.material.opacity = 0.45;
+        scene.add(bigGridHelper);
+        
+        const groundPlaneMat = new THREE.MeshStandardMaterial({ color: 0xeef2f5, roughness: 0.8, metalness: 0.05, transparent: true, opacity: 0.25, side: THREE.DoubleSide });
+        const largeGroundDisc = new THREE.Mesh(new THREE.CircleGeometry(400, 32), groundPlaneMat);
+        largeGroundDisc.rotation.x = -Math.PI / 2;
+        largeGroundDisc.position.y = -0.03;
+        scene.add(largeGroundDisc);
+        
+        // --- 环境光及辅助光源 ---
+        const ambientLight = new THREE.AmbientLight(0x9aabbb, 0.65);
+        scene.add(ambientLight);
+        const fillLight = new THREE.DirectionalLight(0xffffff, 0.75);
+        fillLight.position.set(2, 8, 3);
+        scene.add(fillLight);
+        const backLight = new THREE.PointLight(0xaaccff, 0.45);
+        backLight.position.set(-3, 5, -6);
+        scene.add(backLight);
+        
+        // --- 杆子: 细圆柱，底部位于 y=0 ---
+        const poleMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.3, metalness: 0.1 });
+        const poleGeo = new THREE.CylinderGeometry(0.12, 0.12, 1, 16);
+        const pole = new THREE.Mesh(poleGeo, poleMat);
+        scene.add(pole);
+        
+        // --- 影子平面：完全平铺在地面 (y=0) ---
+        const shadowPlaneMat = new THREE.MeshStandardMaterial({ 
+            color: 0x4a4a4a, 
+            emissive: 0x1a1a1a, 
+            transparent: true, 
+            opacity: 0.7, 
+            side: THREE.DoubleSide,
+            roughness: 0.6
+        });
+        const customShadowPlane = new THREE.Mesh(new THREE.BufferGeometry(), shadowPlaneMat);
+        scene.add(customShadowPlane);
+        
+        // 太阳光线: 太阳→杆顶→影子末端
+        const rayMat = new THREE.MeshBasicMaterial({ color: 0xff9f1c, transparent: true, opacity: 0.85 });
+        let raySunToTop = new THREE.Mesh(new THREE.BufferGeometry(), rayMat);
+        let rayTopToShadow = new THREE.Mesh(new THREE.BufferGeometry(), rayMat);
+        scene.add(raySunToTop);
+        scene.add(rayTopToShadow);
+        
+        // --- 红色太阳 ---
+        const sunMat = new THREE.MeshStandardMaterial({ color: 0xff3333, emissive: 0xff2200, emissiveIntensity: 0.9, roughness: 0.2 });
+        const sunSphere = new THREE.Mesh(new THREE.SphereGeometry(6.0, 128, 128), sunMat);
+        scene.add(sunSphere);
+        
+        const sunLightDir = new THREE.DirectionalLight(0xffaa66, 0.9);
+        scene.add(sunLightDir);
+        
+        // 虚线圆圈 (太阳在地平线以下时显示)
+        const dashedCirclePts = [];
+        const dashRadius = 6.2;
+        for (let i = 0; i <= 100; i++) {
+            const a = (i / 100) * Math.PI * 2;
+            dashedCirclePts.push(new THREE.Vector3(Math.cos(a) * dashRadius, Math.sin(a) * dashRadius, 0));
+        }
+        const dashedCircleGeo = new THREE.BufferGeometry().setFromPoints(dashedCirclePts);
+        const dashedCircleMat = new THREE.LineDashedMaterial({ color: 0xff8888, dashSize: 0.35, gapSize: 0.22 });
+        const dashedSunCircle = new THREE.Line(dashedCircleGeo, dashedCircleMat);
+        dashedSunCircle.computeLineDistances();
+        dashedSunCircle.visible = false;
+        scene.add(dashedSunCircle);
+        
+        // ========= 对称映射: 物理角度 -> 显示角度 (关于南北轴对称) =========
+        function displayAngle(physDeg) {
+            if (physDeg === 0) return 0;
+            return (360 - physDeg) % 360;
+        }
+        
+        // ========= 核心修正: 使太阳视觉上从 E标签侧升起 W标签侧落下 =========
+        function transformToEastRiseWestSet(azRad) {
+            return (2 * Math.PI - azRad) % (2 * Math.PI);
+        }
+        
+        // ========= 辅助函数: 画圆环、刻度线 (保持原有逻辑) =========
+        function addRing(radius, yOffset, color) {
+            const points = [];
+            for (let deg = 0; deg <= 360; deg++) {
+                const rad = deg * Math.PI / 180;
+                const x = Math.sin(rad) * radius;
+                const z = Math.cos(rad) * radius;
+                points.push(new THREE.Vector3(x, yOffset, z));
+            }
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({ color: color });
+            const ring = new THREE.Line(geometry, material);
+            scene.add(ring);
+        }
+        
+        function addTicksAndLabels(radius, yOffset, tickLen, labelIntervalDeg, tickIntervalDeg, fontSize = '12px', labelRadiusOffset = 0.5, options = {}) {
+            const tickMat = new THREE.LineBasicMaterial({ color: 0x7a8e9e });
+            const tickItems = [];
+            const labelItems = [];
+            for (let deg = 0; deg < 360; deg += tickIntervalDeg) {
+                const rad = deg * Math.PI / 180;
+                const dirX = Math.sin(rad);
+                const dirZ = Math.cos(rad);
+                const startX = dirX * radius;
+                const startZ = dirZ * radius;
+                const endX = dirX * (radius + tickLen);
+                const endZ = dirZ * (radius + tickLen);
+                const points = [new THREE.Vector3(startX, yOffset, startZ), new THREE.Vector3(endX, yOffset, endZ)];
+                const barGeo = new THREE.BufferGeometry().setFromPoints(points);
+                const bar = new THREE.Line(barGeo, tickMat);
+                scene.add(bar);
+                tickItems.push({ deg, object: bar });
+                
+                const isCardinalAxis = deg % 90 === 0;
+                const shouldCreateLabel = deg % labelIntervalDeg === 0 && !(options.skipCardinalLabels && isCardinalAxis);
+                if (shouldCreateLabel) {
+                    const showDeg = displayAngle(deg);
+                    const labelDiv = document.createElement('div');
+                    labelDiv.textContent = `${showDeg}°`;
+                    labelDiv.style.color = '#1e2a3a';
+                    labelDiv.style.fontSize = fontSize;
+                    labelDiv.style.fontWeight = 'bold';
+                    labelDiv.style.background = 'rgba(255,255,240,0.85)';
+                    labelDiv.style.padding = '2px 5px';
+                    labelDiv.style.borderRadius = '16px';
+                    labelDiv.style.border = '1px solid #99aabb';
+                    labelDiv.style.backdropFilter = 'blur(4px)';
+                    const labelObj = new CSS2DObject(labelDiv);
+                    const labelR = radius + labelRadiusOffset;
+                    const lx = Math.sin(rad) * labelR;
+                    const lz = Math.cos(rad) * labelR;
+                    labelObj.position.set(lx, 0.005, lz);
+                    scene.add(labelObj);
+                    labelItems.push({ deg, object: labelObj });
+                }
+            }
+            return { radius, tickItems, labelItems };
+        }
+
+        function projectedRingRadiusPx(radius) {
+            const center = new THREE.Vector3(0, 0, 0).project(camera);
+            const edge = new THREE.Vector3(radius, 0, 0).project(camera);
+            const dx = (edge.x - center.x) * window.innerWidth * 0.5;
+            const dy = (edge.y - center.y) * window.innerHeight * 0.5;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function pickInterval(radiusPx, minPixelGap, intervals) {
+            const circumferencePx = Math.max(0, 2 * Math.PI * radiusPx);
+            for (const interval of intervals) {
+                const itemCount = 360 / interval;
+                if (circumferencePx / itemCount >= minPixelGap) return interval;
+            }
+            return intervals[intervals.length - 1];
+        }
+
+        function updateAdaptiveAngleDensity(ringData) {
+            const radiusPx = projectedRingRadiusPx(ringData.radius);
+            const shouldShowLabels = shouldShowInnerAngleLabels(ringData.radius);
+            const labelInterval = pickInterval(radiusPx, 54, [10, 15, 30, 45, 90]);
+            const tickInterval = pickInterval(radiusPx, 8, [1, 2, 5, 10, 15]);
+            ringData.tickItems.forEach(({ deg, object }) => {
+                object.visible = deg % tickInterval === 0;
+            });
+            ringData.labelItems.forEach(({ deg, object }) => {
+                object.visible = shouldShowLabels && deg % labelInterval === 0;
+            });
+        }
+
+        function shouldShowInnerAngleLabels(radius) {
+            return projectedRingRadiusPx(radius) >= 115;
+        }
+
+        function adaptiveInnerDirectionRadius() {
+            const innerRadiusPx = projectedRingRadiusPx(14);
+            const pxPerWorldUnit = Math.max(0.001, innerRadiusPx / 14);
+            const minScreenRadiusPx = 128;
+            return Math.min(64, Math.max(15.8, minScreenRadiusPx / pxPerWorldUnit));
+        }
+
+        function updateInnerDirectionLabels(labels) {
+            const labelRadius = adaptiveInnerDirectionRadius();
+            labels.n.position.set(0, 0.005, labelRadius);
+            labels.s.position.set(0, 0.005, -labelRadius);
+            labels.w.position.set(labelRadius, 0.005, 0);
+            labels.e.position.set(-labelRadius, 0.005, 0);
+            const showInnerLabels = shouldShowInnerAngleLabels(14) && !outerDirectionLabelsFitScreen();
+            Object.values(labels).forEach(label => {
+                label.visible = showInnerLabels;
+            });
+        }
+
+        function labelFitsViewport(label, margin = 0.08) {
+            const projected = label.position.clone().project(camera);
+            return projected.z < 1
+                && projected.x > -1 + margin
+                && projected.x < 1 - margin
+                && projected.y > -1 + margin
+                && projected.y < 1 - margin;
+        }
+
+        function outerDirectionLabelsFitScreen() {
+            if (typeof outerDirectionLabels === 'undefined') return false;
+            return Object.values(outerDirectionLabels).every(labelFitsViewport);
+        }
+        
+        // 内圈 (半径14)
+        addRing(14, 0.01, 0x66aaff);
+        const innerAngleRing = addTicksAndLabels(14, 0.01, 0.35, 10, 1, '12px', 1.4, { skipCardinalLabels: true });
+        // 外圈 (半径400)
+        addRing(400, 0.01, 0x99aacc);
+        addTicksAndLabels(400, 0.01, 0.8, 15, 1, '14px', 5.5);
+        
+        // 方向线: 从原点延伸到外圈
+        const origin = new THREE.Vector3(0, 0.02, 0);
+        const makeLine = (end, color) => {
+            const geom = new THREE.BufferGeometry().setFromPoints([origin, end]);
+            const mat = new THREE.LineBasicMaterial({ color: color });
+            return new THREE.Line(geom, mat);
+        };
+        const eastEnd = new THREE.Vector3(400, 0.02, 0);
+        const westEnd = new THREE.Vector3(-400, 0.02, 0);
+        const northEnd = new THREE.Vector3(0, 0.02, 400);
+        const southEnd = new THREE.Vector3(0, 0.02, -400);
+        scene.add(makeLine(eastEnd, 0x8e44ad));
+        scene.add(makeLine(westEnd, 0x8e44ad));
+        scene.add(makeLine(northEnd, 0x2ecc71));
+        scene.add(makeLine(southEnd, 0x2ecc71));
+        
+        // 大字方向标记
+        const makeBigLabel = (text, pos, bgColor) => {
+            const div = document.createElement('div');
+            div.textContent = text;
+            div.style.backgroundColor = bgColor;
+            div.style.color = 'white';
+            div.style.fontSize = '26px';
+            div.style.fontWeight = 'bold';
+            div.style.padding = '4px 16px';
+            div.style.borderRadius = '40px';
+            div.style.border = '2px solid white';
+            div.style.textShadow = '1px 1px 0 black';
+            div.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
+            const label = new CSS2DObject(div);
+            label.position.copy(pos);
+            return label;
+        };
+        const outerDirectionLabelRadius = 500;
+        const outerDirectionLabels = {
+            w: makeBigLabel('W', new THREE.Vector3(outerDirectionLabelRadius, 0.005, 0), '#e67e22'),
+            e: makeBigLabel('E', new THREE.Vector3(-outerDirectionLabelRadius, 0.005, 0), '#e67e22'),
+            n: makeBigLabel('N', new THREE.Vector3(0, 0.005, outerDirectionLabelRadius), '#2ecc71'),
+            s: makeBigLabel('S', new THREE.Vector3(0, 0.005, -outerDirectionLabelRadius), '#2ecc71')
+        };
+        Object.values(outerDirectionLabels).forEach(label => scene.add(label));
+        
+        const makeSmallLabel = (text, pos, color) => {
+            const div = document.createElement('div');
+            div.textContent = text;
+            div.style.color = '#2c3e50';
+            div.style.fontSize = '18px';
+            div.style.fontWeight = 'bold';
+            div.style.background = 'rgba(255,255,245,0.85)';
+            div.style.padding = '2px 8px';
+            div.style.borderRadius = '30px';
+            div.style.border = `1px solid ${color}`;
+            const label = new CSS2DObject(div);
+            label.position.copy(pos);
+            return label;
+        };
+        const innerDirectionLabels = {
+            n: makeSmallLabel('N', new THREE.Vector3(0, 0.005, 15.8), '#2ecc71'),
+            s: makeSmallLabel('S', new THREE.Vector3(0, 0.005, -15.8), '#2ecc71'),
+            w: makeSmallLabel('W', new THREE.Vector3(15.8, 0.005, 0), '#e67e22'),
+            e: makeSmallLabel('E', new THREE.Vector3(-15.8, 0.005, 0), '#e67e22')
+        };
+        Object.values(innerDirectionLabels).forEach(label => scene.add(label));
+        
+        // 影长标签
+        const shadowLenDiv = document.createElement('div');
+        shadowLenDiv.style.backgroundColor = 'rgba(255,255,255,0.9)';
+        shadowLenDiv.style.color = '#2c3e50';
+        shadowLenDiv.style.fontSize = '13px';
+        shadowLenDiv.style.padding = '4px 12px';
+        shadowLenDiv.style.borderRadius = '24px';
+        shadowLenDiv.style.border = '1px solid #ffaa66';
+        shadowLenDiv.style.fontWeight = 'bold';
+        shadowLenDiv.style.whiteSpace = 'nowrap';
+        const shadowLenLabel = new CSS2DObject(shadowLenDiv);
+        shadowLenLabel.visible = false;
+        scene.add(shadowLenLabel);
+        
+        // ========= 天文算法 (保留原逻辑) =========
+        const deg2rad = (deg) => deg * Math.PI / 180;
+        const rad2deg = (rad) => rad * 180 / Math.PI;
+        
+        function equationOfTime(dayOfYear) {
+            const B = (dayOfYear - 1) * 2 * Math.PI / 365;
+            return 229.2 * (0.000075 + 0.001868 * Math.cos(B) - 0.032077 * Math.sin(B) - 0.014615 * Math.cos(2*B) - 0.04089 * Math.sin(2*B));
+        }
+        function getApparentSolarTime(hourLocal, dayOfYear) {
+            const eotHours = equationOfTime(dayOfYear) / 60.0;
+            let apparent = hourLocal + eotHours;
+            apparent = ((apparent % 24) + 24) % 24;
+            return apparent;
+        }
+
+        function getMeanSolarTime(apparentSolarHour, dayOfYear) {
+            return apparentSolarHour - equationOfTime(dayOfYear) / 60.0;
+        }
+
+        function formatMeanAndApparentTime(meanHour, apparentHour) {
+            return `${formatHourMinute(meanHour)} / 真 ${formatHourMinute(apparentHour)}`;
+        }
+        
+        function getDeclination(dayOfYear) {
+            if (dayOfYear === 80 || dayOfYear === 266) return 0;
+            return deg2rad(-23.45) * Math.cos(2 * Math.PI / 365 * (dayOfYear + 10));
+        }
+        
+        function computeSunPosition(latRad, decRad, hourAngleRad) {
+            const sinPhi = Math.sin(latRad);
+            const cosPhi = Math.cos(latRad);
+            const sinDec = Math.sin(decRad);
+            const cosDec = Math.cos(decRad);
+            const cosHour = Math.cos(hourAngleRad);
+            const sinH = sinPhi * sinDec + cosPhi * cosDec * cosHour;
+            let h = Math.asin(Math.min(1, Math.max(-1, sinH)));
+            const sinAz = -cosDec * Math.sin(hourAngleRad) / Math.cos(h);
+            const cosAz = (sinDec - sinPhi * sinH) / (cosPhi * Math.cos(h));
+            let A = Math.atan2(sinAz, cosAz);
+            if (A < 0) A += 2 * Math.PI;
+            return { h, A };
+        }
+        
+        function getShadowTip(poleHeight, sunHeightRad, sunAzimuthRad) {
+            if (sunHeightRad <= 0) return new THREE.Vector3(0, 0, 0);
+            const L = poleHeight / Math.tan(sunHeightRad);
+            const dx = -Math.sin(sunAzimuthRad) * L;
+            const dz = -Math.cos(sunAzimuthRad) * L;
+            return new THREE.Vector3(dx, 0, dz);
+        }
+
+        function createRayGeometry(start, end, radius = 0.07) {
+            const curve = new THREE.LineCurve3(start, end);
+            return new THREE.TubeGeometry(curve, 1, radius, 8, false);
+        }
+
+        function getSolarEventTimes(latRad, decRad, dayOfYear) {
+            const cosHour = -Math.tan(latRad) * Math.tan(decRad);
+            const noonMeanSolarHour = getMeanSolarTime(12, dayOfYear);
+            const noonTime = formatMeanAndApparentTime(noonMeanSolarHour, 12);
+            if (cosHour > 1) return { sunrise: '--', noon: noonTime, sunset: '--' };
+            if (cosHour < -1) return { sunrise: '--', noon: noonTime, sunset: '--' };
+            const hourAngle = Math.acos(cosHour);
+            const sunriseApparentHour = 12 - hourAngle * 12 / Math.PI;
+            const sunsetApparentHour = 12 + hourAngle * 12 / Math.PI;
+            const sunriseMeanHour = getMeanSolarTime(sunriseApparentHour, dayOfYear);
+            const sunsetMeanHour = getMeanSolarTime(sunsetApparentHour, dayOfYear);
+            return {
+                sunrise: formatMeanAndApparentTime(sunriseMeanHour, sunriseApparentHour),
+                noon: noonTime,
+                sunset: formatMeanAndApparentTime(sunsetMeanHour, sunsetApparentHour)
+            };
+        }
+
+        const sunTimeLabels = [];
+
+        function makeSunTimeLabel(text, position, type = 'hour') {
+            const div = document.createElement('div');
+            div.textContent = text;
+            div.style.color = type === 'event' ? '#8a3a00' : '#294766';
+            div.style.fontSize = type === 'event' ? '13px' : '11px';
+            div.style.fontWeight = 'bold';
+            div.style.background = type === 'event' ? 'rgba(255,245,220,0.9)' : 'rgba(245,250,255,0.86)';
+            div.style.border = type === 'event' ? '1px solid #ffaa33' : '1px solid #88aacc';
+            div.style.borderRadius = '18px';
+            div.style.padding = type === 'event' ? '3px 7px' : '2px 5px';
+            div.style.whiteSpace = 'nowrap';
+            const label = new CSS2DObject(div);
+            label.position.copy(position);
+            scene.add(label);
+            sunTimeLabels.push(label);
+        }
+
+        const seasonalHoverDiv = document.createElement('div');
+        seasonalHoverDiv.style.color = '#26384d';
+        seasonalHoverDiv.style.fontSize = '13px';
+        seasonalHoverDiv.style.fontWeight = 'bold';
+        seasonalHoverDiv.style.background = 'rgba(255,255,245,0.94)';
+        seasonalHoverDiv.style.border = '1px solid #88aadd';
+        seasonalHoverDiv.style.borderRadius = '18px';
+        seasonalHoverDiv.style.padding = '4px 9px';
+        seasonalHoverDiv.style.whiteSpace = 'nowrap';
+        seasonalHoverDiv.style.boxShadow = '0 2px 10px rgba(0,0,0,0.18)';
+        const seasonalHoverLabel = new CSS2DObject(seasonalHoverDiv);
+        seasonalHoverLabel.visible = false;
+        scene.add(seasonalHoverLabel);
+
+        function clearSunTimeLabels() {
+            sunTimeLabels.forEach(label => scene.remove(label));
+            sunTimeLabels.length = 0;
+        }
+
+        function addSunTimeLabelForHour(labelText, hour, latRad, decRad, type = 'hour') {
+            const hourAngleRad = (hour - 12) * Math.PI / 12;
+            const { h, A } = computeSunPosition(latRad, decRad, hourAngleRad);
+            if (type !== 'event' && h < -0.001) return;
+            const visualAz = transformToEastRiseWestSet(A);
+            const position = sunWorldPos(Math.max(0, h), visualAz);
+            position.y += type === 'event' ? 8 : 5;
+            makeSunTimeLabel(labelText, position, type);
+        }
+
+        function rebuildSunTimeLabels(latRad, decRad, dayOfYear) {
+            clearSunTimeLabels();
+            const cosHour = -Math.tan(latRad) * Math.tan(decRad);
+            if (cosHour >= -1 && cosHour <= 1) {
+                const hourAngle = Math.acos(cosHour);
+                const sunriseApparentHour = 12 - hourAngle * 12 / Math.PI;
+                const sunsetApparentHour = 12 + hourAngle * 12 / Math.PI;
+                addSunTimeLabelForHour(`日出 ${formatHourMinute(getMeanSolarTime(sunriseApparentHour, dayOfYear))}`, sunriseApparentHour, latRad, decRad, 'event');
+                addSunTimeLabelForHour(`日落 ${formatHourMinute(getMeanSolarTime(sunsetApparentHour, dayOfYear))}`, sunsetApparentHour, latRad, decRad, 'event');
+            }
+            for (let hour = 0; hour < 24; hour++) {
+                const apparentHour = getApparentSolarTime(hour, dayOfYear);
+                addSunTimeLabelForHour(`${hour.toString().padStart(2,'0')}:00`, apparentHour, latRad, decRad);
+            }
+        }
+
+        function formatHourMinute(hourValue) {
+            const normalized = ((hourValue % 24) + 24) % 24;
+            const totalMinutes = Math.floor(normalized * 60 + 1e-6);
+            const hour = Math.floor(totalMinutes / 60);
+            const minute = totalMinutes % 60;
+            return `${hour.toString().padStart(2,'0')}:${minute.toString().padStart(2,'0')}`;
+        }
+
+        function formatHourMinuteSecond(hourValue) {
+            const normalized = ((hourValue % 24) + 24) % 24;
+            const totalSeconds = Math.round(normalized * 3600) % 86400;
+            const hour = Math.floor(totalSeconds / 3600);
+            const minute = Math.floor((totalSeconds % 3600) / 60);
+            const second = totalSeconds % 60;
+            return `${hour.toString().padStart(2,'0')}:${minute.toString().padStart(2,'0')}:${second.toString().padStart(2,'0')}`;
+        }
+        
+        const SUN_RADIUS = 400.0;
+        function sunWorldPos(hRad, aRad) {
+            const x = Math.cos(hRad) * Math.sin(aRad) * SUN_RADIUS;
+            const y = Math.sin(hRad) * SUN_RADIUS;
+            const z = Math.cos(hRad) * Math.cos(aRad) * SUN_RADIUS;
+            return new THREE.Vector3(x, y, z);
+        }
+        
+        function isPolarNight(latRad, decRad) {
+            const absLat = Math.abs(latRad);
+            if (absLat < Math.PI/2 - 0.01) return false;
+            const isNorthPole = latRad > 0;
+            if (isNorthPole) return decRad < 0;
+            else return decRad > 0;
+        }
+        
+        function getSolarTermName(dayOfYear) {
+            const terms = [
+                { day: 80, name: "春分" },
+                { day: 173, name: "夏至" },
+                { day: 266, name: "秋分" },
+                { day: 356, name: "冬至" }
+            ];
+            let closest = null;
+            let minDiff = 365;
+            for (const t of terms) {
+                let diff = Math.abs(dayOfYear - t.day);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closest = t;
+                }
+            }
+            if (closest && minDiff <= 2) return closest.name;
+            return "";
+        }
+        
+        function displayAzimuth(physAz) {
+            const deg = rad2deg(physAz);
+            return ((deg % 360) + 360) % 360;
+        }
+        
+        // ========= 轨迹生成函数 (完整保留，不变) =========
+        let sunTrajectoryMesh = null;
+        let undergroundSunTrajectoryMesh = null;
+        let seasonalSunTrajectoryGroup = null;
+        let shadowTipTrajectoryLine = null;
+        let solarConeMesh = null;
+        let shadowConeMesh = null;
+        let halfHourRayGroup = null;
+        
+        function generateSunTrajectoryTube(latRad, decRad) { 
+            const absLat = Math.abs(latRad);
+            const isPolar = absLat > Math.PI/2 - 0.01;
+            if (isPolar && isPolarNight(latRad, decRad)) return null;
+            if (isPolar) {
+                const constAlt = Math.abs(decRad);
+                if (constAlt <= 0.01) return null;
+                const points = [];
+                for (let az = 0; az <= 2*Math.PI + 0.001; az += Math.PI/90) {
+                    const visualAz = transformToEastRiseWestSet(az);
+                    const x = Math.cos(constAlt) * Math.sin(visualAz) * SUN_RADIUS;
+                    const y = Math.sin(constAlt) * SUN_RADIUS;
+                    const z = Math.cos(constAlt) * Math.cos(visualAz) * SUN_RADIUS;
+                    points.push(new THREE.Vector3(x, y, z));
+                }
+                const curve = new THREE.CatmullRomCurve3(points);
+                const tubeGeo = new THREE.TubeGeometry(curve, 420, 1.05, 12, true);
+                const material = new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0x552200, roughness: 0.4 });
+                return new THREE.Mesh(tubeGeo, material);
+            } else {
+                const points = [];
+                for (let ha = -Math.PI; ha <= Math.PI + 0.001; ha += Math.PI / 360) {
+                    const { h, A } = computeSunPosition(latRad, decRad, ha);
+                    if (h >= 0) {
+                        const visualAz = transformToEastRiseWestSet(A);
+                        points.push(sunWorldPos(h, visualAz));
+                    }
+                }
+                if (points.length < 3) return null;
+                const curve = new THREE.CatmullRomCurve3(points);
+                const tubeGeo = new THREE.TubeGeometry(curve, 420, 1.05, 12, false);
+                const material = new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0x552200, roughness: 0.4 });
+                return new THREE.Mesh(tubeGeo, material);
+            }
+        }
+
+        function makeSunTrajectoryMesh(points, closed, color, opacity = 1) {
+            if (points.length < 3) return null;
+            const curve = new THREE.CatmullRomCurve3(points);
+            const tubeGeo = new THREE.TubeGeometry(curve, 720, 1.05, 16, closed);
+            const material = new THREE.MeshBasicMaterial({
+                color,
+                transparent: opacity < 1,
+                opacity,
+                depthTest: false,
+                depthWrite: false
+            });
+            const mesh = new THREE.Mesh(tubeGeo, material);
+            mesh.renderOrder = 4;
+            return mesh;
+        }
+
+        function makeSunTrajectoryDashedTube(points, closed, color, opacity = 1) {
+            if (points.length < 3) return null;
+            const linePoints = closed ? points.concat(points[0].clone()) : points;
+            const group = new THREE.Group();
+            const dashSize = 14;
+            const gapSize = 9;
+            const sampleStep = 2.5;
+            const tubeRadius = 1.15;
+            const material = new THREE.MeshBasicMaterial({
+                color,
+                transparent: opacity < 1,
+                opacity,
+                depthTest: false,
+                depthWrite: false
+            });
+
+            let distanceAlongPath = 0;
+            let currentDash = [];
+            const flushDash = () => {
+                if (currentDash.length < 2) {
+                    currentDash = [];
+                    return;
+                }
+                const curve = new THREE.CatmullRomCurve3(currentDash);
+                const geometry = new THREE.TubeGeometry(curve, Math.max(2, currentDash.length * 2), tubeRadius, 14, false);
+                const mesh = new THREE.Mesh(geometry, material.clone());
+                mesh.renderOrder = 8;
+                group.add(mesh);
+                currentDash = [];
+            };
+
+            for (let i = 0; i < linePoints.length - 1; i++) {
+                const start = linePoints[i];
+                const end = linePoints[i + 1];
+                const segmentLength = start.distanceTo(end);
+                const steps = Math.max(1, Math.ceil(segmentLength / sampleStep));
+                for (let step = 0; step <= steps; step++) {
+                    const t = step / steps;
+                    const point = start.clone().lerp(end, t);
+                    const segmentDistance = segmentLength * t;
+                    const phase = (distanceAlongPath + segmentDistance) % (dashSize + gapSize);
+                    if (phase < dashSize) {
+                        currentDash.push(point);
+                    } else {
+                        flushDash();
+                    }
+                }
+                distanceAlongPath += segmentLength;
+            }
+            flushDash();
+            material.dispose();
+            return group.children.length ? group : null;
+        }
+
+        function makeHorizontalSunCircleMesh(altRad, color, opacity = 1) {
+            const radius = Math.cos(altRad) * SUN_RADIUS;
+            if (Math.abs(radius) < 0.001) return null;
+            const samplePoints = [];
+            for (let i = 0; i < 360; i++) {
+                const angle = i * Math.PI / 180;
+                samplePoints.push(new THREE.Vector3(
+                    Math.sin(angle) * Math.abs(radius),
+                    Math.sin(altRad) * SUN_RADIUS,
+                    Math.cos(angle) * Math.abs(radius)
+                ));
+            }
+            const geometry = new THREE.TorusGeometry(Math.abs(radius), 1.05, 16, 512);
+            geometry.rotateX(Math.PI / 2);
+            const material = new THREE.MeshBasicMaterial({
+                color,
+                transparent: opacity < 1,
+                opacity,
+                depthTest: false,
+                depthWrite: false
+            });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.y = Math.sin(altRad) * SUN_RADIUS;
+            mesh.renderOrder = 5;
+            mesh.userData.seasonalSamplePoints = samplePoints;
+            return mesh;
+        }
+
+        function generateFullDaySunCircle(latRad, decRad, color, labelText) {
+            const absLat = Math.abs(latRad);
+            if (absLat > Math.PI / 2 - 0.01) {
+                const altRad = latRad > 0 ? decRad : -decRad;
+                const polarMesh = makeHorizontalSunCircleMesh(altRad, color, 0.72);
+                if (polarMesh) polarMesh.userData.seasonalLabel = labelText;
+                return polarMesh;
+            }
+
+            const points = [];
+            for (let ha = -Math.PI; ha <= Math.PI + 0.001; ha += Math.PI / 360) {
+                const { h, A } = computeSunPosition(latRad, decRad, ha);
+                const visualAz = transformToEastRiseWestSet(A);
+                points.push(sunWorldPos(h, visualAz));
+            }
+            const mesh = makeSunTrajectoryMesh(points, true, color, 0.72);
+            if (mesh) {
+                mesh.userData.seasonalLabel = labelText;
+                mesh.userData.seasonalSamplePoints = points;
+            }
+            return mesh;
+        }
+
+        function generateSeasonalSunTrajectories(latRad) {
+            const group = new THREE.Group();
+            const seasonalPaths = [
+                { day: 80, color: 0x44cc88, label: '春分 / 秋分' },
+                { day: 173, color: 0xffcc33, label: '夏至' },
+                { day: 266, color: 0x44cc88, label: '春分 / 秋分' },
+                { day: 356, color: 0x55aaff, label: '冬至' }
+            ];
+            const usedDeclinations = new Set();
+
+            seasonalPaths.forEach(path => {
+                const decRad = getDeclination(path.day);
+                const decKey = decRad.toFixed(6);
+                if (usedDeclinations.has(decKey)) return;
+                usedDeclinations.add(decKey);
+
+                const mesh = generateFullDaySunCircle(latRad, decRad, path.color, path.label);
+                if (mesh) {
+                    mesh.renderOrder = 5;
+                    group.add(mesh);
+                }
+            });
+
+            return group.children.length ? group : null;
+        }
+
+        function generateUndergroundSunTrajectoryTube(latRad, decRad, dashed = false) {
+            const points = [];
+            let currentSegment = [];
+            for (let ha = -Math.PI; ha <= Math.PI + 0.001; ha += Math.PI / 360) {
+                const { h, A } = computeSunPosition(latRad, decRad, ha);
+                if (h < 0) {
+                    const visualAz = transformToEastRiseWestSet(A);
+                    currentSegment.push(sunWorldPos(h, visualAz));
+                } else if (currentSegment.length) {
+                    points.push(currentSegment);
+                    currentSegment = [];
+                }
+            }
+            if (currentSegment.length) points.push(currentSegment);
+
+            const visibleSegments = points.filter(segment => segment.length >= 3);
+            if (!visibleSegments.length) return null;
+
+            if (visibleSegments.length === 1 && visibleSegments[0].length > 600) {
+                return dashed
+                    ? makeSunTrajectoryDashedTube(visibleSegments[0], true, 0x6655ff, 0.68)
+                    : makeSunTrajectoryMesh(visibleSegments[0], true, 0x6655ff, 0.55);
+            }
+
+            const group = new THREE.Group();
+            visibleSegments.forEach(segment => {
+                const mesh = dashed
+                    ? makeSunTrajectoryDashedTube(segment, false, 0x6655ff, 0.68)
+                    : makeSunTrajectoryMesh(segment, false, 0x6655ff, 0.55);
+                if (mesh) group.add(mesh);
+            });
+            return group.children.length ? group : null;
+        }
+        
+        function generateShadowTipTrajectory(latRad, decRad, poleHeight) {
+            const absLat = Math.abs(latRad);
+            const isPolar = absLat > Math.PI/2 - 0.01;
+            if (isPolar && isPolarNight(latRad, decRad)) return null;
+            if (isPolar) {
+                const constAlt = Math.abs(decRad);
+                if (constAlt <= 0.01) return null;
+                const L = poleHeight / Math.tan(constAlt);
+                const points = [];
+                for (let az = 0; az <= 2*Math.PI + 0.001; az += Math.PI/180) {
+                    const visualAz = transformToEastRiseWestSet(az);
+                    const x = -Math.sin(visualAz) * L;
+                    const z = -Math.cos(visualAz) * L;
+                    points.push(new THREE.Vector3(x, 0, z));
+                }
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                const material = new THREE.LineBasicMaterial({ color: 0x3399ff, linewidth: 2 });
+                return new THREE.Line(geometry, material);
+            } else {
+                const points = [];
+                for (let ha = -Math.PI; ha <= Math.PI + 0.001; ha += Math.PI / 180) {
+                    const { h, A } = computeSunPosition(latRad, decRad, ha);
+                    if (h > 0.008) {
+                        const visualAz = transformToEastRiseWestSet(A);
+                        const tip = getShadowTip(poleHeight, h, visualAz);
+                        if (tip.length() < 600) points.push(tip);
+                    }
+                }
+                if (points.length < 2) return null;
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                const material = new THREE.LineBasicMaterial({ color: 0x3399ff, linewidth: 2 });
+                return new THREE.Line(geometry, material);
+            }
+        }
+        
+        function makeFanSurface(apex, curvePoints, material) {
+            if (!curvePoints || curvePoints.length < 2) return null;
+
+            const vertices = [];
+            for (let i = 0; i < curvePoints.length - 1; i++) {
+                vertices.push(
+                    apex.x, apex.y, apex.z,
+                    curvePoints[i].x, curvePoints[i].y, curvePoints[i].z,
+                    curvePoints[i + 1].x, curvePoints[i + 1].y, curvePoints[i + 1].z
+                );
+            }
+
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+            geometry.computeBoundingSphere();
+            return new THREE.Mesh(geometry, material);
+        }
+
+        function generateSolarAndShadowCone(latRad, decRad, poleHeight) {
+            const poleTop = new THREE.Vector3(0, poleHeight, 0);
+            const sunPoints = [];
+            const shadowPoints = [];
+
+            for (let ha = -Math.PI; ha <= Math.PI + 0.001; ha += Math.PI / 180) {
+                const { h, A } = computeSunPosition(latRad, decRad, ha);
+                if (h > 0.008) {
+                    const visualAz = transformToEastRiseWestSet(A);
+                    const sunPos = sunWorldPos(h, visualAz);
+                    sunPoints.push(sunPos);
+
+                    const shadowTip = getShadowTip(poleHeight, h, visualAz);
+                    if (shadowTip.length() <= 600) shadowPoints.push(shadowTip);
+                }
+            }
+
+            const upperMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffcc33,
+                transparent: true,
+                opacity: 0.22,
+                side: THREE.DoubleSide,
+                depthWrite: false
+            });
+            const lowerMaterial = new THREE.MeshBasicMaterial({
+                color: 0x99aacc,
+                transparent: true,
+                opacity: 0.20,
+                side: THREE.DoubleSide,
+                depthWrite: false
+            });
+
+            const upperCone = sunPoints.length >= 3 ? makeFanSurface(poleTop, sunPoints, upperMaterial) : null;
+            const lowerCone = shadowPoints.length >= 3 ? makeFanSurface(poleTop, shadowPoints, lowerMaterial) : null;
+            if (upperCone) upperCone.renderOrder = 1;
+            if (lowerCone) lowerCone.renderOrder = 1;
+
+            if (!upperCone) upperMaterial.dispose();
+            if (!lowerCone) lowerMaterial.dispose();
+
+            return { upperCone, lowerCone };
+        }
+
+        function disposeObject3D(object) {
+            if (!object) return;
+            object.traverse(child => {
+                if (child.geometry) child.geometry.dispose();
+                if (Array.isArray(child.material)) child.material.forEach(material => material.dispose());
+                else if (child.material) child.material.dispose();
+            });
+        }
+
+        function generateHalfHourSolarRays(latRad, decRad, dayOfYear, poleHeight) {
+            const group = new THREE.Group();
+            group.renderOrder = 10;
+            const poleTop = new THREE.Vector3(0, poleHeight, 0);
+
+            for (let localHour = 0; localHour <= 24.001; localHour += 0.5) {
+                const apparentSolarHour = getApparentSolarTime(localHour, dayOfYear);
+                const hourAngleRad = (apparentSolarHour - 12) * Math.PI / 12;
+                const { h, A } = computeSunPosition(latRad, decRad, hourAngleRad);
+                if (h <= 0.008) continue;
+
+                const visualAz = transformToEastRiseWestSet(A);
+                const sunPos = sunWorldPos(h, visualAz);
+                const shadowTip = getShadowTip(poleHeight, h, visualAz);
+                const opacity = localHour % 1 === 0 ? 0.95 : 0.72;
+                const material = new THREE.MeshBasicMaterial({
+                    color: localHour % 1 === 0 ? 0xff5a00 : 0xffc400,
+                    transparent: true,
+                    opacity,
+                    depthTest: false,
+                    depthWrite: false
+                });
+
+                const upperRay = new THREE.Mesh(createRayGeometry(sunPos, poleTop, 0.12), material);
+                upperRay.renderOrder = 10;
+                group.add(upperRay);
+
+                if (shadowTip.length() <= 600) {
+                    const lowerRay = new THREE.Mesh(createRayGeometry(poleTop, shadowTip, 0.12), material.clone());
+                    lowerRay.renderOrder = 10;
+                    group.add(lowerRay);
+                }
+            }
+
+            return group.children.length ? group : null;
+        }
+
+        function updateShadowPlaneGeometry(shadowTipPos, isValid) {
+            if (!isValid || shadowTipPos.length() < 0.05) {
+                customShadowPlane.visible = false;
+                return;
+            }
+            customShadowPlane.visible = true;
+            const start = new THREE.Vector3(0, 0, 0);
+            const end = shadowTipPos.clone();
+            const dir = new THREE.Vector3().subVectors(end, start).normalize();
+            const perp = new THREE.Vector3(-dir.z, 0, dir.x).normalize();
+            const halfWidth = 0.08;
+            const p0 = start.clone().add(perp.clone().multiplyScalar(halfWidth));
+            const p1 = start.clone().add(perp.clone().multiplyScalar(-halfWidth));
+            const p2 = end.clone().add(perp.clone().multiplyScalar(-halfWidth));
+            const p3 = end.clone().add(perp.clone().multiplyScalar(halfWidth));
+            const vertices = [
+                p0.x, p0.y, p0.z, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z,
+                p3.x, p3.y, p3.z, p0.x, p0.y, p0.z, p2.x, p2.y, p2.z, p3.x, p3.y, p3.z
+            ];
+            const indices = [0, 1, 2, 0, 2, 3];
+            const normals = new Array(indices.length).fill(0).map(() => [0,1,0]).flat();
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+            geometry.setIndex(indices);
+            geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(normals), 3));
+            geometry.computeVertexNormals();
+            const oldGeo = customShadowPlane.geometry;
+            customShadowPlane.geometry = geometry;
+            if (oldGeo) oldGeo.dispose();
+        }
+        
+        // ========= 全局状态与连续时间流动 (基于 requestAnimationFrame) =========
+        let currentLat = 40;
+        let currentDay = 172;
+        let currentLocalHour = 12;
+        let currentPoleHeight = 2.0;
+        let lastTrajParams = { lat: null, dec: null, height: null };
+        
+        let autoFlowEnabled = false;      // 自动流动标志
+        let autoTimeSpeed = 1;
+        let nightBoostEnabled = true;
+        let showSunTimeLabels = false;
+        let showUndergroundSunTrajectory = false;
+        let showSeasonalSunTrajectories = false;
+        let showConeSurfaces = false;
+        let lastFrameTimestamp = null;    // 用于计算时间差
+        let wasCompactLayout = window.innerWidth <= 640;
+        
+        function stopAutoTime() {
+            autoFlowEnabled = false;
+            lastFrameTimestamp = null;
+            updatePlayButtons();
+        }
+        
+        function startAutoTime() {
+            autoFlowEnabled = true;
+            lastFrameTimestamp = null; // 下一帧重新获取起始时间，避免跳跃
+            updatePlayButtons();
+        }
+
+        function updatePlayButtons() {
+            const collapsedPlayBtn = document.getElementById('collapsedPlayBtn');
+            const collapsedPauseBtn = document.getElementById('collapsedPauseBtn');
+            if (!collapsedPlayBtn || !collapsedPauseBtn) return;
+        }
+
+        function setControlsCollapsed(collapsed) {
+            document.body.classList.toggle('controls-collapsed', collapsed);
+        }
+
+        function syncResponsiveControls() {
+            const isCompactLayout = window.innerWidth <= 640;
+            if (isCompactLayout && !wasCompactLayout) setControlsCollapsed(true);
+            wasCompactLayout = isCompactLayout;
+        }
+        
+        // 手动调节的包装函数 (都会停止自动流动)
+        const latSlider = document.getElementById('latSlider');
+        const latNum = document.getElementById('latNumber');
+        const dateSlider = document.getElementById('dateSlider');
+        const dateNum = document.getElementById('dateNumber');
+        const dateMonthNum = document.getElementById('dateMonthNumber');
+        const dateDayNum = document.getElementById('dateDayNumber');
+        const timeSlider = document.getElementById('timeSlider');
+        const timeNum = document.getElementById('timeNumber');
+        const heightNum = document.getElementById('heightNumber');
+        const speedButtons = document.querySelectorAll('.speed-btn');
+        const nightBoostToggle = document.getElementById('nightBoostToggle');
+        const sunTimeLabelsToggle = document.getElementById('sunTimeLabelsToggle');
+        const undergroundSunToggle = document.getElementById('undergroundSunToggle');
+        const seasonalSunPathsToggle = document.getElementById('seasonalSunPathsToggle');
+        const coneSurfaceToggle = document.getElementById('coneSurfaceToggle');
+
+        function setUndergroundSunTrajectoryVisibility() {
+            if (undergroundSunTrajectoryMesh) undergroundSunTrajectoryMesh.visible = showUndergroundSunTrajectory;
+        }
+
+        function rebuildUndergroundSunTrajectory(latRad, decRad) {
+            if (undergroundSunTrajectoryMesh) {
+                scene.remove(undergroundSunTrajectoryMesh);
+                disposeObject3D(undergroundSunTrajectoryMesh);
+                undergroundSunTrajectoryMesh = null;
+            }
+            const newUndergroundSun = generateUndergroundSunTrajectoryTube(latRad, decRad, true);
+            if (newUndergroundSun) {
+                undergroundSunTrajectoryMesh = newUndergroundSun;
+                undergroundSunTrajectoryMesh.visible = showUndergroundSunTrajectory;
+                scene.add(undergroundSunTrajectoryMesh);
+            }
+        }
+
+        function rebuildSeasonalSunTrajectories(latRad) {
+            seasonalHoverLabel.visible = false;
+            if (seasonalSunTrajectoryGroup) {
+                scene.remove(seasonalSunTrajectoryGroup);
+                disposeObject3D(seasonalSunTrajectoryGroup);
+                seasonalSunTrajectoryGroup = null;
+            }
+            if (!showSeasonalSunTrajectories) return;
+
+            const newSeasonalTrajectories = generateSeasonalSunTrajectories(latRad);
+            if (newSeasonalTrajectories) {
+                seasonalSunTrajectoryGroup = newSeasonalTrajectories;
+                scene.add(seasonalSunTrajectoryGroup);
+            }
+        }
+
+        function updateSeasonalTrajectoryHover(event) {
+            if (!showSeasonalSunTrajectories || !seasonalSunTrajectoryGroup) {
+                seasonalHoverLabel.visible = false;
+                return;
+            }
+
+            const rect = renderer.domElement.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+            let best = null;
+            const thresholdPx = 18;
+
+            seasonalSunTrajectoryGroup.traverse(child => {
+                const points = child.userData.seasonalSamplePoints;
+                const labelText = child.userData.seasonalLabel;
+                if (!points || !labelText) return;
+
+                points.forEach(point => {
+                    const projected = point.clone().project(camera);
+                    if (projected.z < -1 || projected.z > 1) return;
+                    const screenX = (projected.x * 0.5 + 0.5) * rect.width;
+                    const screenY = (-projected.y * 0.5 + 0.5) * rect.height;
+                    const distancePx = Math.hypot(screenX - mouseX, screenY - mouseY);
+                    if (distancePx <= thresholdPx && (!best || distancePx < best.distancePx)) {
+                        best = { distancePx, point, labelText };
+                    }
+                });
+            });
+
+            if (!best) {
+                seasonalHoverLabel.visible = false;
+                return;
+            }
+
+            seasonalHoverDiv.textContent = best.labelText;
+            seasonalHoverLabel.position.copy(best.point);
+            seasonalHoverLabel.position.y += 8;
+            seasonalHoverLabel.visible = true;
+        }
+
+        renderer.domElement.addEventListener('pointermove', updateSeasonalTrajectoryHover);
+        renderer.domElement.addEventListener('pointerleave', () => {
+            seasonalHoverLabel.visible = false;
+        });
+
+        function setConeSurfaceVisibility() {
+            if (solarConeMesh) solarConeMesh.visible = showConeSurfaces;
+            if (shadowConeMesh) shadowConeMesh.visible = showConeSurfaces;
+            if (halfHourRayGroup) halfHourRayGroup.visible = showConeSurfaces;
+        }
+
+        function getMonthDayFromDay(dayIndex) {
+            const dateObj = new Date(2024, 0, dayIndex + 1);
+            return { month: dateObj.getMonth() + 1, day: dateObj.getDate() };
+        }
+
+        function getDaysInMonth(month) {
+            return new Date(2024, month, 0).getDate();
+        }
+
+        function getDayFromMonthDay(month, day) {
+            const parsedMonth = parseInt(month);
+            const parsedDay = parseInt(day);
+            if (isNaN(parsedMonth) || isNaN(parsedDay)) return null;
+            const safeMonth = Math.min(12, Math.max(1, parsedMonth));
+            const maxDay = getDaysInMonth(safeMonth);
+            const safeDay = Math.min(maxDay, Math.max(1, parsedDay));
+            const dateObj = new Date(2024, safeMonth - 1, safeDay);
+            return Math.min(364, Math.max(0, Math.round((dateObj - new Date(2024, 0, 1)) / 86400000)));
+        }
+
+        function syncDateInputs() {
+            const { month, day } = getMonthDayFromDay(currentDay);
+            dateSlider.value = currentDay;
+            dateNum.value = currentDay;
+            dateMonthNum.value = month;
+            dateDayNum.value = day;
+            dateDayNum.max = getDaysInMonth(month);
+        }
+
+        function csvEscape(value) {
+            const text = String(value);
+            return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+        }
+
+        function buildRealtimeCsv() {
+            const { month, day } = getMonthDayFromDay(currentDay);
+            const solarTerm = getSolarTermName(currentDay);
+            const displayDate = `${month}月${day}日${solarTerm ? ` (${solarTerm})` : ''}`;
+            const latRad = deg2rad(currentLat);
+            const decRad = getDeclination(currentDay);
+            const rows = [
+                ['时间（*即平太阳时）', '日期', '真太阳时', '太阳高度(°)', '太阳方位(°)', '影长(m)', '杆影末端X(m)', '杆影末端Z(m)']
+            ];
+
+            for (let step = 0; step <= 2400; step++) {
+                const localHour = step / 100;
+                const apparentSolarHour = getApparentSolarTime(localHour, currentDay);
+                const hourAngleRad = (apparentSolarHour - 12) * Math.PI / 12;
+                const { h, A } = computeSunPosition(latRad, decRad, hourAngleRad);
+                const visualAz = transformToEastRiseWestSet(A);
+                const shadowTip = h > 0 ? getShadowTip(currentPoleHeight, h, visualAz) : null;
+                const shadowLenText = shadowTip
+                    ? shadowTip.length().toFixed(2)
+                    : '夜间无影';
+                const shadowXText = shadowTip ? shadowTip.x.toFixed(2) : '夜间无影';
+                const shadowZText = shadowTip ? shadowTip.z.toFixed(2) : '夜间无影';
+                rows.push([
+                    formatHourMinuteSecond(localHour),
+                    displayDate,
+                    formatHourMinute(apparentSolarHour),
+                    rad2deg(h).toFixed(1),
+                    displayAzimuth(A).toFixed(1),
+                    shadowLenText,
+                    shadowXText,
+                    shadowZText
+                ]);
+            }
+
+            return rows.map(row => row.map(csvEscape).join(',')).join('\r\n');
+        }
+
+        function exportRealtimeCsv() {
+            stopAutoTime();
+            const { month, day } = getMonthDayFromDay(currentDay);
+            const csvText = '\uFEFF' + buildRealtimeCsv();
+            const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `YZ50_${month}月${day}日_实时参数.csv`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        function getCurrentSunHeightRad() {
+            const apparentSolarHour = getApparentSolarTime(currentLocalHour, currentDay);
+            const hourAngleRad = (apparentSolarHour - 12) * Math.PI / 12;
+            return computeSunPosition(deg2rad(currentLat), getDeclination(currentDay), hourAngleRad).h;
+        }
+
+        function getEffectiveAutoTimeSpeed() {
+            const nightMultiplier = nightBoostEnabled && getCurrentSunHeightRad() <= 0 ? 2 : 1;
+            return autoTimeSpeed * nightMultiplier;
+        }
+        
+        function setLat(v) { stopAutoTime(); let val = Math.min(90, Math.max(-90, parseFloat(v))); if (isNaN(val)) val = 0; currentLat = val; latSlider.value = val; latNum.value = val.toFixed(1); updateAll(); }
+        function setDate(v) { stopAutoTime(); const parsed = parseInt(v); if (isNaN(parsed)) return; currentDay = Math.min(364, Math.max(0, parsed)); syncDateInputs(); updateAll(); }
+        function setDateFromMonthDay() { stopAutoTime(); const dayIndex = getDayFromMonthDay(dateMonthNum.value, dateDayNum.value); if (dayIndex === null) return; currentDay = dayIndex; syncDateInputs(); updateAll(); }
+        function setTime(v) { stopAutoTime(); let val = Math.min(24, Math.max(0, parseFloat(v))); if (isNaN(val)) val = 0; currentLocalHour = val; timeSlider.value = val; timeNum.value = val.toFixed(2); updateAll(); }
+        function setHeight(v, shouldFormatInput = false) {
+            stopAutoTime();
+            const rawVal = parseFloat(v);
+            if (isNaN(rawVal)) return;
+            const val = Math.min(100, Math.max(0.5, rawVal));
+            currentPoleHeight = val;
+            if (shouldFormatInput) heightNum.value = val.toFixed(1);
+            updateAll();
+        }
+        
+        latSlider.addEventListener('input', e => setLat(e.target.value));
+        latNum.addEventListener('input', e => setLat(e.target.value));
+        dateSlider.addEventListener('input', e => setDate(e.target.value));
+        dateNum.addEventListener('input', e => setDate(e.target.value));
+        dateMonthNum.addEventListener('input', setDateFromMonthDay);
+        dateDayNum.addEventListener('input', setDateFromMonthDay);
+        dateNum.addEventListener('change', syncDateInputs);
+        dateMonthNum.addEventListener('change', syncDateInputs);
+        dateDayNum.addEventListener('change', syncDateInputs);
+        timeSlider.addEventListener('input', e => setTime(e.target.value));
+        timeNum.addEventListener('input', e => setTime(e.target.value));
+        heightNum.addEventListener('input', e => setHeight(e.target.value));
+        heightNum.addEventListener('change', e => setHeight(e.target.value, true));
+        
+        document.getElementById('springBtn').addEventListener('click', () => { stopAutoTime(); setDate(80); });
+        document.getElementById('summerBtn').addEventListener('click', () => { stopAutoTime(); setDate(173); });
+        document.getElementById('autumnBtn').addEventListener('click', () => { stopAutoTime(); setDate(266); });
+        document.getElementById('winterBtn').addEventListener('click', () => { stopAutoTime(); setDate(356); });
+        document.getElementById('exportCsvBtn').addEventListener('click', exportRealtimeCsv);
+        document.getElementById('timeFlowBtn').addEventListener('click', () => { startAutoTime(); });
+        document.getElementById('timePauseBtn').addEventListener('click', () => { stopAutoTime(); });
+        document.getElementById('collapseControlsBtn').addEventListener('click', () => { setControlsCollapsed(true); });
+        document.getElementById('expandControlsBtn').addEventListener('click', () => { setControlsCollapsed(false); });
+        document.getElementById('collapsedPlayBtn').addEventListener('click', startAutoTime);
+        document.getElementById('collapsedPauseBtn').addEventListener('click', stopAutoTime);
+        nightBoostToggle.addEventListener('change', () => {
+            nightBoostEnabled = nightBoostToggle.checked;
+        });
+        coneSurfaceToggle.addEventListener('change', () => {
+            showConeSurfaces = coneSurfaceToggle.checked;
+            setConeSurfaceVisibility();
+        });
+        sunTimeLabelsToggle.addEventListener('change', () => {
+            showSunTimeLabels = sunTimeLabelsToggle.checked;
+            if (!showSunTimeLabels) {
+                clearSunTimeLabels();
+                return;
+            }
+            const latRad = deg2rad(currentLat);
+            const decRad = getDeclination(currentDay);
+            if (sunTrajectoryMesh) rebuildSunTimeLabels(latRad, decRad, currentDay);
+        });
+        undergroundSunToggle.addEventListener('change', () => {
+            showUndergroundSunTrajectory = undergroundSunToggle.checked;
+            setUndergroundSunTrajectoryVisibility();
+        });
+        seasonalSunPathsToggle.addEventListener('change', () => {
+            showSeasonalSunTrajectories = seasonalSunPathsToggle.checked;
+            rebuildSeasonalSunTrajectories(deg2rad(currentLat));
+        });
+        speedButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                autoTimeSpeed = parseFloat(button.dataset.speed);
+                speedButtons.forEach(item => item.classList.toggle('active', item === button));
+            });
+        });
+        
+        // 核心更新函数 (完整渲染)
+        function updateAll() {
+            const apparentSolarHour = getApparentSolarTime(currentLocalHour, currentDay);
+            const latRad = deg2rad(currentLat);
+            const decRad = getDeclination(currentDay);
+            const hourAngleRad = (apparentSolarHour - 12) * Math.PI / 12;
+            const { h, A } = computeSunPosition(latRad, decRad, hourAngleRad);
+            const sunHeightDeg = rad2deg(h);
+            const visualAz = transformToEastRiseWestSet(A);
+            const sunAzDisplay = displayAzimuth(A);
+            
+            const dateObj = new Date(2024, 0, currentDay + 1);
+            const month = dateObj.getMonth() + 1;
+            const day = dateObj.getDate();
+            const solarTerm = getSolarTermName(currentDay);
+            document.getElementById('statDate').innerHTML = `${month}月${day}日`;
+            document.getElementById('solarTerm').innerHTML = solarTerm ? ` (${solarTerm})` : '';
+            const localHourInt = Math.floor(currentLocalHour);
+            const localMin = Math.floor((currentLocalHour % 1) * 60);
+            document.getElementById('statLocalTime').innerText = `${localHourInt.toString().padStart(2,'0')}:${localMin.toString().padStart(2,'0')}`;
+            const solarHourInt = Math.floor(apparentSolarHour);
+            const solarMin = Math.floor((apparentSolarHour % 1) * 60);
+            document.getElementById('statSolarTime').innerText = `${solarHourInt.toString().padStart(2,'0')}:${solarMin.toString().padStart(2,'0')}`;
+            const solarEvents = getSolarEventTimes(latRad, decRad, currentDay);
+            document.getElementById('statSunriseTime').innerText = solarEvents.sunrise;
+            document.getElementById('statNoonTime').innerText = solarEvents.noon;
+            document.getElementById('statSunsetTime').innerText = solarEvents.sunset;
+            const declinationDeg = rad2deg(decRad);
+            document.getElementById('statDeclination').innerHTML = `${Math.abs(declinationDeg).toFixed(1)}°${declinationDeg >= 0 ? 'N' : 'S'}`;
+            document.getElementById('statAlt').innerHTML = sunHeightDeg.toFixed(1);
+            document.getElementById('statAz').innerHTML = sunAzDisplay.toFixed(0);
+            
+            pole.scale.y = currentPoleHeight;
+            pole.position.y = currentPoleHeight / 2;
+            const poleTop = new THREE.Vector3(0, currentPoleHeight, 0);
+            
+            const hasSunlight = h > 0;
+            const shadowTipPos = hasSunlight
+                ? getShadowTip(currentPoleHeight, h, visualAz)
+                : new THREE.Vector3(0, 0, 0);
+            const shadowLen = shadowTipPos.length();
+            const shadowLenText = hasSunlight ? `${shadowLen.toFixed(2)} m` : '夜间无影';
+            document.getElementById('statShadowLen').innerHTML = shadowLenText;
+            shadowLenDiv.textContent = `影长 ${shadowLenText}`;
+            shadowLenLabel.position.copy(shadowTipPos);
+            shadowLenLabel.position.y += 0.22;
+            
+            const isValid = h > 0.008 && shadowLen > 0.02;
+            shadowLenLabel.visible = false;
+            updateShadowPlaneGeometry(shadowTipPos, isValid);
+            
+            if (isValid) {
+                const sunPos = sunWorldPos(h, visualAz);
+                const ray1Geo = createRayGeometry(sunPos, poleTop);
+                raySunToTop.geometry.dispose();
+                raySunToTop.geometry = ray1Geo;
+                const ray2Geo = createRayGeometry(poleTop, shadowTipPos);
+                rayTopToShadow.geometry.dispose();
+                rayTopToShadow.geometry = ray2Geo;
+                raySunToTop.visible = true;
+                rayTopToShadow.visible = true;
+            } else {
+                raySunToTop.visible = false;
+                rayTopToShadow.visible = false;
+            }
+            
+            const sunPos = sunWorldPos(h, visualAz);
+            sunSphere.position.copy(sunPos);
+            dashedSunCircle.position.copy(sunPos);
+            sunLightDir.position.copy(sunPos);
+            sunLightDir.target.position.set(0, 0, 0);
+            sunLightDir.target.updateMatrixWorld();
+            sunLightDir.intensity = Math.max(0, Math.sin(h)) * 0.95;
+            
+            const aboveHorizon = h > 0;
+            sunSphere.visible = aboveHorizon;
+            dashedSunCircle.visible = !aboveHorizon;
+            if (dashedSunCircle.visible) dashedSunCircle.quaternion.copy(camera.quaternion);
+            
+            const currentDec = getDeclination(currentDay);
+            const needSun = (lastTrajParams.lat !== currentLat || Math.abs(lastTrajParams.dec - currentDec) > 1e-6);
+            const needShadow = (lastTrajParams.lat !== currentLat || Math.abs(lastTrajParams.dec - currentDec) > 1e-6 || lastTrajParams.height !== currentPoleHeight);
+            const needCone = needShadow;
+            
+            if (needSun) {
+                if (sunTrajectoryMesh) scene.remove(sunTrajectoryMesh);
+                if (undergroundSunTrajectoryMesh) {
+                    scene.remove(undergroundSunTrajectoryMesh);
+                    disposeObject3D(undergroundSunTrajectoryMesh);
+                    undergroundSunTrajectoryMesh = null;
+                }
+                const newSun = generateSunTrajectoryTube(latRad, currentDec);
+                if (newSun) {
+                    sunTrajectoryMesh = newSun;
+                    scene.add(sunTrajectoryMesh);
+                    if (showSunTimeLabels) rebuildSunTimeLabels(latRad, currentDec, currentDay);
+                    else clearSunTimeLabels();
+                } else {
+                    sunTrajectoryMesh = null;
+                    clearSunTimeLabels();
+                }
+                rebuildUndergroundSunTrajectory(latRad, currentDec);
+                rebuildSeasonalSunTrajectories(latRad);
+            }
+            if (needShadow) {
+                if (shadowTipTrajectoryLine) scene.remove(shadowTipTrajectoryLine);
+                const newShadowTraj = generateShadowTipTrajectory(latRad, currentDec, currentPoleHeight);
+                if (newShadowTraj) {
+                    shadowTipTrajectoryLine = newShadowTraj;
+                    scene.add(shadowTipTrajectoryLine);
+                } else shadowTipTrajectoryLine = null;
+
+                if (needCone) {
+                    if (solarConeMesh) {
+                        scene.remove(solarConeMesh);
+                        solarConeMesh.geometry.dispose();
+                        solarConeMesh.material.dispose();
+                        solarConeMesh = null;
+                    }
+                    if (shadowConeMesh) {
+                        scene.remove(shadowConeMesh);
+                        shadowConeMesh.geometry.dispose();
+                        shadowConeMesh.material.dispose();
+                        shadowConeMesh = null;
+                    }
+                    if (halfHourRayGroup) {
+                        scene.remove(halfHourRayGroup);
+                        disposeObject3D(halfHourRayGroup);
+                        halfHourRayGroup = null;
+                    }
+
+                    const { upperCone, lowerCone } = generateSolarAndShadowCone(latRad, currentDec, currentPoleHeight);
+                    if (upperCone) {
+                        solarConeMesh = upperCone;
+                        solarConeMesh.visible = showConeSurfaces;
+                        scene.add(solarConeMesh);
+                    }
+                    if (lowerCone) {
+                        shadowConeMesh = lowerCone;
+                        shadowConeMesh.visible = showConeSurfaces;
+                        scene.add(shadowConeMesh);
+                    }
+                    const newHalfHourRays = generateHalfHourSolarRays(latRad, currentDec, currentDay, currentPoleHeight);
+                    if (newHalfHourRays) {
+                        halfHourRayGroup = newHalfHourRays;
+                        halfHourRayGroup.visible = showConeSurfaces;
+                        scene.add(halfHourRayGroup);
+                    }
+                }
+                lastTrajParams = { lat: currentLat, dec: currentDec, height: currentPoleHeight };
+            }
+            
+            document.getElementById('latVal').innerHTML = `${Math.abs(currentLat).toFixed(1)}${currentLat>=0?'°N':'°S'}`;
+            document.getElementById('dateVal').innerHTML = `${month}月${day}日`;
+            document.getElementById('timeVal').innerHTML = `${localHourInt.toString().padStart(2,'0')}:${localMin.toString().padStart(2,'0')}`;
+        }
+        
+        // 连续时间流动驱动：每帧根据实际经过时间累加小时数
+        function updateAutoTime(nowMs) {
+            if (!autoFlowEnabled) return;
+            if (lastFrameTimestamp === null) {
+                lastFrameTimestamp = nowMs;
+                return;
+            }
+            const deltaSec = Math.min(0.05, (nowMs - lastFrameTimestamp) / 1000); // 限制最大单帧步长，避免跨度过大
+            if (deltaSec <= 0) return;
+            lastFrameTimestamp = nowMs;
+            // 速度: 1x 时每秒增加 0.5 小时
+            const hourDelta = deltaSec * 0.5 * getEffectiveAutoTimeSpeed();
+            let newHour = currentLocalHour + hourDelta;
+            let newDay = currentDay;
+            if (newHour >= 24) {
+                newHour -= 24;
+                newDay += 1;
+                if (newDay > 364) newDay = 0;
+            }
+            currentLocalHour = parseFloat(newHour.toFixed(6)); // 保留高精度
+            currentDay = newDay;
+            // 同步滑块显示，但不触发事件
+            timeSlider.value = currentLocalHour;
+            timeNum.value = currentLocalHour.toFixed(2);
+            syncDateInputs();
+            // 立即更新场景，保持连续感
+            updateAll();
+        }
+        
+        // 星空
+        const starGeo = new THREE.BufferGeometry();
+        const starCount = 3000;
+        const starPos = new Float32Array(starCount * 3);
+        for (let i = 0; i < starCount; i++) {
+            starPos[i*3] = (Math.random() - 0.5) * 800;
+            starPos[i*3+1] = (Math.random() - 0.5) * 300 + 30;
+            starPos[i*3+2] = (Math.random() - 0.5) * 600 - 200;
+        }
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+        const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xaaaaaa, size: 0.25, transparent: true, opacity: 0.4 }));
+        scene.add(stars);
+        function animateStars() { stars.rotation.y += 0.0002; stars.rotation.x += 0.0001; requestAnimationFrame(animateStars); }
+        animateStars();
+        
+        // 初次更新
+        if (wasCompactLayout) setControlsCollapsed(true);
+        updatePlayButtons();
+        updateAll();
+        
+        // 主动画循环：处理自动时间 + 渲染
+        let lastTimestampForAuto = null;
+        function animate(timeMs) {
+            if (autoFlowEnabled) {
+                if (lastTimestampForAuto === null) lastTimestampForAuto = timeMs;
+                const delta = Math.min(0.05, (timeMs - lastTimestampForAuto) / 1000);
+                if (delta > 0) {
+                    lastTimestampForAuto = timeMs;
+                    const hourDelta = delta * 0.5 * getEffectiveAutoTimeSpeed();
+                    let newHour = currentLocalHour + hourDelta;
+                    let newDay = currentDay;
+                    if (newHour >= 24) {
+                        newHour -= 24;
+                        newDay += 1;
+                        if (newDay > 364) newDay = 0;
+                    }
+                    currentLocalHour = parseFloat(newHour.toFixed(6));
+                    currentDay = newDay;
+                    // 同步控件
+                    timeSlider.value = currentLocalHour;
+                    timeNum.value = currentLocalHour.toFixed(2);
+                    syncDateInputs();
+                    updateAll();
+                }
+            } else {
+                lastTimestampForAuto = null;
+            }
+            
+            controls.update();
+            updateAdaptiveAngleDensity(innerAngleRing);
+            updateInnerDirectionLabels(innerDirectionLabels);
+            if (dashedSunCircle.visible) dashedSunCircle.quaternion.copy(camera.quaternion);
+            renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+        
+        requestAnimationFrame(animate);
+        
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
+            syncResponsiveControls();
+        });
+    </script>
+</body>
+</html>

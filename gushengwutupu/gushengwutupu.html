@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>古生物图谱 - 在线浏览</title>
+<style>
+:root {
+  --bg: #0f1923;
+  --bg-card: #1a2734;
+  --bg-card-hover: #21303f;
+  --border: rgba(78, 205, 196, 0.15);
+  --text: #e8eef3;
+  --text-muted: #8a9ba8;
+  --accent: #4ecdc4;
+  --accent2: #ff6b6b;
+  --accent4: #54a0ff;
+  --radius: 14px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+/* 顶部 */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border-bottom: 2px solid var(--accent);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand .icon {
+  font-size: 30px;
+  width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(78, 205, 196, 0.12);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.brand h1 {
+  font-size: 22px;
+  background: linear-gradient(135deg, var(--accent), var(--accent4));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+}
+.brand p { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.search-box { position: relative; flex: 0 1 340px; min-width: 200px; }
+.search-box input {
+  width: 100%;
+  padding: 10px 16px 10px 40px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(26, 39, 52, 0.9);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+.search-box input:focus { border-color: var(--accent); }
+.search-box .s-icon {
+  position: absolute; left: 13px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 15px;
+  pointer-events: none;
+}
+/* 主体 */
+main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+/* 左侧目录 */
+aside {
+  width: 300px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.toc-head {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+.toc-head .count { color: var(--accent); font-weight: 600; }
+#tocList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  min-height: 0;
+}
+#tocList::-webkit-scrollbar { width: 6px; }
+#tocList::-webkit-scrollbar-thumb { background: rgba(78,205,196,0.25); border-radius: 3px; }
+.toc-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.toc-item:hover { background: var(--bg-card-hover); }
+.toc-item.active {
+  background: rgba(78, 205, 196, 0.15);
+  border-left: 3px solid var(--accent);
+}
+.toc-item .no {
+  font-size: 11px;
+  color: var(--accent);
+  font-family: Consolas, monospace;
+  min-width: 32px;
+}
+.toc-item .nm {
+  font-size: 13px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.toc-empty {
+  padding: 30px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+/* 右侧内容 */
+section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.toolbar button {
+  padding: 8px 18px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: rgba(78, 205, 196, 0.08);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.toolbar button:hover:not(:disabled) {
+  background: var(--accent);
+  color: #0f1923;
+  border-color: var(--accent);
+}
+.toolbar button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+#currentLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+}
+#contentFrame {
+  flex: 1;
+  border: none;
+  background: #fff;
+  width: 100%;
+  min-height: 0;
+}
+/* 移动端适配 */
+@media (max-width: 768px) {
+  header { flex-direction: column; align-items: stretch; }
+  main { flex-direction: column; }
+  aside { width: 100%; height: 35%; border-right: none; border-bottom: 1px solid var(--border); }
+  section { flex: 1; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="icon">🦕</span>
+    <div>
+      <h1>古生物图谱</h1>
+      <p>古生物图文资料 · 常州市武进区横山桥高级中学地理教研组 · 仅供课堂教学使用</p>
+    </div>
+  </div>
+  <div class="search-box">
+    <span class="s-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="搜索名称或编号，如：三叶虫 / 33">
+  </div>
+</header>
+
+<main>
+  <aside>
+    <div class="toc-head">
+      <span>📋 目录</span>
+      <span class="count" id="countLabel">274 种</span>
+    </div>
+    <div id="tocList"></div>
+  </aside>
+  <section>
+    <div class="toolbar">
+      <button id="prevBtn" title="上一页 (←)">◀ 上一个</button>
+      <span id="currentLabel">001 团藻</span>
+      <button id="nextBtn" title="下一页 (→)">下一个 ▶</button>
+    </div>
+    <iframe id="contentFrame" src="001.html" title="古生物内容"></iframe>
+  </section>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var toc = [];
+  var currentIdx = 0;
+  var listEl = document.getElementById('tocList');
+  var frameEl = document.getElementById('contentFrame');
+  var searchEl = document.getElementById('searchInput');
+  var countEl = document.getElementById('countLabel');
+  var labelEl = document.getElementById('currentLabel');
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+
+  // 加载目录
+  fetch('toc.json')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      toc = data;
+      countEl.textContent = toc.length + ' 种';
+      renderList('');
+      // 恢复上次浏览
+      var last = parseInt(localStorage.getItem('gs_toc_last'), 10);
+      if (!isNaN(last) && last >= 0 && last < toc.length) {
+        selectItem(last, false);
+      } else {
+        selectItem(0, false);
+      }
+    })
+    .catch(function () {
+      listEl.innerHTML = '<div class="toc-empty">目录加载失败，请检查网络后刷新</div>';
+    });
+
+  // 渲染目录列表（带过滤）
+  function renderList(keyword) {
+    keyword = (keyword || '').trim().toLowerCase();
+    var html = '';
+    var matched = 0;
+    toc.forEach(function (item, i) {
+      var num = item.n;
+      var name = item.name || '';
+      if (keyword) {
+        var kw = keyword;
+        var hit = String(num) === kw ||
+                  (num >= 100 ? String(num).indexOf(kw) !== -1 : String(num).indexOf(kw) !== -1) ||
+                  name.toLowerCase().indexOf(kw) !== -1;
+        if (!hit) return;
+      }
+      matched++;
+      var isActive = (i === currentIdx && !keyword);
+      html += '<div class="toc-item' + (isActive ? ' active' : '') + '" data-idx="' + i + '">' +
+              '<span class="no">' + ('000' + num).slice(-3) + '</span>' +
+              '<span class="nm">' + name + '</span></div>';
+    });
+    if (!matched) {
+      html = '<div class="toc-empty">未找到「' + (keyword || '') + '」，换个关键词试试</div>';
+    }
+    listEl.innerHTML = html;
+    countEl.textContent = matched + ' 种';
+
+    // 绑定点击
+    Array.prototype.forEach.call(listEl.querySelectorAll('.toc-item'), function (el) {
+      el.addEventListener('click', function () {
+        selectItem(parseInt(el.getAttribute('data-idx'), 10), true);
+      });
+    });
+    // 保持当前项可见
+    var activeEl = listEl.querySelector('.toc-item.active');
+    if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+  }
+
+  // 选中某项
+  function selectItem(idx, fromClick) {
+    if (idx < 0 || idx >= toc.length) return;
+    currentIdx = idx;
+    var item = toc[idx];
+    var page = ('000' + item.n).slice(-3) + '.html';
+    frameEl.src = page;
+    labelEl.textContent = ('000' + item.n).slice(-3) + ' ' + (item.name || '');
+    prevBtn.disabled = idx === 0;
+    nextBtn.disabled = idx === toc.length - 1;
+    try { localStorage.setItem('gs_toc_last', String(idx)); } catch (e) {}
+    // 高亮
+    Array.prototype.forEach.call(listEl.querySelectorAll('.toc-item'), function (el) {
+      el.classList.toggle('active', parseInt(el.getAttribute('data-idx'), 10) === idx);
+    });
+    var activeEl = listEl.querySelector('.toc-item.active');
+    if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+  }
+
+  // 搜索
+  var searchTimer = null;
+  searchEl.addEventListener('input', function () {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function () {
+      renderList(searchEl.value);
+    }, 150);
+  });
+
+  // 上下页
+  prevBtn.addEventListener('click', function () { selectItem(currentIdx - 1, true); });
+  nextBtn.addEventListener('click', function () { selectItem(currentIdx + 1, true); });
+
+  // 键盘左右键切换（搜索框聚焦时不响应）
+  document.addEventListener('keydown', function (e) {
+    if (document.activeElement === searchEl) return;
+    if (e.key === 'ArrowLeft') selectItem(currentIdx - 1, true);
+    if (e.key === 'ArrowRight') selectItem(currentIdx + 1, true);
+  });
+})();
+</script>
+<!-- 署名：横山桥高中孙慧制作 -->
+<div style="position:fixed;top:12px;right:14px;z-index:9999;background:rgba(0,0,0,0.55);color:#fff;font-size:13px;letter-spacing:2px;padding:6px 14px;border-radius:18px;border:1px solid rgba(255,215,130,0.55);box-shadow:0 2px 8px rgba(0,0,0,0.35);pointer-events:none;user-select:none;white-space:nowrap;">横山桥高中孙慧制作</div>
+</body>
+</html>
