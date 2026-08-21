@@ -890,5 +890,12 @@
         renderCategories();
         renderContent();
     </script>
+<!-- 动态时间水印 -->
+<div id="time-wm" style="position:fixed;right:10px;bottom:8px;z-index:99999;pointer-events:none;user-select:none;text-align:right;font:11px/1.7 -apple-system,'Microsoft YaHei',sans-serif;color:rgba(255,255,255,.88);background:rgba(0,0,0,.42);padding:3px 10px;border-radius:12px;letter-spacing:.5px;white-space:nowrap;">
+  <span id="wm-now">--</span><br>横山桥高中地理教研组 · 构建于 2026-08-21
+</div>
+<script>
+(function(){var e=document.getElementById("wm-now");function p(n){return (n<10?"0":"")+n}function t(){var d=new Date();e.textContent="当前时间 "+d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes())}t();setInterval(t,30000)})();
+</script>
 </body>
 </html>
