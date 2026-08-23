@@ -32,6 +32,25 @@
             --radius: 14px;
             --shadow: 0 4px 24px rgba(0,0,0,0.3);
             --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --search-bg: rgba(15, 25, 35, 0.85);
+            --icon-bg: rgba(78, 205, 196, 0.1);
+            --tag-bg: rgba(78, 205, 196, 0.12);
+        }
+
+        html[data-theme="light"] {
+            --bg: #f2f5f8;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f7fafc;
+            --border: rgba(15, 60, 55, 0.14);
+            --border-hover: rgba(15, 143, 128, 0.5);
+            --text: #1f2d3a;
+            --text-muted: #5f7285;
+            --accent: #0f8f80;
+            --accent-glow: rgba(15, 143, 128, 0.18);
+            --shadow: 0 6px 20px rgba(31, 45, 58, 0.1);
+            --search-bg: rgba(255, 255, 255, 0.92);
+            --icon-bg: rgba(15, 143, 128, 0.1);
+            --tag-bg: rgba(15, 143, 128, 0.1);
         }
 
         * {
@@ -156,7 +175,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(15, 25, 35, 0.85);
+            background: var(--search-bg);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             padding: 10px 0;
@@ -332,7 +351,7 @@
             align-items: center;
             justify-content: center;
             border-radius: 10px;
-            background: rgba(78, 205, 196, 0.1);
+            background: var(--icon-bg);
         }
 
         .card-title {
@@ -386,7 +405,7 @@
             font-size: 0.65rem;
             padding: 2px 8px;
             border-radius: 4px;
-            background: rgba(78, 205, 196, 0.12);
+            background: var(--tag-bg);
             color: var(--accent);
             margin-right: 4px;
         }
@@ -400,6 +419,54 @@
             color: #ff6b6b;
             margin-left: 6px;
             vertical-align: middle;
+        }
+
+        html[data-theme="light"] .cat-btn.active {
+            color: #ffffff;
+        }
+
+        html[data-theme="light"] .local-tag {
+            color: #d64545;
+            background: rgba(214, 69, 69, 0.1);
+        }
+
+        html[data-theme="light"] .local-card {
+            background: #fdfefe;
+        }
+
+        /* Theme toggle */
+        .top-banner {
+            position: relative;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            color: #fff;
+            border-radius: 20px;
+            padding: 4px 13px;
+            cursor: pointer;
+            font-size: 0.78rem;
+            line-height: 1.5;
+            font-family: inherit;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.24);
+        }
+
+        @media (max-width: 600px) {
+            .theme-toggle {
+                position: static;
+                transform: none;
+                margin-top: 8px;
+            }
         }
 
         .cloud-card {
@@ -537,12 +604,29 @@
             background: rgba(78, 205, 196, 0.4);
         }
     </style>
+    <script>
+        (function () {
+            var t = null;
+            try { t = localStorage.getItem('wb-theme'); } catch (e) {}
+            if (t !== 'light' && t !== 'dark') t = 'light';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+        function toggleTheme() {
+            var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+            var next = cur === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            try { localStorage.setItem('wb-theme', next); } catch (e) {}
+            var b = document.getElementById('themeToggle');
+            if (b) b.textContent = next === 'dark' ? '☀ 浅色' : '🌙 深色';
+        }
+    </script>
 </head>
 <body>
     <!-- 学校标识横幅 -->
     <div class="top-banner">
         <div class="school-name">🏫 常州市武进区横山桥高级中学地理教研组</div>
         <div class="school-sub">仅限课堂教学使用，非商业用途</div>
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="切换明暗主题">🌙 深色</button>
     </div>
     <div class="container">
         <!-- Header -->
@@ -600,6 +684,15 @@
     </div>
 
     <script>
+        // Sync toggle button label with saved theme
+        (function () {
+            var b = document.getElementById('themeToggle');
+            if (b) {
+                var t = document.documentElement.getAttribute('data-theme');
+                b.textContent = t === 'dark' ? '☀ 浅色' : '🌙 深色';
+            }
+        })();
+
         // Data
         const categories = [
             {
