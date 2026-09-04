@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClimaQuiz — 世界气候分布测试</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- 左侧面板：上部 12 个气候按钮区，下部气候信息区 -->
+  <aside id="leftPanel">
+    <section id="quizPanel">
+      <div class="location-line">
+        <span id="locName">准备中…</span>
+        <span id="coords"></span>
+      </div>
+      <div id="options"></div>
+    </section>
+
+    <section id="infoPanel">
+      <div class="info-title">气候信息</div>
+      <div id="infoBody">
+        <div class="info-hint">🖱️ 开启右上「🌐 气候图」后点击地球，查看该点气候类型；或直接答题。</div>
+      </div>
+    </section>
+  </aside>
+
+  <!-- 右侧：地球 -->
+  <main id="globeWrap">
+    <div id="globeViz"></div>
+
+    <!-- 顶部计分栏 -->
+    <header id="hud">
+      <div class="brand">🌍 ClimaQuiz</div>
+      <div class="stats">
+        <span>第 <b id="qnum">0</b> 题</span>
+        <span>得分 <b id="score">0</b></span>
+        <span>连对 <b id="streak">0</b> 🔥</span>
+        <span>正确率 <b id="accuracy">—</b></span>
+      </div>
+      <button id="btnMap" class="hud-btn">🌐 气候图</button>
+      <button id="btnChart" class="hud-btn hud-on">📊 水热图 开</button>
+      <button id="btnSpeak" class="hud-btn">🔊 语音 开</button>
+      <button id="btnExit" class="hud-btn hud-exit">⏻ 退出程序</button>
+    </header>
+
+    <!-- 气候分布图例面板 -->
+    <div id="legendPanel" class="hidden">
+      <div class="legend-head">
+        <span>世界气候类型分布</span>
+        <button id="btnMapClose" class="legend-x">✕</button>
+      </div>
+      <div id="legendList"></div>
+    </div>
+  </main>
+
+</div>
+
+<!-- 结算界面 -->
+<div id="endScreen" class="center-panel hidden">
+  <h2>本轮结束！</h2>
+  <div class="final-stats">
+    <div class="big"><span id="finalScore">0</span> 分</div>
+    <div>答对 <span id="finalCorrect">0</span> / <span id="finalTotal">0</span></div>
+    <div>最高连对 <span id="finalStreak">0</span></div>
+    <div id="rank"></div>
+  </div>
+  <button id="btnRestart">再来一局</button>
+</div>
+
+<script src="vendor/three.min.js?v=15"></script>
+<script src="vendor/globe.gl.js?v=15"></script>
+<script src="climates.js?v=24"></script>
+<script src="i18n.js?v=24"></script>
+<script src="assets.js?v=24"></script>
+<script src="app.js?v=45"></script>
+
+</body>
+</html>
