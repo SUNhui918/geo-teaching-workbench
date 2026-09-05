@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <!--
 ════════════════════════════════════════════════════════════
-  地理教师智能化教学工作台
+  地理智能化教学工作台
   版权所有 © 2026 常州市武进区横山桥高级中学地理教研组
 ────────────────────────────────────────────────────────────
   本页面为原创教学资源，仅限课堂教学使用，非商业用途。
@@ -12,7 +12,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>地理教师智能化教学工作台</title>
+    <title>地理智能化教学工作台</title>
     <style>
         :root {
             --bg: #0f1923;
@@ -89,7 +89,7 @@
             padding: 0 24px;
         }
 
-        /* ===== Nav Bar（参考简洁风：logo + 横向tabs + 右侧按钮）===== */
+        /* ===== Nav Bar（两行布局：第1行 logo + 学校名 + 右侧按钮；第2行 nav-tabs）===== */
         .nav-bar {
             position: sticky;
             top: 0;
@@ -98,33 +98,64 @@
             border-bottom: 1px solid var(--border);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            height: 56px;
+            display: flex;
+            flex-direction: column;
+            padding: 10px 20px 0;
+            gap: 8px;
+        }
+        .nav-row {
             display: flex;
             align-items: center;
-            padding: 0 20px;
-            gap: 18px;
+            gap: 14px;
+            width: 100%;
         }
+        .nav-row-1 { min-height: 38px; }
+        .nav-row-2 {
+            overflow-x: auto;
+            scrollbar-width: none;
+            margin: 0 -20px;
+            padding: 0 20px 8px;
+        }
+        .nav-row-2::-webkit-scrollbar { display: none; }
 
         .nav-logo {
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 1.05rem;
+            font-size: 1.15rem;
             font-weight: 700;
             color: var(--text);
             flex-shrink: 0;
             text-decoration: none;
         }
-        .nav-logo .nav-globe { font-size: 1.5rem; line-height: 1; }
+        .nav-logo .nav-globe { font-size: 1.4rem; line-height: 1; }
+
+        .nav-school {
+            font-size: 0.86rem;
+            color: var(--text-muted);
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .nav-school b {
+            color: var(--text);
+            font-weight: 600;
+            margin-right: 4px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
 
         .nav-tabs {
             display: flex;
             gap: 4px;
             flex: 1;
-            overflow-x: auto;
-            scrollbar-width: none;
         }
-        .nav-tabs::-webkit-scrollbar { display: none; }
 
         .nav-tab {
             padding: 6px 12px;
@@ -196,10 +227,12 @@
         .nav-icon-btn:hover { color: var(--text); border-color: var(--border-hover); }
 
         @media (max-width: 768px) {
-            .nav-bar { padding: 0 12px; gap: 10px; }
-            .nav-search-input { width: 120px; }
-            .nav-search-input:focus { width: 160px; }
-            .nav-tabs { gap: 2px; }
+            .nav-bar { padding: 8px 12px 0; }
+            .nav-row-2 { margin: 0 -12px; padding: 0 12px 6px; }
+            .nav-logo { font-size: 1rem; }
+            .nav-school { font-size: 0.78rem; }
+            .nav-search-input { width: 110px; }
+            .nav-search-input:focus { width: 150px; }
             .nav-tab { padding: 5px 9px; font-size: 0.8rem; }
         }
 
@@ -371,19 +404,25 @@
     </script>
 </head>
 <body>
-    <!-- 学校标识横幅 -->
-    <!-- Nav Bar（简洁风格：logo + tabs + search + theme） -->
+    <!-- Nav Bar（两行布局：第1行 logo + 学校名 + 右侧按钮；第2行 nav-tabs） -->
     <div class="nav-bar">
-        <div class="nav-logo">
-            <span class="nav-globe">🌍</span>
-            <span>地理视界</span>
+        <div class="nav-row nav-row-1">
+            <div class="nav-logo">
+                <span class="nav-globe">🌍</span>
+                <span>地理智能化教学工作台</span>
+            </div>
+            <div class="nav-school"><b>常州市武进区横山桥高级中学</b>地理教研组</div>
+            <div class="nav-right">
+                <div class="nav-search-wrap">
+                    <span class="nav-search-icon">🔍</span>
+                    <input type="text" class="nav-search-input" id="navSearch" placeholder="搜索资源..." oninput="handleSearch()">
+                </div>
+                <button class="nav-icon-btn" id="themeToggle" onclick="toggleTheme()" title="切换明暗主题">🌙</button>
+            </div>
         </div>
-        <div class="nav-tabs" id="navTabs"></div>
-        <div class="nav-search-wrap">
-            <span class="nav-search-icon">🔍</span>
-            <input type="text" class="nav-search-input" id="navSearch" placeholder="搜索资源..." oninput="handleSearch()">
+        <div class="nav-row nav-row-2">
+            <div class="nav-tabs" id="navTabs"></div>
         </div>
-        <button class="nav-icon-btn" id="themeToggle" onclick="toggleTheme()" title="切换明暗主题">🌙</button>
     </div>
 
     <div class="container">
@@ -401,7 +440,7 @@
         <div class="toast" id="toast"></div>
 
         <footer>
-            <p>地理教师智能化教学工作台 · 汇集优质地理教学资源 · 助力高效课堂</p>
+            <p>地理智能化教学工作台 · 汇集优质地理教学资源 · 助力高效课堂</p>
             <p style="margin-top:4px; opacity:0.6;">仅课堂教学使用，非商业用途</p>
             <p style="margin-top:6px; opacity:0.45; font-size:0.85em;">© 2026 常州市武进区横山桥高级中学地理教研组</p>
         </footer>
@@ -474,6 +513,19 @@
                 ]
             },
             {
+                id: 'water',
+                name: '水',
+                icon: '🌊',
+                color: '#0984e3',
+                desc: '潮汐、海洋、水体运动',
+                sites: [
+                    { title: '中国水系html', url: 'file:///D:/360MoveData/Users/29621/Desktop/交互网页/中国水系.html', icon: '💧', desc: '交互式中国主要河流、湖泊分布图。', local: true, kind: 'html', cloud: '中国水系.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\交互网页\\中国水系.html' },
+                    { title: '全球潮汐-潮流预报', url: 'http://global-tide.nmdis.org.cn/', icon: '🌊', desc: '全球潮汐潮流预报服务。' },
+                    { title: '地球 NullSchool 洋流地图', url: 'https://earth.nullschool.net/#current/ocean/surface/currents/orthographic', icon: '🌐', desc: '全球海洋洋流实时可视化。' },
+                    { title: 'NowCoast 实时海岸观测', url: 'https://nowcoast.noaa.gov/', icon: '🗺️', desc: '美国 NOAA 实时海岸观测平台。' },
+                ]
+            },
+            {
                 id: 'environment',
                 name: '环境与生态',
                 icon: '🌿',
@@ -484,19 +536,6 @@
                     { title: '真气网气象风场地图', url: 'https://map.zq12369.com/', icon: '🌬️', desc: '结合空气质量与风场的可视化地图。' },
                     { title: '世界实时空气质量指数', url: 'http://waqi.info/', icon: '🌍', desc: '全球空气质量实时指数，覆盖世界主要城市。' },
                     { title: '全球光污染地图', url: 'https://www.lightpollutionmap.info/', icon: '💡', desc: '全球光污染分布可视化。' },
-                ]
-            },
-            {
-                id: 'water',
-                name: '水',
-                icon: '🌊',
-                color: '#0984e3',
-                desc: '潮汐、海洋、水体运动',
-                sites: [
-                    { title: '全球潮汐-潮流预报', url: 'http://global-tide.nmdis.org.cn/', icon: '🌊', desc: '全球潮汐潮流预报服务。' },
-                    { title: '地球 NullSchool 洋流地图', url: 'https://earth.nullschool.net/#current/ocean/surface/currents/orthographic', icon: '🌐', desc: '全球海洋洋流实时可视化。' },
-                    { title: 'NowCoast 实时海岸观测', url: 'https://nowcoast.noaa.gov/', icon: '🗺️', desc: '美国 NOAA 实时海岸观测平台。' },
-                    { title: '中国水系html', url: 'file:///D:/360MoveData/Users/29621/Desktop/交互网页/中国水系.html', icon: '💧', desc: '交互式中国主要河流、湖泊分布图。', local: true, kind: 'html', cloud: '中国水系.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\交互网页\\中国水系.html' },
                 ]
             },
             {
