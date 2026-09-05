@@ -634,22 +634,47 @@ function drawTopic2D(ctx, px, py, offX, offY, mapW, mapH){
     ctx.fillStyle = '#7beaff'; ctx.fillText('A ' + formatCoord(pt.gcALat, pt.gcALon), px(pt.gcALon)+8, py(pt.gcALat)-6);
     ctx.fillStyle = '#ff9e80'; ctx.fillText('B ' + formatCoord(pt.gcBLat, pt.gcBLon), px(pt.gcBLon)+8, py(pt.gcBLat)-6);
 
-    var gp = greatCirclePoints(pt.gcALon, pt.gcALat, pt.gcBLon, pt.gcBLat, 120);
+    // 完美对齐 2D 平面图大圆航线坐标映射
+    var steps = 100;
     ctx.strokeStyle='#ffd166'; ctx.lineWidth=2.5; ctx.beginPath();
-    var started = false, prevLon = null;
-    gp.forEach(function(v){
-      var r = v.length();
-      var lat = 90 - Math.acos(THREE.MathUtils.clamp(v.y/r, -1, 1))/DEG;
-      var lon = Math.atan2(v.z, -v.x)/DEG; 
-      var x = px(lon), y = py(lat);
-      if(!started){ ctx.moveTo(x, y); started = true; }
-      else {
-        if(prevLon !== null && Math.abs(lon - prevLon) > 180){
-          ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
-        } else { ctx.lineTo(x, y); }
+    
+    for(var i = 0; i <= steps; i++){
+      var t = i / steps;
+      var lon1 = pt.gcALon * DEG, lat1 = pt.gcALat * DEG;
+      var lon2 = pt.gcBLon * DEG, lat2 = pt.gcBLat * DEG;
+      
+      var v1 = new THREE.Vector3(Math.cos(lat1)*Math.cos(lon1), Math.sin(lat1), Math.cos(lat1)*Math.sin(lon1));
+      var v2 = new THREE.Vector3(Math.cos(lat2)*Math.cos(lon2), Math.sin(lat2), Math.cos(lat2)*Math.sin(lon2));
+      var dotVal = THREE.MathUtils.clamp(v1.dot(v2), -1, 1);
+      var omega = Math.acos(dotVal);
+      
+      var p;
+      if(Math.sin(omega) < 0.001){
+        p = v1.clone();
+      } else {
+        var sinOm = Math.sin(omega);
+        var s1 = Math.sin((1 - t) * omega) / sinOm;
+        var s2 = Math.sin(t * omega) / sinOm;
+        p = new THREE.Vector3(
+          v1.x * s1 + v2.x * s2,
+          v1.y * s1 + v2.y * s2,
+          v1.z * s1 + v2.z * s2
+        ).normalize();
       }
-      prevLon = lon;
-    });
+      
+      var curLat = Math.asin(THREE.MathUtils.clamp(p.y, -1, 1)) / DEG;
+      var curLon = Math.atan2(p.z, p.x) / DEG;
+      
+      var x = px(curLon), y = py(curLat);
+      if(i === 0) ctx.moveTo(x, y);
+      else {
+        if(Math.abs(curLon - (Math.atan2(v1.z, v1.x)/DEG)) > 270){
+          ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+    }
     ctx.stroke();
   }
   else if(currentTopic==='symmetry'){
