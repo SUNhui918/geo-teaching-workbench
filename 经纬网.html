@@ -857,6 +857,19 @@ animate();
 
 /* ---------- 初始化 ---------- */
 switchTopic('lon');
+/* URL 参数直达：?topic=greatcircle&view=2d （老师分享链接时可预选主题） */
+(function(){
+  var p = new URLSearchParams(location.search);
+  if(p.has('topic')){
+    var t = p.get('topic');
+    var btn = document.querySelector('#topicTabs .topic-tab[data-topic="' + t + '"]');
+    if(btn) switchTopic(t, btn);
+  }
+  if(p.get('view') === '2d'){
+    var btn2 = document.querySelector('#viewModeRow .opt-btn[data-view="2d"]');
+    if(btn2) btn2.click();
+  }
+})();
 </script>
 </body>
 </html>
