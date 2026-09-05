@@ -399,10 +399,10 @@ Object.keys(BOUNDARIES).forEach(function(k){
     var latlngs = line.map(function(p){ return [p[1], p[0]]; });
     L.polyline(latlngs, {color:cfg.color, weight:2.5, opacity:.95, dashArray:cfg.dash||null}).addTo(grp);
   });
-  // 沿线地名标注（圆圈 + 文字）
+  // 沿线地名标注（圆圈 + 文字）  labels 格式: [经度, 纬度, 名称]
   (cfg.labels||[]).forEach(function(lb){
-    makeDotLabel(lb[2], lb[1], lb[0], cfg.color).addTo(grp);
-    L.circleMarker([lb[2], lb[1]], {
+    makeDotLabel(lb[1], lb[0], lb[2], cfg.color).addTo(grp);
+    L.circleMarker([lb[1], lb[0]], {
       radius:4, color:cfg.color, weight:1.5, fillColor:cfg.color, fillOpacity:.9, interactive:false
     }).addTo(grp);
   });
