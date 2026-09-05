@@ -104,6 +104,27 @@
   .geoname-wrap{display:flex;align-items:center;gap:5px;}
   .geoname{font-size:11px;color:#2f9e6e;background:rgba(255,255,255,.92);border-radius:3px;padding:1px 5px;box-shadow:0 1px 3px rgba(0,0,0,.5);white-space:nowrap;font-weight:600;}
   .zonename{font-size:11px;color:#fff;background:rgba(20,40,70,.9);border-radius:3px;padding:1px 5px;box-shadow:0 1px 3px rgba(0,0,0,.5);white-space:nowrap;font-weight:600;}
+  /* 搜索结果地名注记 */
+  .search-label{
+    font-size:13px;font-weight:700;color:#fff;white-space:nowrap;
+    background:rgba(229,57,53,.92);border:1.5px solid #ffd166;
+    border-radius:4px;padding:2px 9px;box-shadow:0 2px 8px rgba(0,0,0,.6);
+    transform:translate(-50%,-160%);
+  }
+  /* 图例 */
+  .legend-box{border:1px solid var(--panel-line);border-radius:9px;overflow:hidden;margin-top:10px;}
+  .legend-head{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#16273e;font-size:13px;cursor:pointer;user-select:none;}
+  .legend-head:hover{background:#1b3050;}
+  .legend-head .caret{font-size:10px;color:var(--txt-dim);transition:.2s;flex-shrink:0;}
+  .legend-box.open .legend-head .caret{transform:rotate(90deg);}
+  .legend-body{display:none;padding:8px 10px;}
+  .legend-box.open .legend-body{display:block;}
+  .lg-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--txt-dim);padding:3px 0;}
+  .lg-swatch{width:14px;height:4px;border-radius:2px;flex-shrink:0;}
+  .lg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;border:1.5px solid #fff;}
+  .lg-label{font-size:11px;color:#fff;background:rgba(229,57,53,.92);border:1px solid #ffd166;border-radius:3px;padding:0 6px;white-space:nowrap;flex-shrink:0;}
+  .lg-title{font-size:11px;color:var(--txt);font-weight:600;margin:6px 0 2px;}
+  .lg-title:first-child{margin-top:0;}
   /* 响应式 */
   @media (max-width:720px){
     .panel{position:absolute;z-index:1300;height:100%;transform:translateX(-100%);transition:.25s;box-shadow:0 0 30px rgba(0,0,0,.5);}
@@ -171,6 +192,28 @@
         <div class="tool-row">
           <button class="tool-btn" id="resetBtn">⟲ 重置视角</button>
           <button class="tool-btn" id="fullBtn">⛶ 全屏</button>
+        </div>
+      </div>
+
+      <div class="legend-box open" id="legendBox">
+        <div class="legend-head"><span class="caret">▶</span><span>🗺️ 图例</span></div>
+        <div class="legend-body">
+          <div class="lg-title">搜索结果</div>
+          <div class="lg-row"><span class="lg-dot" style="background:#ff5e5e"></span> 定位点（红圈）</div>
+          <div class="lg-row"><span class="lg-label">地名</span> 地名注记</div>
+          <div class="lg-title">中国主要地形区</div>
+          <div class="lg-row"><span class="lg-swatch" style="background:#f6c945"></span> 主要高原</div>
+          <div class="lg-row"><span class="lg-swatch" style="background:#7bc96f"></span> 主要盆地</div>
+          <div class="lg-row"><span class="lg-swatch" style="background:#4dd0e1"></span> 主要平原</div>
+          <div class="lg-row"><span class="lg-swatch" style="background:#ff9e80"></span> 三大丘陵</div>
+          <div class="lg-row"><span class="lg-swatch" style="background:#c792ea"></span> 主要山脉</div>
+          <div class="lg-title">重要地理分界线（示意）</div>
+          <div class="lg-row"><span class="lg-swatch" style="background:#ff5e5e"></span> 地势三级阶梯界线</div>
+          <div class="lg-row"><span class="lg-swatch" style="background:#ffd166"></span> 季风区与非季风区分界</div>
+          <div class="lg-row"><span class="lg-swatch" style="background:#4dd0e1"></span> 秦岭—淮河线</div>
+          <div class="lg-row"><span class="lg-swatch" style="background:#b388ff"></span> 干湿地区界线</div>
+          <div class="lg-row"><span class="lg-swatch" style="background:#ff9e80"></span> 温度带界线</div>
+          <div class="lg-row"><span class="lg-swatch" style="background:#80cbc4"></span> 四大地理区域界线</div>
         </div>
       </div>
     </div>
@@ -676,7 +719,7 @@ var PLACES = [
   ['东欧平原',40,55,'欧洲面积最大的平原。','世界地形']
 ];
 
-var searchMarker = null;
+var searchLayer = L.layerGroup().addTo(map);
 var searchListEl = document.getElementById('resultList');
 var searchStatusEl = document.getElementById('searchStatus');
 var searchInputEl = document.getElementById('searchInput');
@@ -708,11 +751,18 @@ function runSearch(q){
 function flyToPlace(p){
   var nm=p[0], lon=p[1], lat=p[2], note=p[3];
   searchListEl.style.display='none';
-  if(searchMarker){ map.removeLayer(searchMarker); }
-  searchMarker = L.circleMarker([lat, lon], {radius:9, color:'#ff5e5e', weight:2.5, fillColor:'#ff5e5e', fillOpacity:.55});
-  searchMarker.addTo(map);
-  searchMarker.bindPopup('<div class="feature-card"><div class="fc-title">'+nm+'</div><div class="fc-note">'+note+'</div></div>').openPopup();
+  searchLayer.clearLayers();
+  // 定位红圈
+  var marker = L.circleMarker([lat, lon], {radius:9, color:'#ff5e5e', weight:2.5, fillColor:'#ff5e5e', fillOpacity:.55});
+  searchLayer.addLayer(marker);
+  // 地名注记（常显标签，位于点位上方）
+  var label = L.marker([lat, lon], {
+    icon: L.divIcon({className:'', html:'<div class="search-label">'+nm+'</div>', iconSize:[0,0], iconAnchor:[0,0]}),
+    interactive:false, keyboard:false
+  });
+  searchLayer.addLayer(label);
   map.flyTo([lat, lon], Math.max(map.getZoom(), 6), {duration:1});
+  marker.bindPopup('<div class="feature-card"><div class="fc-title">'+nm+'</div><div class="fc-note">'+note+'</div></div>').openPopup();
 }
 
 document.getElementById('searchBtn').addEventListener('click', function(){ runSearch(searchInputEl.value); });
@@ -747,6 +797,11 @@ document.getElementById('fullBtn').addEventListener('click', function(){
 /* ---------- 移动端面板开关 ---------- */
 document.getElementById('panelToggle').addEventListener('click', function(){
   document.getElementById('panel').classList.toggle('open');
+});
+
+/* ---------- 图例折叠 ---------- */
+document.querySelector('.legend-head').addEventListener('click', function(){
+  this.parentElement.classList.toggle('open');
 });
 </script>
 </body>
