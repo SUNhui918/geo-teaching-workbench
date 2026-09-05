@@ -89,418 +89,199 @@
             padding: 0 24px;
         }
 
-        /* Header */
-        .top-banner {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            color: #fff;
-            text-align: center;
-            padding: 9px 24px;
-            border-bottom: 2px solid var(--accent);
-        }
-
-        .top-banner .school-name {
-            font-size: 1.05rem;
-            font-weight: 600;
-            letter-spacing: 2px;
-        }
-
-        .top-banner .school-sub {
-            font-size: 0.75rem;
-            opacity: 0.7;
-            margin-top: 3px;
-        }
-
-        header {
-            padding: 18px 0 14px;
-            text-align: center;
-        }
-
-        .header-icon {
-            font-size: 48px;
-            line-height: 1;
-            margin-bottom: 6px;
-            display: inline-block;
-            animation: float 4s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
-        }
-
-        header h1 {
-            font-size: 1.9rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--accent), var(--accent4));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: 1px;
-            margin-bottom: 4px;
-        }
-
-        header p {
-            color: var(--text-muted);
-            font-size: 0.88rem;
-        }
-
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 28px;
-            margin-top: 12px;
-            flex-wrap: wrap;
-        }
-
-        .stat {
-            text-align: center;
-        }
-
-        .stat-num {
-            font-size: 1.35rem;
-            font-weight: 700;
-            color: var(--accent);
-            line-height: 1.2;
-        }
-
-        .stat-label {
-            font-size: 0.72rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        /* Search */
-        .search-bar {
+        /* ===== Nav Bar（参考简洁风：logo + 横向tabs + 右侧按钮）===== */
+        .nav-bar {
             position: sticky;
             top: 0;
             z-index: 100;
-            background: var(--search-bg);
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            padding: 10px 0;
-            margin-bottom: 16px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .search-wrapper {
-            max-width: 600px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 10px 18px 10px 44px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: var(--text);
-            font-size: 0.95rem;
-            outline: none;
-            transition: var(--transition);
-        }
-
-        .search-input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-
-        .search-input::placeholder {
-            color: var(--text-muted);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            font-size: 1.1rem;
-        }
-
-        /* Category tabs */
-        .categories {
+            height: 56px;
             display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-content: center;
-            margin-bottom: 20px;
+            align-items: center;
+            padding: 0 20px;
+            gap: 18px;
         }
 
-        .cat-btn {
-            padding: 7px 13px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 30px;
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text);
+            flex-shrink: 0;
+            text-decoration: none;
+        }
+        .nav-logo .nav-globe { font-size: 1.5rem; line-height: 1; }
+
+        .nav-tabs {
+            display: flex;
+            gap: 4px;
+            flex: 1;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .nav-tabs::-webkit-scrollbar { display: none; }
+
+        .nav-tab {
+            padding: 6px 12px;
+            border-radius: 8px;
             color: var(--text-muted);
-            font-size: 0.8rem;
-            line-height: 1.4;
+            font-size: 0.88rem;
             cursor: pointer;
-            transition: var(--transition);
             white-space: nowrap;
+            transition: var(--transition);
             user-select: none;
         }
-
-        .cat-btn:hover {
-            border-color: var(--border-hover);
-            color: var(--text);
-        }
-
-        .cat-btn.active {
-            background: var(--accent);
-            border-color: var(--accent);
+        .nav-tab:hover { color: var(--text); background: var(--bg-card); }
+        .nav-tab.active {
             color: #0f1923;
+            background: var(--accent);
             font-weight: 600;
         }
-
-        .cat-btn .count {
+        html[data-theme="light"] .nav-tab.active { color: #ffffff; }
+        .nav-tab .nav-count {
             margin-left: 4px;
             opacity: 0.7;
             font-size: 0.8em;
         }
 
-        /* Section */
-        .section {
-            margin-bottom: 40px;
-        }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .section-icon {
-            font-size: 1.5rem;
-        }
-
-        .section-title {
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .section-desc {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-left: auto;
-        }
-
-        /* Grid */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 16px;
-        }
-
-        /* Card */
-        .card {
-            display: flex;
-            flex-direction: column;
-            background: var(--bg-card);
+        .nav-search-wrap { position: relative; flex-shrink: 0; }
+        .nav-search-input {
+            width: 180px;
+            padding: 6px 10px 6px 30px;
             border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-            text-decoration: none;
+            border-radius: 8px;
+            background: var(--bg-card);
             color: var(--text);
+            font-size: 0.85rem;
+            outline: none;
             transition: var(--transition);
-            position: relative;
-            overflow: hidden;
+            font-family: inherit;
         }
-
-        .card::before {
-            content: '';
+        .nav-search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+            width: 240px;
+        }
+        .nav-search-icon {
             position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 3px;
-            background: var(--card-accent, var(--accent));
-            opacity: 0;
-            transition: var(--transition);
+            left: 9px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            pointer-events: none;
         }
 
-        .card:hover {
-            background: var(--bg-card-hover);
-            border-color: var(--border-hover);
-            transform: translateY(-3px);
-            box-shadow: var(--shadow);
-        }
-
-        .card:hover::before {
-            opacity: 1;
-        }
-
-        .card-header {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 10px;
-        }
-
-        .card-icon {
-            font-size: 1.8rem;
-            line-height: 1;
+        .nav-icon-btn {
             flex-shrink: 0;
-            width: 44px;
-            height: 44px;
+            width: 34px;
+            height: 34px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 10px;
-            background: var(--icon-bg);
-        }
-
-        .card-title {
-            font-size: 0.95rem;
-            font-weight: 600;
-            line-height: 1.4;
-            margin-top: 4px;
-        }
-
-        .card-desc {
-            font-size: 0.8rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-card);
             color: var(--text-muted);
-            line-height: 1.5;
-            margin-bottom: 12px;
-            flex-grow: 1;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        .nav-icon-btn:hover { color: var(--text); border-color: var(--border-hover); }
+
+        @media (max-width: 768px) {
+            .nav-bar { padding: 0 12px; gap: 10px; }
+            .nav-search-input { width: 120px; }
+            .nav-search-input:focus { width: 160px; }
+            .nav-tabs { gap: 2px; }
+            .nav-tab { padding: 5px 9px; font-size: 0.8rem; }
         }
 
-        .card-footer {
+        /* ===== Section ===== */
+        .section { margin-bottom: 30px; }
+        .section-header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
             gap: 8px;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        .section-icon { font-size: 1.2rem; }
+        .section-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+        .section-count { font-size: 0.78rem; color: var(--text-muted); margin-left: auto; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 14px;
         }
 
-        .card-url {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            word-break: break-all;
-            flex: 1;
+        /* ===== Card（简洁样式：badge + 标题 + 一行描述 + 大数字水印）===== */
+        .card {
+            display: block;
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            min-height: 110px;
+            text-decoration: none;
+            color: var(--text);
+            transition: var(--transition);
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            cursor: pointer;
         }
-
-        .card-link {
-            font-size: 0.75rem;
-            color: var(--card-accent, var(--accent));
-            font-weight: 600;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+        .card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
-
-        .card:hover .card-link {
-            text-decoration: underline;
-        }
-
-        .card-tag {
+        .card-badge {
             display: inline-block;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             padding: 2px 8px;
             border-radius: 4px;
             background: var(--tag-bg);
-            color: var(--accent);
-            margin-right: 4px;
+            color: var(--card-accent, var(--accent));
+            margin-bottom: 8px;
         }
-
-        .local-card {
-            border-style: dashed;
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.35;
+            margin-bottom: 6px;
         }
-
-        .local-tag {
-            background: rgba(255, 107, 107, 0.15);
-            color: #ff6b6b;
-            margin-left: 6px;
-            vertical-align: middle;
+        .card-desc {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.55;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
-
-        html[data-theme="light"] .cat-btn.active {
-            color: #ffffff;
-        }
-
-        html[data-theme="light"] .local-tag {
-            color: #d64545;
-            background: rgba(214, 69, 69, 0.1);
-        }
-
-        html[data-theme="light"] .local-card {
-            background: #fdfefe;
-        }
-
-        /* Theme toggle */
-        .top-banner {
-            position: relative;
-        }
-
-        .theme-toggle {
+        /* 大数字水印（右侧底部） */
+        .card-watermark {
             position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.28);
-            color: #fff;
-            border-radius: 20px;
-            padding: 4px 13px;
-            cursor: pointer;
-            font-size: 0.78rem;
-            line-height: 1.5;
-            font-family: inherit;
-            transition: var(--transition);
-            white-space: nowrap;
-        }
-
-        .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.24);
-        }
-
-        @media (max-width: 600px) {
-            .theme-toggle {
-                position: static;
-                transform: none;
-                margin-top: 8px;
-            }
-        }
-
-        .cloud-card {
-            background: linear-gradient(135deg, rgba(78, 205, 196, 0.06), rgba(9, 132, 227, 0.06));
-            border-style: solid;
-        }
-
-        .cloud-tag {
-            background: rgba(0, 184, 148, 0.15);
-            color: #00b894;
-            margin-left: 6px;
-            vertical-align: middle;
-        }
-
-        .cloud-note {
-            font-size: 0.75rem;
-            color: #e17055;
-            background: rgba(225, 112, 85, 0.08);
-            border-radius: 6px;
-            padding: 6px 10px;
-            margin: 8px 0;
-            line-height: 1.5;
-        }
-
-        .local-open {
-            flex-shrink: 0;
-            padding: 4px 10px;
-            border-radius: 6px;
-            background: rgba(78, 205, 196, 0.1);
-            transition: var(--transition);
-        }
-
-        .local-open:hover {
-            background: rgba(78, 205, 196, 0.25);
+            right: -4px;
+            bottom: -22px;
+            font-size: 5.6rem;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--card-accent, var(--accent));
+            opacity: 0.07;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            pointer-events: none;
+            user-select: none;
+            letter-spacing: -2px;
         }
 
         /* No results */
@@ -510,10 +291,7 @@
             color: var(--text-muted);
             display: none;
         }
-
-        .no-results.show {
-            display: block;
-        }
+        .no-results.show { display: block; }
 
         /* Toast */
         .toast {
@@ -533,11 +311,7 @@
             pointer-events: none;
             z-index: 999;
         }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
         /* 版权水印 */
         .copyright-wm {
@@ -553,56 +327,31 @@
             white-space: nowrap;
         }
 
-        /* Footer */
         footer {
             text-align: center;
-            padding: 40px 0 30px;
+            padding: 30px 0 24px;
             color: var(--text-muted);
-            font-size: 0.8rem;
+            font-size: 0.78rem;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-            header h1 {
-                font-size: 1.5rem;
-            }
-            .header-icon {
-                font-size: 40px;
-            }
-            .stats {
-                gap: 18px;
-            }
-            .cat-btn {
-                padding: 6px 11px;
-                font-size: 0.74rem;
-            }
-            .categories {
-                gap: 6px;
-            }
+            .grid { grid-template-columns: 1fr; }
+            .card-watermark { font-size: 4.5rem; bottom: -16px; }
         }
 
         /* Smooth scroll */
-        html {
-            scroll-behavior: smooth;
-        }
+        html { scroll-behavior: smooth; }
 
         /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg);
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
         ::-webkit-scrollbar-thumb {
             background: rgba(78, 205, 196, 0.2);
             border-radius: 4px;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(78, 205, 196, 0.4);
-        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(78, 205, 196, 0.4); }
+
     </style>
     <script>
         (function () {
@@ -623,43 +372,21 @@
 </head>
 <body>
     <!-- 学校标识横幅 -->
-    <div class="top-banner">
-        <div class="school-name">🏫 常州市武进区横山桥高级中学地理教研组</div>
-        <div class="school-sub">仅限课堂教学使用，非商业用途</div>
-        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="切换明暗主题">🌙 深色</button>
-    </div>
-    <div class="container">
-        <!-- Header -->
-        <header>
-            <div class="header-icon">🌍</div>
-            <h1>地理教师智能化教学工作台</h1>
-            <p>一站式地理教学资源平台 · 让地理课堂更智能、更生动</p>
-            <div class="stats">
-                <div class="stat">
-                    <div class="stat-num" id="totalNum">0</div>
-                    <div class="stat-label">资源网站</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-num">6</div>
-                    <div class="stat-label">资源分类</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-num">∞</div>
-                    <div class="stat-label">教学可能</div>
-                </div>
-            </div>
-        </header>
-
-        <!-- Search -->
-        <div class="search-bar">
-            <div class="search-wrapper">
-                <span class="search-icon">🔍</span>
-                <input type="text" class="search-input" id="searchInput" placeholder="搜索网站名称、关键词..." oninput="handleSearch()">
-            </div>
+    <!-- Nav Bar（简洁风格：logo + tabs + search + theme） -->
+    <div class="nav-bar">
+        <div class="nav-logo">
+            <span class="nav-globe">🌍</span>
+            <span>地理视界</span>
         </div>
+        <div class="nav-tabs" id="navTabs"></div>
+        <div class="nav-search-wrap">
+            <span class="nav-search-icon">🔍</span>
+            <input type="text" class="nav-search-input" id="navSearch" placeholder="搜索资源..." oninput="handleSearch()">
+        </div>
+        <button class="nav-icon-btn" id="themeToggle" onclick="toggleTheme()" title="切换明暗主题">🌙</button>
+    </div>
 
-        <!-- Categories -->
-        <div class="categories" id="categories"></div>
+    <div class="container">
 
         <!-- Content -->
         <div id="content"></div>
@@ -702,17 +429,17 @@
                 color: '#feca57',
                 desc: '地球运动、星空、天文教具',
                 sites: [
-                    { title: '太阳视运动模拟器', url: 'file:///D:/360MoveData/Users/29621/Desktop/EarthMotion_Windows_v1.0.exe', icon: '☀️', desc: '太阳视运动模拟器（网页版），可控制纬度、日期、时间，采用高中地理常考的侧视图与地平圈俯视图双视图，直观展示日出日落方位、正午太阳高度与昼夜长短变化，讲解地球运动必备工具。', local: true, cloud: 'earthmotion.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\EarthMotion_Windows_v1.0.exe' },
-                    { title: '太阳周日视运动演示动画', url: 'file:///E:/课件、教材、教学设计/自然地理视频与动画/sunrisecn/20210820 太阳周日视运动演示动画.exe', icon: '🌅', desc: '太阳周日视运动演示动画，生动演示太阳一日内的东升西落运动轨迹，课堂演示必备工具。', local: true, cloud: 'player.html?swf=swf/sunrise_0.swf', path: 'E:\\课件、教材、教学设计\\自然地理视频与动画\\sunrisecn\\20210820 太阳周日视运动演示动画.exe' },
-                    { title: '太阳视运动轨迹与杆影', url: 'file:///D:/360MoveData/Users/29621/Desktop/太阳视运动轨迹与杆影v.60版.html', icon: '🕰️', desc: '太阳视运动轨迹与杆影变化模拟，动态展示不同纬度、不同季节的太阳运行轨迹与日影变化规律，辅助正午太阳高度教学。', local: true, kind: 'html', cloud: '太阳视运动轨迹与杆影.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\太阳视运动轨迹与杆影v.60版.html' },
-                    { title: '月相演示', url: 'file:///E:/课件、教材、教学设计/自然地理视频与动画/月相/月相(分亏凸月盈凸月峨眉月残月)2025.4.18.exe', icon: '🌙', desc: '月相演示动画，分步展示亏凸月、盈凸月、峨眉月、残月等月相变化过程，讲解月相成因必备工具。', local: true, cloud: 'player.html?swf=swf/yuexiang_0.swf', path: 'E:\\课件、教材、教学设计\\自然地理视频与动画\\月相\\月相(分亏凸月盈凸月峨眉月残月)2025.4.18.exe' },
-                    { title: '公转的意义', url: 'file:///E:/课件、教材、教学设计/自然地理视频与动画/地球运动/公转的意义.exe', icon: '🔄', desc: '地球公转的意义flash演示，直观展示公转带来的四季更替、昼夜长短变化与五带划分。', local: true, cloud: 'player.html?swf=swf/gongzhuan_0.swf', path: 'E:\\课件、教材、教学设计\\自然地理视频与动画\\地球运动\\公转的意义.exe' },
-                    { title: '地球运动flash课件', url: 'file:///E:/课件、教材、教学设计/自然地理视频与动画/地球运动/地球的运动flash课件.exe', icon: '🌍', desc: '地球运动flash课件，系统讲解自转与公转的规律、周期、速度及其地理意义。', local: true, cloud: 'player.html?swf=swf/diqiuyundong_0.swf', path: 'E:\\课件、教材、教学设计\\自然地理视频与动画\\地球运动\\地球的运动flash课件.exe' },
-                    { title: '10万颗星星', url: 'http://stars.chromeexperiments.com/', icon: '✨', desc: '谷歌星球实验项目，缩放浏览10万颗近真实星星，感受宇宙浩瀚。' },
-                    { title: '虚拟天文馆', url: 'https://stellarium-web.org', icon: '🪐', desc: '免费开源星空模拟软件在线版，设定任意地点与时间即可模拟当时星空，展示星座、行星、银河等天体，天文教学神器。' },
-                    { title: '人造天体过境', url: 'http://www.heavens-above.com/', icon: '🛰️', desc: '查询人造卫星、国际空间站等天体过境时间和方位，天文观测利器。' },
-                    { title: '经纬网及其应用', url: 'file:///C:/Users/29621/WorkBuddy/2026-08-20-07-32-53/dist/经纬网.html', icon: '🌐', desc: '3D 交互式经纬网教学工具：球面图（可北极/南极/侧面三种视角，可旋转）+ 平面图双视图，底图可在卫星影像/分层设色地形/政区图三种间切换；含经线和经度、纬线和纬度、球对称点（对跖点）、两点间最短航向（大圆航线）4 个知识点，每个配讲解与可拖动参数滑块。', local: true, kind: 'html', cloud: '经纬网.html', path: 'C:\\Users\\29621\\WorkBuddy\\2026-08-20-07-32-53\\dist\\经纬网.html' },
-                    { title: '空间环境研究预报中心', url: 'http://www.sepc.ac.cn/', icon: '🌌', desc: '空间天气预报、太阳活动监测，了解空间环境变化。' },
+                    { title: '太阳视运动模拟器', url: 'file:///D:/360MoveData/Users/29621/Desktop/EarthMotion_Windows_v1.0.exe', icon: '☀️', desc: '太阳视运动模拟器，可调纬度/日期/时间，展示日出日落方位与正午太阳高度。', local: true, cloud: 'earthmotion.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\EarthMotion_Windows_v1.0.exe' },
+                    { title: '太阳周日视运动演示动画', url: 'file:///E:/课件、教材、教学设计/自然地理视频与动画/sunrisecn/20210820 太阳周日视运动演示动画.exe', icon: '🌅', desc: '太阳一日内东升西落运动轨迹演示动画。', local: true, cloud: 'player.html?swf=swf/sunrise_0.swf', path: 'E:\\课件、教材、教学设计\\自然地理视频与动画\\sunrisecn\\20210820 太阳周日视运动演示动画.exe' },
+                    { title: '太阳视运动轨迹与杆影', url: 'file:///D:/360MoveData/Users/29621/Desktop/太阳视运动轨迹与杆影v.60版.html', icon: '🕰️', desc: '不同纬度、不同季节的太阳运行轨迹与日影变化模拟。', local: true, kind: 'html', cloud: '太阳视运动轨迹与杆影.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\太阳视运动轨迹与杆影v.60版.html' },
+                    { title: '月相演示', url: 'file:///E:/课件、教材、教学设计/自然地理视频与动画/月相/月相(分亏凸月盈凸月峨眉月残月)2025.4.18.exe', icon: '🌙', desc: '分步展示亏凸月、盈凸月、峨眉月、残月等月相变化过程。', local: true, cloud: 'player.html?swf=swf/yuexiang_0.swf', path: 'E:\\课件、教材、教学设计\\自然地理视频与动画\\月相\\月相(分亏凸月盈凸月峨眉月残月)2025.4.18.exe' },
+                    { title: '公转的意义', url: 'file:///E:/课件、教材、教学设计/自然地理视频与动画/地球运动/公转的意义.exe', icon: '🔄', desc: 'Flash 课件，直观展示公转带来的四季更替与五带划分。', local: true, cloud: 'player.html?swf=swf/gongzhuan_0.swf', path: 'E:\\课件、教材、教学设计\\自然地理视频与动画\\地球运动\\公转的意义.exe' },
+                    { title: '地球运动flash课件', url: 'file:///E:/课件、教材、教学设计/自然地理视频与动画/地球运动/地球的运动flash课件.exe', icon: '🌍', desc: '系统讲解自转与公转的规律、周期、速度及其地理意义。', local: true, cloud: 'player.html?swf=swf/diqiuyundong_0.swf', path: 'E:\\课件、教材、教学设计\\自然地理视频与动画\\地球运动\\地球的运动flash课件.exe' },
+                    { title: '10万颗星星', url: 'http://stars.chromeexperiments.com/', icon: '✨', desc: '谷歌星球实验项目，浏览 10 万颗近真实星星。' },
+                    { title: '虚拟天文馆', url: 'https://stellarium-web.org', icon: '🪐', desc: '免费开源星空模拟在线版，设定任意地点与时间模拟当时星空。' },
+                    { title: '人造天体过境', url: 'http://www.heavens-above.com/', icon: '🛰️', desc: '查询人造卫星、空间站等天体过境时间和方位。' },
+                    { title: '经纬网及其应用', url: 'file:///C:/Users/29621/WorkBuddy/2026-08-20-07-32-53/dist/经纬网.html', icon: '🌐', desc: '3D 交互式经纬网：球面/平面双视图，含经度/纬度/球对称点/最短航向 4 个知识点。', local: true, kind: 'html', cloud: '经纬网.html', path: 'C:\\Users\\29621\\WorkBuddy\\2026-08-20-07-32-53\\dist\\经纬网.html' },
+                    { title: '空间环境研究预报中心', url: 'http://www.sepc.ac.cn/', icon: '🌌', desc: '空间天气预报与太阳活动监测。' },
                 ]
             },
             {
@@ -722,13 +449,13 @@
                 color: '#e17055',
                 desc: '地质、地貌、板块运动',
                 sites: [
-                    { title: '在线地形图', url: 'file:///C:/Users/29621/WorkBuddy/2026-08-20-07-32-53/dist/地形图.html', icon: '⛰️', desc: '在线地形图查看器，默认地形底图，可切换卫星/地形/矢量三种底图，内置中文地名注记、5 组中国主要地形区（高原/盆地/平原/丘陵/山脉）、6 条重要地理分界线（含沿线山脉地名标注），可用于中国地形和世界地形的教学。', local: true, kind: 'html', cloud: '地形图.html', path: 'C:\\Users\\29621\\WorkBuddy\\2026-08-20-07-32-53\\dist\\地形图.html' },
-                    { title: '板块运动', url: 'https://dinosaurpictures.org/ancient-earth#260', icon: '🧩', desc: '可拖动时间轴查看地球各时期大陆漂移面貌，直观展示板块运动。' },
-                    { title: '古生物图谱', url: 'file:///J:/C-地质专业课件/古生物学/古生物图谱.exe', icon: '🦕', desc: '古生物图谱电子书，收录276种古生物图文资料（三叶虫、恐龙、猛犸象等），附化石复原图与文字介绍，讲解地球历史与生物演化必备资料。', local: true, cloud: 'gushengwutupu/gushengwutupu.html', path: 'J:\\C-地质专业课件\\古生物学\\古生物图谱.exe' },
-                    { title: '岩石图谱', url: 'file:///D:/360MoveData/Users/29621/Desktop/新建文件夹/沉积岩', icon: '🪨', desc: '岩石图谱在线版，收录24种常见岩石手标本图文资料，按沉积岩（10种）、岩浆岩（8种）、变质岩（6种）三大类分类，含标本照片与岩石属性信息卡（颜色、结构、构造、矿物成分、产地等），岩石识别与三大岩类教学必备资料。', local: true, cloud: 'yanshitupu/yanshitupu.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\新建文件夹' },
-                    { title: '等高线交互课件', url: 'file:///D:/360MoveData/Users/29621/Desktop/交互网页/等高线交互课件（不止dili）.html', icon: '🗻', desc: '等高线交互课件，动态演示等高线地形图的判读方法，交互操作理解山地、盆地、山脊、山谷、鞍部、陡崖等地形部位与等高线特征，等高线教学必备工具。', local: true, kind: 'html', cloud: '等高线交互课件.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\交互网页\\等高线交互课件（不止dili）.html' },
-                    { title: '720云全景地貌', url: 'https://www.720yun.com/', icon: '🏞️', desc: '720云全景平台，汇集全球地貌景观的360°全景实拍，可沉浸式"身临其境"查看山地、河流、海岸、峡谷等各类地貌，地貌教学最直观的素材库。' },
-                    { title: '海岸线变迁', url: 'https://linad3d.github.io/contourlines/', icon: '🌊', desc: '等高线‑高程网页工具，输入或选取区域即可生成等高线与高程可视化效果，对比古今海岸线位置与海陆分布变化，讲海岸线变迁与海平面变化的演示工具。' },
+                    { title: '在线地形图', url: 'file:///C:/Users/29621/WorkBuddy/2026-08-20-07-32-53/dist/地形图.html', icon: '⛰️', desc: '默认地形底图，可切换卫星/地形/矢量，含中文地名、5 组地形区、6 条分界线。', local: true, kind: 'html', cloud: '地形图.html', path: 'C:\\Users\\29621\\WorkBuddy\\2026-08-20-07-32-53\\dist\\地形图.html' },
+                    { title: '板块运动', url: 'https://dinosaurpictures.org/ancient-earth#260', icon: '🧩', desc: '拖动时间轴查看地球各时期大陆漂移面貌。' },
+                    { title: '古生物图谱', url: 'file:///J:/C-地质专业课件/古生物学/古生物图谱.exe', icon: '🦕', desc: '收录 276 种古生物图文资料（三叶虫、恐龙、猛犸象等）。', local: true, cloud: 'gushengwutupu/gushengwutupu.html', path: 'J:\\C-地质专业课件\\古生物学\\古生物图谱.exe' },
+                    { title: '岩石图谱', url: 'file:///D:/360MoveData/Users/29621/Desktop/新建文件夹/沉积岩', icon: '🪨', desc: '24 种常见岩石手标本图文资料，分沉积岩/岩浆岩/变质岩三大类。', local: true, cloud: 'yanshitupu/yanshitupu.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\新建文件夹' },
+                    { title: '等高线交互课件', url: 'file:///D:/360MoveData/Users/29621/Desktop/交互网页/等高线交互课件（不止dili）.html', icon: '🗻', desc: '动态演示等高线地形图的判读方法。', local: true, kind: 'html', cloud: '等高线交互课件.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\交互网页\\等高线交互课件（不止dili）.html' },
+                    { title: '720云全景地貌', url: 'https://www.720yun.com/', icon: '🏞️', desc: '全球地貌景观的 360° 全景实拍，地貌教学素材库。' },
+                    { title: '海岸线变迁', url: 'https://linad3d.github.io/contourlines/', icon: '🌊', desc: '输入区域即可生成等高线与高程可视化，对比古今海岸线变化。' },
 
                 ]
             },
@@ -739,11 +466,11 @@
                 color: '#54a0ff',
                 desc: '天气、风场、卫星云图',
                 sites: [
-                    { title: '全球气象平台 Ventusky', url: 'https://www.ventusky.com/', icon: '🌡️', desc: '全球气象可视化平台，实时展示温度、降水、风场等多维气象数据。' },
-                    { title: '全球风、气象、海洋状况', url: 'https://earth.nullschool.net/', icon: '🌀', desc: '全球风场、气象与海洋状况实时可视化，可切换不同高度层与数据集，直观展示大气与海洋环流。' },
-                    { title: '风云四号卫星天气应用平台', url: 'http://rsapp.nsmc.org.cn/geofy/?i=0&isPlay=true&speed=2&sat=fy-4a&pro=geos&type=full_disk&band=1', icon: '🛰️', desc: '国产风云四号气象卫星云图实时展示，可动画播放查看天气系统演变。' },
-                    { title: '中央气象台·台风网', url: 'https://typhoon.nmc.cn', icon: '🌀', desc: '中央气象台台风路径实时发布系统，实时跟踪台风当前位置、强度变化与预测路径，附卫星云图与风场数据，台风与天气系统教学必备工具。' },
-                    { title: '气候类型检测HTML', url: 'file:///D:/360MoveData/Users/29621/Desktop/交互网页/气候类型检测-白鹭洲中学（陈晓斌）/index.html', icon: '🌏', desc: '世界气候分布互动测试，3D地球上点击任意地点即可检测该地气候类型，附气温降水柱状图与气候特征说明，气候类型判读与巩固练习利器。版权署名：白鹭洲中学·陈晓斌。', local: true, kind: 'html', cloud: 'qihoujiance/index.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\交互网页\\气候类型检测-白鹭洲中学（陈晓斌）\\index.html' },
+                    { title: '全球气象平台 Ventusky', url: 'https://www.ventusky.com/', icon: '🌡️', desc: '全球气象可视化平台，实时展示温度/降水/风场等多维气象数据。' },
+                    { title: '全球风、气象、海洋状况', url: 'https://earth.nullschool.net/', icon: '🌀', desc: '全球风场、气象与海洋状况实时可视化。' },
+                    { title: '风云四号卫星天气应用平台', url: 'http://rsapp.nsmc.org.cn/geofy/?i=0&isPlay=true&speed=2&sat=fy-4a&pro=geos&type=full_disk&band=1', icon: '🛰️', desc: '国产风云四号气象卫星云图实时展示。' },
+                    { title: '中央气象台·台风网', url: 'https://typhoon.nmc.cn', icon: '🌀', desc: '实时跟踪台风当前位置、强度变化与预测路径。' },
+                    { title: '气候类型检测HTML', url: 'file:///D:/360MoveData/Users/29621/Desktop/交互网页/气候类型检测-白鹭洲中学（陈晓斌）/index.html', icon: '🌏', desc: '3D 地球上点击任意地点检测气候类型，附气温降水柱状图。', local: true, kind: 'html', cloud: 'qihoujiance/index.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\交互网页\\气候类型检测-白鹭洲中学（陈晓斌）\\index.html' },
                 ]
             },
             {
@@ -753,10 +480,10 @@
                 color: '#1dd1a1',
                 desc: '空气质量、光污染、潮汐',
                 sites: [
-                    { title: '真气网空气质量在线监测', url: 'https://www.aqistudy.cn/', icon: '🌫️', desc: '全国城市空气质量实时监测与历史数据查询，AQI指数可视化。' },
-                    { title: '真气网气象风场地图', url: 'https://map.zq12369.com/', icon: '🌬️', desc: '结合空气质量与风场的可视化地图，分析污染物扩散方向。' },
-                    { title: '世界实时空气质量指数', url: 'http://waqi.info/', icon: '🌍', desc: '全球空气质量实时指数，覆盖世界主要城市，对比全球大气环境。' },
-                    { title: '全球光污染地图', url: 'https://www.lightpollutionmap.info/', icon: '💡', desc: '全球光污染分布可视化，分析人类活动对夜空环境的影响。' },
+                    { title: '真气网空气质量在线监测', url: 'https://www.aqistudy.cn/', icon: '🌫️', desc: '全国城市空气质量实时监测与历史数据查询。' },
+                    { title: '真气网气象风场地图', url: 'https://map.zq12369.com/', icon: '🌬️', desc: '结合空气质量与风场的可视化地图。' },
+                    { title: '世界实时空气质量指数', url: 'http://waqi.info/', icon: '🌍', desc: '全球空气质量实时指数，覆盖世界主要城市。' },
+                    { title: '全球光污染地图', url: 'https://www.lightpollutionmap.info/', icon: '💡', desc: '全球光污染分布可视化。' },
                 ]
             },
             {
@@ -766,10 +493,10 @@
                 color: '#0984e3',
                 desc: '潮汐、海洋、水体运动',
                 sites: [
-                    { title: '全球潮汐-潮流预报', url: 'http://global-tide.nmdis.org.cn/', icon: '🌊', desc: '全球潮汐潮流预报服务平台，查询潮汐变化规律。' },
-                    { title: '地球 NullSchool 洋流地图', url: 'https://earth.nullschool.net/#current/ocean/surface/currents/orthographic', icon: '🌐', desc: '全球海洋洋流实时可视化，展示表层洋流运动方向与速度，直观理解洋流分布规律。' },
-                    { title: 'NowCoast 实时海岸观测', url: 'https://nowcoast.noaa.gov/', icon: '🗺️', desc: '美国NOAA实时海岸观测平台，集成海面温度、风场、波浪、海流等海洋实况数据，了解海洋环境监测。' },
-                    { title: '中国水系html', url: 'file:///D:/360MoveData/Users/29621/Desktop/交互网页/中国水系.html', icon: '💧', desc: '交互式中国主要河流、湖泊分布图，基于标准国界，点击河流/湖泊即可查看详情，省区名称直接标注于图上，中国水系教学必备工具。', local: true, kind: 'html', cloud: '中国水系.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\交互网页\\中国水系.html' },
+                    { title: '全球潮汐-潮流预报', url: 'http://global-tide.nmdis.org.cn/', icon: '🌊', desc: '全球潮汐潮流预报服务。' },
+                    { title: '地球 NullSchool 洋流地图', url: 'https://earth.nullschool.net/#current/ocean/surface/currents/orthographic', icon: '🌐', desc: '全球海洋洋流实时可视化。' },
+                    { title: 'NowCoast 实时海岸观测', url: 'https://nowcoast.noaa.gov/', icon: '🗺️', desc: '美国 NOAA 实时海岸观测平台。' },
+                    { title: '中国水系html', url: 'file:///D:/360MoveData/Users/29621/Desktop/交互网页/中国水系.html', icon: '💧', desc: '交互式中国主要河流、湖泊分布图。', local: true, kind: 'html', cloud: '中国水系.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\交互网页\\中国水系.html' },
                 ]
             },
             {
@@ -779,9 +506,9 @@
                 color: '#ff6b6b',
                 desc: '人口、迁徙、位置大数据',
                 sites: [
-                    { title: '世界人口时钟', url: 'https://countrymeters.info/cn/World', icon: '⏰', desc: '全球及各国人口实时变动数据，直观展示人口增长趋势。' },
-                    { title: '百度迁徙', url: 'http://qianxi.baidu.com/', icon: '🚂', desc: '百度大数据迁徙地图，展示人口流动方向与规模，人口迁移教学利器。' },
-                    { title: '腾讯位置大数据', url: 'https://heat.qq.com/', icon: '📊', desc: '腾讯位置服务热力图数据，展示人口活动空间分布与密度。' },
+                    { title: '世界人口时钟', url: 'https://countrymeters.info/cn/World', icon: '⏰', desc: '全球及各国人口实时变动数据。' },
+                    { title: '百度迁徙', url: 'http://qianxi.baidu.com/', icon: '🚂', desc: '百度大数据迁徙地图，展示人口流动方向与规模。' },
+                    { title: '腾讯位置大数据', url: 'https://heat.qq.com/', icon: '📊', desc: '腾讯位置服务热力图数据。' },
                 ]
             },
             {
@@ -791,12 +518,12 @@
                 color: '#5f27cd',
                 desc: '标准地图、街景、地理空间数据',
                 sites: [
-                    { title: '标准地图服务系统', url: 'http://bzdt.ch.mnr.gov.cn/index.html', icon: '📐', desc: '自然资源部官方标准地图服务，下载中国及世界标准地图，教学首选。' },
-                    { title: '发现中国', url: 'https://www.ageeye.cn/', icon: '🇨🇳', desc: '中国历史地理知识地图平台，叠加历史地图与现代地图。' },
-                    { title: 'Geo中国地图集网', url: 'https://www.osgeo.cn/map/m046d', icon: '🗺️', desc: '中国地图集在线浏览，多专题多尺度地图资源。' },
-                    { title: '谷歌地球在线', url: 'https://www.earthol.com/', icon: '🌐', desc: '在线谷歌地球浏览，全球卫星影像查看。' },
-                    { title: '世界免费专业地图下载', url: 'https://www.d-maps.com/', icon: '📋', desc: '海量世界及区域专业地图免费下载，涵盖多种投影方式。' },
-                    { title: '地理空间数据云', url: 'http://www.gscloud.cn/', icon: '☁️', desc: '中科院遥感卫星数据云平台，获取遥感影像与地理空间数据。' },
+                    { title: '标准地图服务系统', url: 'http://bzdt.ch.mnr.gov.cn/index.html', icon: '📐', desc: '自然资源部官方标准地图服务，下载中国及世界标准地图。' },
+                    { title: '发现中国', url: 'https://www.ageeye.cn/', icon: '🇨🇳', desc: '中国历史地理知识地图平台。' },
+                    { title: 'Geo中国地图集网', url: 'https://www.osgeo.cn/map/m046d', icon: '🗺️', desc: '中国地图集在线浏览。' },
+                    { title: '谷歌地球在线', url: 'https://www.earthol.com/', icon: '🌐', desc: '在线谷歌地球浏览，全球卫星影像。' },
+                    { title: '世界免费专业地图下载', url: 'https://www.d-maps.com/', icon: '📋', desc: '海量世界及区域专业地图免费下载。' },
+                    { title: '地理空间数据云', url: 'http://www.gscloud.cn/', icon: '☁️', desc: '中科院遥感卫星数据云平台。' },
                 ]
             },
             {
@@ -806,24 +533,24 @@
                 color: '#48dbfb',
                 desc: '气象、土壤、农业、水利等权威数据',
                 sites: [
-                    { title: '国家统计局数据查询', url: 'https://data.stats.gov.cn', icon: '📈', desc: '国家统计局官方数据查询平台，人口普查、GDP、物价、就业等国民经济与社会发展权威统计数据，按年度/月度/地区多维查询，人文地理教学首选数据源。' },
-                    { title: '中国气象数据网', url: 'http://data.cma.cn/', icon: '🌤️', desc: '中国气象局官方气象数据平台，提供历史气象观测与预报数据。' },
-                    { title: '中国天气网', url: 'http://www.weather.com.cn/', icon: '🌦️', desc: '中国气象局主办天气预报门户，实时全国天气查询。' },
-                    { title: '中央气象台', url: 'http://www.nmc.cn/', icon: '📡', desc: '中央气象台官方网站，提供权威天气预报与气象灾害预警。' },
-                    { title: '中国海洋预报网', url: 'https://www.oceanguide.org.cn/IndexHome', icon: '🌊', desc: '海洋环境预报服务，海浪、海温、潮汐等海洋数据查询。' },
-                    { title: '中国自然资源数据库', url: 'http://www.data.ac.cn/', icon: '🏞️', desc: '自然资源科学数据库，涵盖土地、水、矿产等多类资源数据。' },
-                    { title: '中国土壤数据库', url: 'http://vdb3.soil.csdb.cn/', icon: '🟤', desc: '中国土壤科学数据库，土壤类型与理化性质数据查询。' },
-                    { title: '中国动物主题数据库', url: 'http://www.zoology.csdb.cn/', icon: '🐼', desc: '中国动物物种数据库，生物多样性教学资源。' },
-                    { title: '国家农业科学数据中心', url: 'http://www.agridata.cn/', icon: '🌾', desc: '农业科学数据共享平台，涵盖农业各领域专业数据。' },
-                    { title: '日梭万年历', url: 'https://www.nongli114.com/', icon: '📅', desc: '万年历查询工具，农历、节气、日出日落时间一应俱全。' },
-                    { title: '中国环境监测总站', url: 'http://www.cnemc.cn/', icon: '🏭', desc: '全国环境质量监测数据发布平台，水、大气、噪声等环境数据。' },
-                    { title: '水利部数据', url: 'http://www.mwr.gov.cn/sj/', icon: '💧', desc: '水利部水资源数据公开，江河湖泊水文数据查询。' },
-                    { title: '国家减灾网', url: 'http://www.ndrcc.org.cn/', icon: '⚠️', desc: '国家减灾中心，自然灾害监测预警与灾情数据。' },
-                    { title: '探月工程数据服务', url: 'http://moon.bao.ac.cn/', icon: '🌕', desc: '中国探月工程科学数据发布与信息服务系统，月球探测数据。' },
-                    { title: '联合国粮农组织数据库', url: 'http://www.fao.org/statistics/zh/', icon: '🌍', desc: 'FAOSTAT全球粮食与农业统计数据库，国际比较教学数据源。' },
-                    { title: '北大西洋涛动指数(NAO)', url: 'https://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/nao.shtml', icon: '🌬️', desc: '美国气候预测中心NAO指数，大气环流异常教学数据。' },
-                    { title: '国家人口健康科学数据中心', url: 'http://www.phsciencedata.cn/Share/index.jsp', icon: '🏥', desc: '人口健康科学数据共享平台，人口与健康交叉数据。' },
-                    { title: '中科院资源环境数据平台', url: 'http://www.resdc.cn/', icon: '🗺️', desc: '中科院资源环境科学与数据中心，土地利用、植被等多类数据。' },
+                    { title: '国家统计局数据查询', url: 'https://data.stats.gov.cn', icon: '📈', desc: '人口、GDP、物价等国民经济权威统计。' },
+                    { title: '中国气象数据网', url: 'http://data.cma.cn/', icon: '🌤️', desc: '中国气象局官方历史气象数据。' },
+                    { title: '中国天气网', url: 'http://www.weather.com.cn/', icon: '🌦️', desc: '中国气象局主办天气预报门户。' },
+                    { title: '中央气象台', url: 'http://www.nmc.cn/', icon: '📡', desc: '权威天气预报与气象灾害预警。' },
+                    { title: '中国海洋预报网', url: 'https://www.oceanguide.org.cn/IndexHome', icon: '🌊', desc: '海浪、海温、潮汐等海洋数据查询。' },
+                    { title: '中国自然资源数据库', url: 'http://www.data.ac.cn/', icon: '🏞️', desc: '土地、水、矿产等多类资源数据。' },
+                    { title: '中国土壤数据库', url: 'http://vdb3.soil.csdb.cn/', icon: '🟤', desc: '中国土壤类型与理化性质数据查询。' },
+                    { title: '中国动物主题数据库', url: 'http://www.zoology.csdb.cn/', icon: '🐼', desc: '中国动物物种数据库。' },
+                    { title: '国家农业科学数据中心', url: 'http://www.agridata.cn/', icon: '🌾', desc: '农业各领域专业数据共享平台。' },
+                    { title: '日梭万年历', url: 'https://www.nongli114.com/', icon: '📅', desc: '万年历查询，农历/节气/日出日落时间。' },
+                    { title: '中国环境监测总站', url: 'http://www.cnemc.cn/', icon: '🏭', desc: '水、大气、噪声等环境监测数据。' },
+                    { title: '水利部数据', url: 'http://www.mwr.gov.cn/sj/', icon: '💧', desc: '江河湖泊水文数据查询。' },
+                    { title: '国家减灾网', url: 'http://www.ndrcc.org.cn/', icon: '⚠️', desc: '自然灾害监测预警与灾情数据。' },
+                    { title: '探月工程数据服务', url: 'http://moon.bao.ac.cn/', icon: '🌕', desc: '中国探月工程科学数据。' },
+                    { title: '联合国粮农组织数据库', url: 'http://www.fao.org/statistics/zh/', icon: '🌍', desc: 'FAOSTAT 全球粮食与农业统计。' },
+                    { title: '北大西洋涛动指数(NAO)', url: 'https://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/nao.shtml', icon: '🌬️', desc: '美国气候预测中心 NAO 指数。' },
+                    { title: '国家人口健康科学数据中心', url: 'http://www.phsciencedata.cn/Share/index.jsp', icon: '🏥', desc: '人口健康科学数据共享平台。' },
+                    { title: '中科院资源环境数据平台', url: 'http://www.resdc.cn/', icon: '🗺️', desc: '土地利用、植被等多类数据。' },
                 ]
             },
         ];
@@ -831,30 +558,35 @@
         let activeCategory = 'all';
 
         // Render categories
+        // 全局卡序号
+        let globalCardIdx = 0;
+        const _cardIdxMap = new WeakMap();
+
+        // Render nav tabs
         function renderCategories() {
-            const container = document.getElementById('categories');
+            const container = document.getElementById('navTabs');
             let total = 0;
             categories.forEach(c => total += c.sites.length);
 
-            let html = `<div class="cat-btn active" onclick="selectCategory('all')" data-cat="all">全部 <span class="count">${total}</span></div>`;
+            let html = `<div class="nav-tab active" onclick="selectCategory('all')" data-cat="all">全部 <span class="nav-count">${total}</span></div>`;
             categories.forEach(c => {
-                html += `<div class="cat-btn" onclick="selectCategory('${c.id}')" data-cat="${c.id}">${c.icon} ${c.name} <span class="count">${c.sites.length}</span></div>`;
+                html += `<div class="nav-tab" onclick="selectCategory('${c.id}')" data-cat="${c.id}">${c.name} <span class="nav-count">${c.sites.length}</span></div>`;
             });
             container.innerHTML = html;
-            document.getElementById('totalNum').textContent = total;
         }
 
-        // Render content
+        // Render content（简洁卡片：badge + 标题 + 描述 + 大数字水印）
         function renderContent(filterText = '', catFilter = 'all') {
             const container = document.getElementById('content');
             const noResults = document.getElementById('noResults');
             let html = '';
             let hasResults = false;
+            globalCardIdx = 0;
 
             categories.forEach(cat => {
                 if (catFilter !== 'all' && catFilter !== cat.id) return;
 
-                let filteredSites = cat.sites.filter(s => {
+                const filteredSites = cat.sites.filter(s => {
                     if (!filterText) return true;
                     return s.title.toLowerCase().includes(filterText.toLowerCase()) ||
                            s.desc.toLowerCase().includes(filterText.toLowerCase());
@@ -867,59 +599,42 @@
                 html += `<div class="section-header">`;
                 html += `<span class="section-icon">${cat.icon}</span>`;
                 html += `<span class="section-title">${cat.name}</span>`;
-                html += `<span class="section-desc">${cat.desc}</span>`;
+                html += `<span class="section-count">${filteredSites.length} 项</span>`;
                 html += `</div>`;
                 html += `<div class="grid">`;
 
                 filteredSites.forEach(site => {
+                    globalCardIdx++;
                     const isCloudEnv = location.protocol !== 'file:';
-                    if (isCloudEnv && site.cloud) {
-                        // 云端环境：本地资源有在线版 → 渲染为可点击的在线卡片
-                        const tagText = site.cloud.indexOf('player.html') === 0 ? '在线课件' : '在线演示';
-                        html += `<a href="${site.cloud}" target="_blank" class="card cloud-card" style="--card-accent: ${cat.color}">`;
-                        html += `<div class="card-header">`;
-                        html += `<div class="card-icon" style="background: ${cat.color}1a">${site.icon}</div>`;
-                        html += `<div class="card-title">${site.title}<span class="card-tag cloud-tag">${tagText}</span></div>`;
-                        html += `</div>`;
-                        html += `<div class="card-desc">${site.desc}</div>`;
-                        html += `<div class="card-footer">`;
-                        html += `<span class="card-url">🌐 云端在线播放，无需安装</span>`;
-                        html += `<span class="card-link" style="color: ${cat.color}">开始播放 →</span>`;
-                        html += `</div>`;
-                        html += `</a>`;
+                    const isCloudCard = isCloudEnv && site.cloud;
+
+                    // 决定链接 href（云端有 cloud → 用 cloud 链接；本地 → 直接打开本地路径；纯外链 → 原 URL）
+                    let href = '#', target = '', clickHandler = '', cursorStyle = 'cursor: pointer;';
+                    if (isCloudCard) {
+                        href = site.cloud; target = 'target="_blank"';
                     } else if (site.local) {
-                        // 本地资源卡片（本机环境，或云端但无在线版）
-                        const isHtml = site.kind === 'html';
-                        const tagText = isHtml ? '本地网页' : '本地应用';
-                        const openText = isHtml ? '打开' : '打开应用';
-                        html += `<div class="card local-card" style="--card-accent: ${cat.color}" data-path="${site.path}">`;
-                        html += `<div class="card-header">`;
-                        html += `<div class="card-icon" style="background: ${cat.color}1a">${site.icon}</div>`;
-                        html += `<div class="card-title">${site.title}<span class="card-tag local-tag">${tagText}</span></div>`;
-                        html += `</div>`;
-                        html += `<div class="card-desc">${site.desc}</div>`;
-                        if (isCloudEnv) {
-                            html += `<div class="cloud-note">⚠️ 该课件体积较大，暂未上线云端，仅限本机运行</div>`;
-                        }
-                        html += `<div class="card-footer">`;
-                        html += `<span class="card-url" title="点击复制路径" style="cursor: pointer;" onclick="copyPath(event, '${site.path.replace(/\\/g, '\\\\')}')">${site.path}</span>`;
-                        html += `<span class="card-link local-open" style="color: ${cat.color}; cursor: pointer;" onclick="openLocalApp(event, '${site.path.replace(/\\/g, '\\\\')}')">${openText}</span>`;
-                        html += `</div>`;
-                        html += `</div>`;
+                        const fp = 'file:///' + site.path.replace(/\\/g, '/');
+                        href = encodeURI(fp); target = 'target="_blank"';
                     } else {
-                        const domain = site.url.replace(/^https?:\/\//, '').split('/')[0];
-                        html += `<a href="${site.url}" target="_blank" class="card" style="--card-accent: ${cat.color}">`;
-                        html += `<div class="card-header">`;
-                        html += `<div class="card-icon" style="background: ${cat.color}1a">${site.icon}</div>`;
-                        html += `<div class="card-title">${site.title}</div>`;
-                        html += `</div>`;
-                        html += `<div class="card-desc">${site.desc}</div>`;
-                        html += `<div class="card-footer">`;
-                        html += `<span class="card-url">${domain}</span>`;
-                        html += `<span class="card-link" style="color: ${cat.color}">访问 →</span>`;
-                        html += `</div>`;
-                        html += `</a>`;
+                        href = site.url; target = 'target="_blank"';
                     }
+
+                    // Badge：交互演示 / 在线演示 / 地图 / 工具 等
+                    let badge = '';
+                    if (isCloudCard) {
+                        badge = site.cloud.indexOf('player.html') === 0 ? 'Flash 课件' : '在线演示';
+                    } else if (site.local) {
+                        badge = site.kind === 'html' ? '本地工具' : '本地应用';
+                    } else {
+                        badge = '在线资源';
+                    }
+
+                    html += `<a href="${href}" ${target} class="card" style="--card-accent: ${cat.color}; ${cursorStyle}">`;
+                    html += `<div class="card-badge">${badge}</div>`;
+                    html += `<div class="card-title">${site.title}</div>`;
+                    html += `<div class="card-desc">${site.desc}</div>`;
+                    html += `<div class="card-watermark">${String(globalCardIdx).padStart(2, '0')}</div>`;
+                    html += `</a>`;
                 });
 
                 html += `</div></div>`;
@@ -932,71 +647,17 @@
         // Select category
         function selectCategory(catId) {
             activeCategory = catId;
-            document.querySelectorAll('.cat-btn').forEach(btn => {
+            document.querySelectorAll('.nav-tab').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.cat === catId);
             });
-            const searchText = document.getElementById('searchInput').value.trim();
+            const searchText = document.getElementById('navSearch').value.trim();
             renderContent(searchText, catId);
         }
 
         // Search
         function handleSearch() {
-            const searchText = document.getElementById('searchInput').value.trim();
+            const searchText = document.getElementById('navSearch').value.trim();
             renderContent(searchText, activeCategory);
-        }
-
-        // 打开本地应用程序
-        function openLocalApp(event, path) {
-            event.stopPropagation();
-            // 尝试通过 file:// 协议打开本地文件（exe 或 html），encodeURI 处理中文与空格
-            const fileUrl = 'file:///' + path.replace(/\\/g, '/');
-            window.open(encodeURI(fileUrl), '_blank');
-            if (path.toLowerCase().endsWith('.html')) {
-                showToast('正在打开本地网页…<br>若未弹出，请点击上方路径复制后粘贴到浏览器地址栏');
-            } else {
-                showToast('正在尝试打开本地应用…<br>若浏览器拦截，请点击上方路径复制后，粘贴到资源管理器地址栏打开');
-            }
-        }
-
-        // 复制路径到剪贴板
-        function copyPath(event, path) {
-            event.stopPropagation();
-            const realPath = path.replace(/\\\\/g, '\\');
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(realPath).then(() => {
-                    showToast('✅ 路径已复制到剪贴板：<br>' + realPath);
-                }).catch(() => {
-                    fallbackCopy(realPath);
-                });
-            } else {
-                fallbackCopy(realPath);
-            }
-        }
-
-        function fallbackCopy(text) {
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            document.body.appendChild(ta);
-            ta.select();
-            try {
-                document.execCommand('copy');
-                showToast('✅ 路径已复制到剪贴板：<br>' + text);
-            } catch (e) {
-                showToast('复制失败，请手动复制路径：<br>' + text);
-            }
-            document.body.removeChild(ta);
-        }
-
-        // Toast 提示
-        let toastTimer = null;
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerHTML = msg;
-            toast.classList.add('show');
-            clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3500);
         }
 
         // Init
