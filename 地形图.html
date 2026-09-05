@@ -779,7 +779,11 @@ searchInputFloatEl.addEventListener('input', function(){ runSearch(this.value, f
 
 /* ---------- 坐标实时显示 ---------- */
 var coordsBar=document.getElementById('coordsBar');
-function fmtLng(v){ return Math.abs(v).toFixed(3) + (v<0 ? '\u00b0W' : '\u00b0E'); }
+function fmtLng(v){
+  // 归一化到 -180°~180°（Leaflet worldCopyJump 时鼠标 lng 可能短暂超出 ±180）
+  v = ((v + 180) % 360 + 360) % 360 - 180;
+  return Math.abs(v).toFixed(3) + (v<0 ? '\u00b0W' : '\u00b0E');
+}
 function fmtLat(v){ return Math.abs(v).toFixed(3) + (v<0 ? '\u00b0S' : '\u00b0N'); }
 map.on('mousemove', function(e){
   coordsBar.innerHTML='<span>经度 '+fmtLng(e.latlng.lng)+'</span><span>纬度 '+fmtLat(e.latlng.lat)+'</span>缩放 '+map.getZoom();
