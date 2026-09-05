@@ -15,42 +15,51 @@
     <title>地理智能化教学工作台</title>
     <style>
         :root {
+            --bg: #f6f8fb;
+            --bg-card: #ffffff;
+            --bg-card-hover: #fdfeff;
+            --border: rgba(120, 140, 160, 0.1);
+            --border-hover: rgba(43, 184, 163, 0.35);
+            --text: #2d3a4a;
+            --text-muted: #6b7d8e;
+            --accent: #2bb8a3;
+            --accent-2: #7fc9f0;
+            --accent-3: #c792ea;
+            --accent-glow: rgba(43, 184, 163, 0.22);
+            --shadow-card: 0 2px 10px rgba(45, 58, 74, 0.04);
+            --shadow-hover: 0 10px 30px rgba(43, 184, 163, 0.22), 0 2px 8px rgba(127, 201, 240, 0.16);
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            /* 大圆角 */
+            --radius-card: 18px;
+            --radius-pill: 999px;
+            --radius-btn: 14px;
+            /* 莫兰迪马卡龙徽章（粉/薄荷/紫/黄/蓝） */
+            --pill-pink-bg:#ffe5ec;   --pill-pink-fg:#b8395a;
+            --pill-mint-bg:#d8f3e3;   --pill-mint-fg:#1d7a5b;
+            --pill-purple-bg:#ece4f7; --pill-purple-fg:#6b4ba2;
+            --pill-yellow-bg:#fff4d6; --pill-yellow-fg:#a67c00;
+            --pill-blue-bg:#dde9f7;   --pill-blue-fg:#2c6fae;
+            --pill-rose-bg:#ffe0d4;   --pill-rose-fg:#c25e3b;
+        }
+
+        html[data-theme="dark"] {
             --bg: #0f1923;
             --bg-card: #1a2734;
             --bg-card-hover: #21303f;
             --border: rgba(78, 205, 196, 0.15);
-            --border-hover: rgba(78, 205, 196, 0.4);
+            --border-hover: rgba(43, 184, 163, 0.45);
             --text: #e8eef3;
             --text-muted: #8a9ba8;
             --accent: #4ecdc4;
-            --accent-glow: rgba(78, 205, 196, 0.2);
-            --accent2: #ff6b6b;
-            --accent3: #feca57;
-            --accent4: #54a0ff;
-            --accent5: #5f27cd;
-            --accent6: #48dbfb;
-            --radius: 14px;
-            --shadow: 0 4px 24px rgba(0,0,0,0.3);
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --search-bg: rgba(15, 25, 35, 0.85);
-            --icon-bg: rgba(78, 205, 196, 0.1);
-            --tag-bg: rgba(78, 205, 196, 0.12);
-        }
-
-        html[data-theme="light"] {
-            --bg: #f2f5f8;
-            --bg-card: #ffffff;
-            --bg-card-hover: #f7fafc;
-            --border: rgba(15, 60, 55, 0.14);
-            --border-hover: rgba(15, 143, 128, 0.5);
-            --text: #1f2d3a;
-            --text-muted: #5f7285;
-            --accent: #0f8f80;
-            --accent-glow: rgba(15, 143, 128, 0.18);
-            --shadow: 0 6px 20px rgba(31, 45, 58, 0.1);
-            --search-bg: rgba(255, 255, 255, 0.92);
-            --icon-bg: rgba(15, 143, 128, 0.1);
-            --tag-bg: rgba(15, 143, 128, 0.1);
+            --accent-glow: rgba(78, 205, 196, 0.25);
+            --shadow-card: 0 2px 10px rgba(0,0,0,0.3);
+            --shadow-hover: 0 10px 30px rgba(78, 205, 196, 0.25), 0 2px 8px rgba(0,0,0,0.3);
+            --pill-pink-bg:#3a2030;   --pill-pink-fg:#ffb3c6;
+            --pill-mint-bg:#1a3027;   --pill-mint-fg:#9be3c0;
+            --pill-purple-bg:#2a2440; --pill-purple-fg:#c8b8e8;
+            --pill-yellow-bg:#3a3020; --pill-yellow-fg:#ffd98a;
+            --pill-blue-bg:#1f2a3a;   --pill-blue-fg:#9fc0e8;
+            --pill-rose-bg:#3a2820;   --pill-rose-fg:#ffba90;
         }
 
         * {
@@ -61,24 +70,73 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-            background: var(--bg);
+            background-color: var(--bg);
+            background-image:
+              url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='160' viewBox='0 0 220 160'><g fill='none' stroke='%232bb8a3' stroke-width='1' opacity='0.6'><path d='M0 30 Q40 10 80 30 T160 30 T240 30'/><path d='M0 50 Q40 35 80 50 T160 50 T240 50'/><path d='M0 70 Q40 55 80 70 T160 70 T240 70'/><path d='M0 95 Q40 80 80 95 T160 95 T240 95'/><path d='M0 120 Q40 105 80 120 T160 120 T240 120'/><path d='M0 145 Q40 130 80 145 T160 145 T240 145'/><circle cx='40' cy='80' r='1.2' fill='%232bb8a3' opacity='0.8'/><circle cx='120' cy='30' r='1.2' fill='%237fc9f0' opacity='0.8'/><circle cx='180' cy='100' r='1.2' fill='%23c792ea' opacity='0.8'/></g></svg>"),
+              radial-gradient(ellipse at 18% 0%, rgba(43,184,163,0.06) 0%, transparent 45%),
+              radial-gradient(ellipse at 82% 100%, rgba(127,201,240,0.05) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 50%, rgba(199,146,234,0.03) 0%, transparent 60%);
+            background-size: 220px 160px, auto, auto, auto;
             color: var(--text);
             min-height: 100vh;
             line-height: 1.6;
             overflow-x: hidden;
         }
 
-        /* Animated background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background:
-                radial-gradient(ellipse at 20% 0%, rgba(78, 205, 196, 0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 100%, rgba(84, 160, 255, 0.06) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(95, 39, 205, 0.04) 0%, transparent 60%);
-            pointer-events: none;
-            z-index: 0;
+        /* Hero Banner 迷你 Header（96px 高，居中：地球IP+大标题+Slogan+3胶囊，左右小插画） */
+        .hero-banner{
+            position:relative;
+            height:96px;
+            overflow:hidden;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:linear-gradient(135deg, rgba(43,184,163,.07) 0%, rgba(127,201,240,.07) 50%, rgba(199,146,234,.06) 100%);
+            border-bottom:1px solid var(--border);
+        }
+        html[data-theme="dark"] .hero-banner{
+            background:linear-gradient(135deg, rgba(43,184,163,.12) 0%, rgba(127,201,240,.10) 50%, rgba(199,146,234,.08) 100%);
+        }
+        .hero-content{
+            position:relative;z-index:1;
+            display:flex;flex-direction:column;align-items:center;
+            max-width:760px;width:100%;padding:0 24px;
+        }
+        .hero-title-row{display:flex;align-items:center;gap:10px;justify-content:center;}
+        .hero-globe{width:44px;height:44px;flex-shrink:0;}
+        .hero-title{
+            font-size:1.55rem;font-weight:800;letter-spacing:1.5px;
+            background:linear-gradient(135deg,#2bb8a3 0%,#7fc9f0 60%,#c792ea 100%);
+            -webkit-background-clip:text;background-clip:text;color:transparent;
+            display:inline-flex;align-items:center;
+        }
+        .hero-slogan{
+            font-size:.72rem;color:var(--text-muted);margin-top:1px;letter-spacing:2px;
+        }
+        .hero-stats{display:flex;gap:6px;justify-content:center;margin-top:6px;}
+        .hero-stat-pill{
+            font-size:.68rem;padding:2px 10px;border-radius:var(--radius-pill);
+            background:rgba(255,255,255,.85);color:var(--text-muted);
+            border:1px solid var(--border);backdrop-filter:blur(6px);
+            display:inline-flex;align-items:center;gap:3px;font-weight:500;
+        }
+        html[data-theme="dark"] .hero-stat-pill{background:rgba(26,39,52,.85);}
+        .hero-stat-pill b{color:var(--accent);font-weight:700;font-size:.85rem;}
+
+        .hero-deco{
+            position:absolute;top:50%;transform:translateY(-50%);
+            pointer-events:none;opacity:.85;
+        }
+        .hero-deco.left{left:3%;animation:heroFloat 6s ease-in-out infinite;}
+        .hero-deco.right{right:3%;animation:heroFloat 7.5s ease-in-out infinite reverse;}
+        .hero-deco svg{width:80px;height:80px;}
+        @keyframes heroFloat{
+            0%,100%{transform:translateY(calc(-50% - 3px))}
+            50%{transform:translateY(calc(-50% + 3px))}
+        }
+        @media (max-width:760px){
+            .hero-deco{display:none;}
+            .hero-banner{height:auto;padding:14px 0;}
         }
 
         .container {
@@ -86,10 +144,10 @@
             z-index: 1;
             max-width: 1400px;
             margin: 0 auto;
-            padding: 0 24px;
+            padding: 18px 24px 0;
         }
 
-        /* ===== Nav Bar（两行布局：第1行 logo + 学校名 + 右侧按钮；第2行 nav-tabs）===== */
+        /* ===== Nav Bar（紧凑 2 行：第1行 学校名+搜索+主题；第2行 分类 tab）===== */
         .nav-bar {
             position: sticky;
             top: 0;
@@ -100,8 +158,8 @@
             -webkit-backdrop-filter: blur(12px);
             display: flex;
             flex-direction: column;
-            padding: 10px 20px 0;
-            gap: 8px;
+            padding: 6px 20px 0;
+            gap: 4px;
         }
         .nav-row {
             display: flex;
@@ -109,7 +167,7 @@
             gap: 14px;
             width: 100%;
         }
-        .nav-row-1 { min-height: 38px; }
+        .nav-row-1 { min-height: 36px; }
         .nav-row-2 {
             overflow-x: auto;
             scrollbar-width: none;
@@ -117,18 +175,6 @@
             padding: 0 20px 8px;
         }
         .nav-row-2::-webkit-scrollbar { display: none; }
-
-        .nav-logo {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: var(--text);
-            flex-shrink: 0;
-            text-decoration: none;
-        }
-        .nav-logo .nav-globe { font-size: 1.4rem; line-height: 1; }
 
         .nav-school {
             font-size: 0.86rem;
@@ -153,54 +199,77 @@
 
         .nav-tabs {
             display: flex;
-            gap: 4px;
+            gap: 5px;
             flex: 1;
+            flex-wrap: nowrap;
         }
 
         .nav-tab {
-            padding: 6px 12px;
-            border-radius: 8px;
+            padding: 6px 14px;
+            border-radius: var(--radius-pill);
             color: var(--text-muted);
-            font-size: 0.88rem;
+            font-size: 0.86rem;
+            font-weight: 500;
             cursor: pointer;
             white-space: nowrap;
             transition: var(--transition);
             user-select: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: transparent;
+            border: 1px solid transparent;
         }
-        .nav-tab:hover { color: var(--text); background: var(--bg-card); }
+        .nav-tab:hover {
+            color: var(--text);
+            background: var(--bg-card);
+            border-color: var(--border);
+        }
         .nav-tab.active {
-            color: #0f1923;
-            background: var(--accent);
-            font-weight: 600;
+            color: #ffffff;
+            background: linear-gradient(135deg, var(--accent) 0%, #25a991 100%);
+            font-weight: 700;
+            border-color: transparent;
+            box-shadow: 0 4px 14px var(--accent-glow);
         }
-        html[data-theme="light"] .nav-tab.active { color: #ffffff; }
+        html[data-theme="dark"] .nav-tab.active { color: #0f1923; }
+        .nav-tab .tab-icon {
+            font-size: 1em;
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,.1));
+        }
         .nav-tab .nav-count {
-            margin-left: 4px;
-            opacity: 0.7;
-            font-size: 0.8em;
+            margin-left: 3px;
+            opacity: 0.75;
+            font-size: 0.78em;
+            background: rgba(255,255,255,.25);
+            padding: 1px 6px;
+            border-radius: 999px;
         }
+        .nav-tab.active .nav-count { background: rgba(255,255,255,.3); }
 
         .nav-search-wrap { position: relative; flex-shrink: 0; }
         .nav-search-input {
             width: 180px;
-            padding: 6px 10px 6px 30px;
+            padding: 7px 12px 7px 32px;
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: var(--radius-pill);
             background: var(--bg-card);
             color: var(--text);
             font-size: 0.85rem;
             outline: none;
             transition: var(--transition);
             font-family: inherit;
+            box-shadow: var(--shadow-card);
         }
         .nav-search-input:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 2px var(--accent-glow);
+            box-shadow: 0 0 0 3px var(--accent-glow);
             width: 240px;
+            background: var(--bg-card-hover);
         }
         .nav-search-icon {
             position: absolute;
-            left: 9px;
+            left: 11px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-muted);
@@ -216,7 +285,7 @@
             align-items: center;
             justify-content: center;
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: var(--radius-btn);
             background: var(--bg-card);
             color: var(--text-muted);
             cursor: pointer;
@@ -224,7 +293,7 @@
             transition: var(--transition);
             font-family: inherit;
         }
-        .nav-icon-btn:hover { color: var(--text); border-color: var(--border-hover); }
+        .nav-icon-btn:hover { color: var(--text); border-color: var(--border-hover); background: var(--bg-card-hover); }
 
         @media (max-width: 768px) {
             .nav-bar { padding: 8px 12px 0; }
@@ -237,18 +306,34 @@
         }
 
         /* ===== Section ===== */
-        .section { margin-bottom: 30px; }
+        .section { margin-bottom: 28px; }
         .section-header {
             display: flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 14px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border);
+            padding: 4px 0 10px;
+            border-bottom: 1px dashed var(--border);
         }
-        .section-icon { font-size: 1.2rem; }
+        .section-icon {
+            font-size: 1.25rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px; height: 30px;
+            border-radius: 10px;
+            background: var(--bg-card);
+            box-shadow: var(--shadow-card);
+        }
         .section-title { font-size: 1rem; font-weight: 700; color: var(--text); }
-        .section-count { font-size: 0.78rem; color: var(--text-muted); margin-left: auto; }
+        .section-count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-left: auto;
+            padding: 2px 10px;
+            border-radius: var(--radius-pill);
+            background: var(--bg-card);
+        }
 
         .grid {
             display: grid;
@@ -256,41 +341,67 @@
             gap: 14px;
         }
 
-        /* ===== Card（简洁样式：badge + 标题 + 一行描述 + 大数字水印）===== */
+        /* ===== Card（可爱风：badge+标题+描述+右上角微型主题图标+大数字水印+悬停弥散阴影）===== */
         .card {
             display: block;
             position: relative;
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 18px 20px;
-            min-height: 110px;
+            border-radius: var(--radius-card);
+            padding: 16px 18px 18px;
+            min-height: 116px;
             text-decoration: none;
             color: var(--text);
-            transition: var(--transition);
+            transition: transform .25s cubic-bezier(.4,0,.2,1), box-shadow .25s cubic-bezier(.4,0,.2,1), border-color .25s;
             overflow: hidden;
             cursor: pointer;
+            box-shadow: var(--shadow-card);
         }
         .card:hover {
             background: var(--bg-card-hover);
             border-color: var(--border-hover);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+        /* 卡片右上角微型主题图标 */
+        .card-mini-icon {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            font-size: 26px;
+            line-height: 1;
+            opacity: 0.78;
+            transition: transform .3s cubic-bezier(.4,0,.2,1);
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,.06));
+            pointer-events: none;
+        }
+        .card:hover .card-mini-icon {
+            transform: scale(1.18) rotate(-8deg);
+            opacity: 1;
         }
         .card-badge {
             display: inline-block;
             font-size: 0.7rem;
-            padding: 2px 8px;
-            border-radius: 4px;
-            background: var(--tag-bg);
-            color: var(--card-accent, var(--accent));
+            padding: 3px 10px;
+            border-radius: var(--radius-pill);
+            background: var(--pill-blue-bg);
+            color: var(--pill-blue-fg);
             margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
         }
+        .card-badge[data-kind="pink"]   { background: var(--pill-pink-bg);   color: var(--pill-pink-fg); }
+        .card-badge[data-kind="mint"]   { background: var(--pill-mint-bg);   color: var(--pill-mint-fg); }
+        .card-badge[data-kind="purple"] { background: var(--pill-purple-bg); color: var(--pill-purple-fg); }
+        .card-badge[data-kind="yellow"] { background: var(--pill-yellow-bg); color: var(--pill-yellow-fg); }
+        .card-badge[data-kind="blue"]   { background: var(--pill-blue-bg);   color: var(--pill-blue-fg); }
+        .card-badge[data-kind="rose"]   { background: var(--pill-rose-bg);   color: var(--pill-rose-fg); }
         .card-title {
             font-size: 1rem;
             font-weight: 700;
             line-height: 1.35;
             margin-bottom: 6px;
+            padding-right: 32px;   /* 给右上角图标留位 */
         }
         .card-desc {
             font-size: 0.82rem;
@@ -301,7 +412,7 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-        /* 大数字水印（右侧底部） */
+        /* 大数字水印（右侧底部，淡化） */
         .card-watermark {
             position: absolute;
             right: -4px;
@@ -310,7 +421,7 @@
             font-weight: 800;
             line-height: 1;
             color: var(--card-accent, var(--accent));
-            opacity: 0.07;
+            opacity: 0.06;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             pointer-events: none;
             user-select: none;
@@ -404,13 +515,77 @@
     </script>
 </head>
 <body>
-    <!-- Nav Bar（两行布局：第1行 logo + 学校名 + 右侧按钮；第2行 nav-tabs） -->
+    <!-- Hero Banner 迷你 Header（地球IP + 大标题 + Slogan + 3胶囊 + 左右手绘插画） -->
+    <div class="hero-banner">
+        <!-- 左侧小云朵 -->
+        <div class="hero-deco left" aria-hidden="true">
+            <svg viewBox="0 0 100 70" fill="none">
+                <path d="M14 52 Q4 52 4 42 Q4 32 14 32 Q16 22 28 22 Q40 22 44 32 Q54 28 60 36 Q72 36 72 48 Q72 56 62 56 L18 56 Q14 56 14 52 Z" fill="#ffffff" opacity="0.9"/>
+                <path d="M14 52 Q4 52 4 42 Q4 32 14 32 Q16 22 28 22 Q40 22 44 32 Q54 28 60 36 Q72 36 72 48 Q72 56 62 56 L18 56 Q14 56 14 52 Z" fill="none" stroke="#7fc9f0" stroke-width="1.2" opacity="0.7"/>
+                <circle cx="50" cy="18" r="3" fill="#ffd166"/>
+            </svg>
+        </div>
+        <!-- 右侧小罗盘 -->
+        <div class="hero-deco right" aria-hidden="true">
+            <svg viewBox="0 0 100 100" fill="none">
+                <circle cx="50" cy="50" r="38" fill="#fff8e8" stroke="#a0673a" stroke-width="2"/>
+                <circle cx="50" cy="50" r="30" fill="#fffdf6" stroke="#d4b896" stroke-width="0.8"/>
+                <circle cx="50" cy="50" r="3" fill="#a0673a"/>
+                <path d="M50 22 L54 50 L50 78 L46 50 Z" fill="#d04848"/>
+                <path d="M22 50 L50 46 L78 50 L50 54 Z" fill="#3d7ab0"/>
+                <path d="M50 22 L52 50 L50 78 L48 50 Z" fill="#fff" opacity="0.4"/>
+                <text x="50" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="#a0673a">N</text>
+                <text x="50" y="92" text-anchor="middle" font-size="7" fill="#a0673a">S</text>
+                <text x="10" y="54" text-anchor="middle" font-size="7" fill="#a0673a">W</text>
+                <text x="90" y="54" text-anchor="middle" font-size="7" fill="#a0673a">E</text>
+            </svg>
+        </div>
+        <div class="hero-content">
+            <div class="hero-title-row">
+                <!-- 戴探险帽的小地球 IP -->
+                <svg class="hero-globe" viewBox="0 0 48 48" fill="none">
+                    <!-- 探险帽帽檐 -->
+                    <ellipse cx="24" cy="11" rx="14" ry="2.6" fill="#8B5A2B"/>
+                    <!-- 探险帽帽身 -->
+                    <path d="M11 11 L37 11 L33 4.5 Q24 0.5 15 4.5 Z" fill="#A0673A"/>
+                    <path d="M11 11 L37 11 L33 4.5 Q24 0.5 15 4.5 Z" fill="none" stroke="#5d3a1f" stroke-width="0.5"/>
+                    <!-- 帽星 -->
+                    <circle cx="31" cy="6" r="2.2" fill="#FFD166"/>
+                    <circle cx="31" cy="6" r="0.8" fill="#fff"/>
+                    <!-- 帽带 -->
+                    <path d="M11 10 Q24 13 37 10" fill="none" stroke="#FFD166" stroke-width="1.2"/>
+                    <!-- 地球主体 -->
+                    <circle cx="24" cy="29" r="16" fill="#7fc9f0" stroke="#3d7ab0" stroke-width="1.4"/>
+                    <!-- 陆地色块（三大洲剪影） -->
+                    <path d="M14 25 Q17 21 21 23 Q22 26 19 28 Q15 28 14 25 Z" fill="#7bc96f"/>
+                    <path d="M27 23 Q31 23 33 26 Q31 30 28 28 Q26 26 27 23 Z" fill="#7bc96f"/>
+                    <path d="M22 34 Q26 32 29 35 Q27 38 24 37 Z" fill="#7bc96f"/>
+                    <!-- 经纬线点缀 -->
+                    <ellipse cx="24" cy="29" rx="16" ry="4" fill="none" stroke="#fff" stroke-width="0.4" opacity="0.6"/>
+                    <line x1="24" y1="13" x2="24" y2="45" stroke="#fff" stroke-width="0.4" opacity="0.6"/>
+                    <!-- 眼睛（闭眼笑） -->
+                    <path d="M19 28 Q20.5 26 22 28" stroke="#2d3a4a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+                    <path d="M26 28 Q27.5 26 29 28" stroke="#2d3a4a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+                    <!-- 腮红 -->
+                    <circle cx="18" cy="32" r="1.6" fill="#FFB6B6" opacity="0.7"/>
+                    <circle cx="30" cy="32" r="1.6" fill="#FFB6B6" opacity="0.7"/>
+                    <!-- 笑容 -->
+                    <path d="M20 33 Q24 36 28 33" stroke="#2d3a4a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+                </svg>
+                <span class="hero-title">地理智能化教学工作台</span>
+            </div>
+            <div class="hero-slogan">一站式地理教学资源平台 · 让地理课堂更智能、更生动</div>
+            <div class="hero-stats">
+                <span class="hero-stat-pill"><b id="heroCountSites">0</b> 资源网站</span>
+                <span class="hero-stat-pill"><b id="heroCountCats">0</b> 资源分类</span>
+                <span class="hero-stat-pill"><b>∞</b> 教学可能</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nav Bar（第1行 学校名+搜索+主题；第2行 分类 tab） -->
     <div class="nav-bar">
         <div class="nav-row nav-row-1">
-            <div class="nav-logo">
-                <span class="nav-globe">🌍</span>
-                <span>地理智能化教学工作台</span>
-            </div>
             <div class="nav-school"><b>常州市武进区横山桥高级中学</b>地理教研组</div>
             <div class="nav-right">
                 <div class="nav-search-wrap">
@@ -601,20 +776,23 @@
         let globalCardIdx = 0;
         const _cardIdxMap = new WeakMap();
 
-        // Render nav tabs
+        // Render nav tabs（彩色手绘图标 + 药丸圆角）
         function renderCategories() {
             const container = document.getElementById('navTabs');
             let total = 0;
             categories.forEach(c => total += c.sites.length);
 
-            let html = `<div class="nav-tab active" onclick="selectCategory('all')" data-cat="all">全部 <span class="nav-count">${total}</span></div>`;
+            let html = `<div class="nav-tab active" onclick="selectCategory('all')" data-cat="all"><span class="tab-icon">🌐</span>全部 <span class="nav-count">${total}</span></div>`;
             categories.forEach(c => {
-                html += `<div class="nav-tab" onclick="selectCategory('${c.id}')" data-cat="${c.id}">${c.name} <span class="nav-count">${c.sites.length}</span></div>`;
+                html += `<div class="nav-tab" onclick="selectCategory('${c.id}')" data-cat="${c.id}"><span class="tab-icon">${c.icon}</span>${c.name} <span class="nav-count">${c.sites.length}</span></div>`;
             });
             container.innerHTML = html;
+            // Hero Banner 统计徽章数字
+            var hs = document.getElementById('heroCountSites'); if(hs) hs.textContent = total;
+            var hc = document.getElementById('heroCountCats');  if(hc) hc.textContent = categories.length;
         }
 
-        // Render content（简洁卡片：badge + 标题 + 描述 + 大数字水印）
+        // Render content（可爱卡片：莫兰迪胶囊 + 标题 + 描述 + 右上角主题图标 + 大数字水印）
         function renderContent(filterText = '', catFilter = 'all') {
             const container = document.getElementById('content');
             const noResults = document.getElementById('noResults');
@@ -648,7 +826,7 @@
                     const isCloudCard = isCloudEnv && site.cloud;
 
                     // 决定链接 href（云端有 cloud → 用 cloud 链接；本地 → 直接打开本地路径；纯外链 → 原 URL）
-                    let href = '#', target = '', clickHandler = '', cursorStyle = 'cursor: pointer;';
+                    let href = '#', target = '', cursorStyle = 'cursor: pointer;';
                     if (isCloudCard) {
                         href = site.cloud; target = 'target="_blank"';
                     } else if (site.local) {
@@ -658,20 +836,27 @@
                         href = site.url; target = 'target="_blank"';
                     }
 
-                    // Badge：交互演示 / 在线演示 / 地图 / 工具 等
-                    let badge = '';
+                    // Badge（莫兰迪马卡龙胶囊色按类型分配）
+                    let badge = '', kind = 'blue';
                     if (isCloudCard) {
-                        badge = site.cloud.indexOf('player.html') === 0 ? 'Flash 课件' : '在线演示';
+                        if (site.cloud.indexOf('player.html') === 0) { badge = 'Flash 课件'; kind = 'pink'; }
+                        else { badge = '在线演示'; kind = 'mint'; }
                     } else if (site.local) {
-                        badge = site.kind === 'html' ? '本地工具' : '本地应用';
+                        if (site.kind === 'html') { badge = '本地工具'; kind = 'mint'; }
+                        else { badge = '本地应用'; kind = 'yellow'; }
                     } else {
-                        badge = '在线资源';
+                        badge = '在线资源'; kind = 'blue';
+                    }
+                    // 数据库类（数据云/统计/监测站等）用紫色
+                    if (/数据库|数据网|数据$|统计|监测|预报|台|指数|粮农|资源环境|空间数据|减灾|探月|海洋预报|天气网|水利/.test(site.title)) {
+                        kind = 'purple';
                     }
 
                     html += `<a href="${href}" ${target} class="card" style="--card-accent: ${cat.color}; ${cursorStyle}">`;
-                    html += `<div class="card-badge">${badge}</div>`;
+                    html += `<div class="card-badge" data-kind="${kind}">${badge}</div>`;
                     html += `<div class="card-title">${site.title}</div>`;
                     html += `<div class="card-desc">${site.desc}</div>`;
+                    html += `<div class="card-mini-icon">${site.icon || cat.icon}</div>`;
                     html += `<div class="card-watermark">${String(globalCardIdx).padStart(2, '0')}</div>`;
                     html += `</a>`;
                 });
