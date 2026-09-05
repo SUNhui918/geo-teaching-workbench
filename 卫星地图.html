@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>在线卫星地图 · 高中地理教学</title>
+<link rel="stylesheet" href="./leaflet/leaflet.css" />
+<style>
+  :root{
+    --panel-bg:#0f1b2d; --panel-bg2:#13243a; --panel-line:#22344f;
+    --txt:#e8eef6; --txt-dim:#9fb2c8; --accent:#2f9e6e; --accent2:#3a8fd6;
+    --warn:#e0a23a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB",sans-serif;color:var(--txt);}
+  .app{display:flex;height:100vh;width:100vw;overflow:hidden;background:#0a1320;}
+  /* 左侧面板 */
+  .panel{width:300px;min-width:300px;background:linear-gradient(180deg,var(--panel-bg),var(--panel-bg2));
+    border-right:1px solid var(--panel-line);display:flex;flex-direction:column;height:100%;}
+  .panel-header{padding:16px 18px 10px;border-bottom:1px solid var(--panel-line);}
+  .panel-header h1{margin:0;font-size:18px;letter-spacing:1px;}
+  .panel-header .sub{margin-top:4px;font-size:12px;color:var(--txt-dim);}
+  .panel-body{flex:1;overflow-y:auto;padding:14px 16px;}
+  .section{margin-bottom:20px;}
+  .section-label{font-size:13px;font-weight:600;color:var(--txt);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+  .section-label .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .map-btn{flex:1;min-width:78px;padding:9px 6px;border:1px solid var(--panel-line);background:#16273e;color:var(--txt);
+    border-radius:8px;cursor:pointer;font-size:13px;transition:.15s;}
+  .map-btn:hover{border-color:var(--accent2);}
+  .map-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
+  .chk{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;font-size:13px;}
+  .chk:hover{background:#16273e;}
+  .chk input{width:16px;height:16px;accent-color:var(--accent);}
+  .hint-line{font-size:11px;color:var(--txt-dim);margin-top:6px;line-height:1.5;}
+  /* 搜索 */
+  .search-box{display:flex;gap:8px;}
+  .search-box input{flex:1;padding:9px 10px;border-radius:8px;border:1px solid var(--panel-line);background:#0c1828;color:var(--txt);font-size:13px;outline:none;}
+  .search-box input:focus{border-color:var(--accent2);}
+  .search-box button{padding:0 14px;border:none;border-radius:8px;background:var(--accent2);color:#fff;cursor:pointer;font-size:13px;}
+  .search-status{font-size:12px;color:var(--warn);margin-top:8px;min-height:16px;}
+  .result-list{list-style:none;margin:8px 0 0;padding:0;max-height:200px;overflow-y:auto;border-top:1px solid var(--panel-line);}
+  .result-list li{padding:8px 10px;font-size:13px;border-bottom:1px solid var(--panel-line);cursor:pointer;display:flex;justify-content:space-between;gap:8px;}
+  .result-list li:hover{background:#16273e;}
+  .result-list li .cat{font-size:11px;color:var(--txt-dim);flex-shrink:0;}
+  .tool-row{display:flex;gap:8px;}
+  .tool-btn{padding:9px 6px;flex:1;border:1px solid var(--panel-line);background:#16273e;color:var(--txt);border-radius:8px;cursor:pointer;font-size:13px;}
+  .tool-btn:hover{border-color:var(--accent2);}
+  .copyright{padding:12px 16px;border-top:1px solid var(--panel-line);font-size:11px;color:var(--txt-dim);line-height:1.6;}
+  .copyright b{color:var(--txt);}
+  .panel-toggle{display:none;position:absolute;top:10px;left:10px;z-index:1200;background:var(--panel-bg);color:var(--txt);
+    border:1px solid var(--panel-line);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;}
+  /* 地图区 */
+  .stage{flex:1;position:relative;height:100%;}
+  #map{position:absolute;inset:0;}
+  /* 地图右上角坐标条 */
+  .coords-bar{position:absolute;right:12px;bottom:12px;z-index:1000;background:rgba(15,27,45,.82);
+    color:#dbe7f5;font-size:12px;padding:7px 12px;border-radius:8px;border:1px solid var(--panel-line);
+    font-variant-numeric:tabular-nums;backdrop-filter:blur(4px);}
+  .coords-bar span{color:var(--accent);margin-right:10px;}
+  /* 搜索结果浮层(地图内) */
+  .map-search-float{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:1100;
+    background:rgba(15,27,45,.92);border:1px solid var(--panel-line);border-radius:10px;padding:6px;min-width:280px;max-width:90vw;}
+  .map-search-float .search-box input{background:#0c1828;}
+  /* 要素信息卡 */
+  .feature-card{background:#0f1b2d;color:var(--txt);border:1px solid var(--panel-line);border-radius:10px;padding:10px 12px;font-size:13px;max-width:240px;}
+  .feature-card .fc-title{font-weight:700;font-size:14px;margin-bottom:4px;}
+  .feature-card .fc-note{color:var(--txt-dim);line-height:1.5;}
+  /* 响应式 */
+  @media (max-width:720px){
+    .panel{position:absolute;z-index:1300;height:100%;transform:translateX(-100%);transition:.25s;box-shadow:0 0 30px rgba(0,0,0,.5);}
+    .panel.open{transform:translateX(0);}
+    .panel-toggle{display:block;}
+  }
+  .leaflet-container{background:#0a1320;}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <button class="panel-toggle" id="panelToggle">☰ 工具</button>
+  <aside class="panel" id="panel">
+    <div class="panel-header">
+      <h1>🛰️ 在线卫星地图</h1>
+      <div class="sub">高中地理教学 · 卫星影像 / 地形 / 矢量</div>
+    </div>
+    <div class="panel-body">
+      <div class="section">
+        <div class="section-label"><span class="dot"></span>底图类型</div>
+        <div class="btn-row" id="baseBtns">
+          <button class="map-btn active" data-base="sat">卫星影像</button>
+          <button class="map-btn" data-base="ter">地形</button>
+          <button class="map-btn" data-base="vec">矢量</button>
+        </div>
+        <div class="hint-line" id="baseHint"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-label"><span class="dot"></span>图层显示</div>
+        <label class="chk"><input type="checkbox" id="chkLabels" /> <span>地名标注（卫星影像下叠加）</span></label>
+        <label class="chk"><input type="checkbox" id="chkTerrain" /> <span>中国主要地形区</span></label>
+        <div class="hint-line" id="terrainHint">勾选后在图上标出主要高原、盆地、平原中心点（示意位置）。</div>
+      </div>
+
+      <div class="section">
+        <div class="section-label"><span class="dot"></span>地名搜索</div>
+        <div class="search-box">
+          <input id="searchInput" type="search" placeholder="如：北京、尼罗河、青藏高原" maxlength="40" autocomplete="off" />
+          <button id="searchBtn">搜索</button>
+        </div>
+        <div class="search-status" id="searchStatus"></div>
+        <ul class="result-list" id="resultList" style="display:none;"></ul>
+      </div>
+
+      <div class="section">
+        <div class="section-label"><span class="dot"></span>视图</div>
+        <div class="tool-row">
+          <button class="tool-btn" id="resetBtn">⟲ 重置视角</button>
+          <button class="tool-btn" id="fullBtn">⛶ 全屏</button>
+        </div>
+      </div>
+    </div>
+    <div class="copyright">
+      <b>高中地理智能教学工作台 · 自制教学工具</b><br/>
+      底图来源：Esri ArcGIS Online / OpenStreetMap / 天地图（国家基础地理信息中心）。<br/>
+      坐标与要素位置为示意中心点，仅供教学定位参考。
+    </div>
+  </aside>
+
+  <main class="stage">
+    <div id="map"></div>
+    <div class="coords-bar" id="coordsBar"><span>经度 --</span><span>纬度 --</span>缩放 --</div>
+    <div class="map-search-float">
+      <div class="search-box">
+        <input id="searchInputFloat" type="search" placeholder="快速定位：地名 / 河流 / 地形区" maxlength="40" autocomplete="off" />
+        <button id="searchBtnFloat">搜索</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="./leaflet/leaflet.js"></script>
+<script>
+/* ============================================================
+   配置区
+   ------------------------------------------------------------
+   如需「带中文标注」的天地图底图，请到 https://www.tianditu.gov.cn/
+   免费注册并在「应用管理」中创建应用，获取 tk（开发授权码）。
+   把下方字符串替换为你自己的 tk 即可；留空则使用 Esri / OSM 底图。
+   ============================================================ */
+var TIANDITU_TK = "";   // ← 在此填入你自己的天地图 tk（可选）
+
+/* ---------- 底图定义 ---------- */
+var esriImg = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  {maxZoom:19, attribution:'Tiles &copy; Esri — Source: Esri, Maxar, Earthstar Geographics'});
+var esriLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+  {maxZoom:19, attribution:'Esri'});
+var esriTerrain = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}',
+  {maxZoom:13, attribution:'Tiles &copy; Esri'});
+var osmVec = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19, attribution:'&copy; OpenStreetMap contributors', subdomains:'abc'});
+
+function tdt(layer){
+  return L.tileLayer(
+    'https://t{s}.tianditu.gov.cn/'+layer+'_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER='+layer+
+    '&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk='+TIANDITU_TK,
+    {subdomains:['0','1','2','3','4','5','6','7'], maxZoom:18, attribution:'&copy; 天地图'});
+}
+
+var useTDT = (TIANDITU_TK && TIANDITU_TK.length>0);
+if(!useTDT){ document.getElementById('chkLabels').checked = true; }  // Esri 模式默认显示标注
+var bases = {};
+if(useTDT){
+  bases = {
+    sat: L.layerGroup([tdt('img'), tdt('cia')]),
+    ter: L.layerGroup([tdt('ter'), tdt('cta')]),
+    vec: L.layerGroup([tdt('vec'), tdt('cva')])
+  };
+}else{
+  bases = { sat: esriImg, ter: esriTerrain, vec: osmVec };
+}
+
+/* ---------- 地图初始化 ---------- */
+var map = L.map('map', {center:[34,104], zoom:4, zoomControl:true, attributionControl:true, worldCopyJump:true});
+var currentBase = 'sat';
+bases.sat.addTo(map);
+if(!useTDT){ esriLabels.addTo(map); }   // Esri 模式下默认带标注
+
+/* ---------- 底图切换 ---------- */
+var baseBtns = document.getElementById('baseBtns');
+baseBtns.addEventListener('click', function(e){
+  var btn = e.target.closest('.map-btn'); if(!btn) return;
+  var key = btn.getAttribute('data-base');
+  if(key===currentBase) return;
+  map.removeLayer(bases[currentBase]);
+  bases[key].addTo(map);
+  currentBase = key;
+  Array.prototype.forEach.call(baseBtns.children, function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  // Esri 模式下，矢量底图不需要叠加地名标注层
+  if(!useTDT){
+    if(key==='vec'){ if(map.hasLayer(esriLabels)) map.removeLayer(esriLabels); }
+    else { if(document.getElementById('chkLabels').checked) esriLabels.addTo(map); }
+  }
+});
+
+/* 底图提示 */
+document.getElementById('baseHint').textContent = useTDT
+  ? '已启用天地图（含中文标注）。'
+  : '当前使用 Esri 卫星影像 / OSM 矢量；在源码顶部填入天地图 tk 可获中文标注底图。';
+
+/* ---------- 地名标注开关（仅 Esri 模式有效） ---------- */
+var chkLabels = document.getElementById('chkLabels');
+if(useTDT){ chkLabels.checked = true; chkLabels.disabled = true; chkLabels.parentElement.style.opacity=.6;
+  chkLabels.parentElement.title='天地图底图已含中文标注'; }
+chkLabels.addEventListener('change', function(){
+  if(useTDT) return;
+  if(currentBase==='vec') return; // 矢量底图不叠加
+  if(this.checked) esriLabels.addTo(map); else map.removeLayer(esriLabels);
+});
+
+/* ---------- 中国主要地形区（示意点） ---------- */
+var terrainData = [
+  ['青藏高原',88,34,'世界最高、最大的高原，平均海拔4000米以上，号称“世界屋脊”。'],
+  ['内蒙古高原',112,42,'地势平坦开阔，草原广布，海拔多在1000米左右。'],
+  ['黄土高原',108,36,'黄土层深厚，水土流失严重，千沟万壑。'],
+  ['云贵高原',103,25,'喀斯特地貌广布，地形崎岖，多坝子。'],
+  ['塔里木盆地',84,39,'我国最大盆地，内有塔克拉玛干沙漠，气候干旱。'],
+  ['准噶尔盆地',85,45,'我国纬度最高的大盆地，降水稍多，多绿洲。'],
+  ['柴达木盆地',95,37,'位于青藏高原东北部，盐湖与矿产资源丰富，称“聚宝盆”。'],
+  ['四川盆地',105,30,'紫色土广布，物产丰饶，称“天府之国”。'],
+  ['东北平原',125,45,'我国面积最大的平原，黑土肥沃，商品粮基地。'],
+  ['华北平原',116,36,'由黄河等冲积而成，地势低平，人口稠密。'],
+  ['长江中下游平原',113,30,'地势低平、河网密布，称“鱼米之乡”。']
+];
+var terrainLayer = L.layerGroup();
+terrainData.forEach(function(d){
+  var m = L.circleMarker([d[2],d[1]], {radius:6, color:'#ffd34d', weight:2, fillColor:'#e0a23a', fillOpacity:.9});
+  m.bindTooltip(d[0], {permanent:false, direction:'top'});
+  m.bindPopup('<div class="feature-card"><div class="fc-title">'+d[0]+'</div><div class="fc-note">'+d[3]+'</div></div>');
+  terrainLayer.addLayer(m);
+});
+document.getElementById('chkTerrain').addEventListener('change', function(){
+  if(this.checked) terrainLayer.addTo(map); else map.removeLayer(terrainLayer);
+});
+
+/* ---------- 地名搜索数据库（原创，示意坐标） ---------- */
+var PLACES = [
+  // 中国省级行政中心及主要城市
+  ['北京',116.40,39.90,'中华人民共和国首都。','城市'],
+  ['上海',121.47,31.23,'我国最大城市、经济中心。','城市'],
+  ['广州',113.26,23.13,'广东省会，华南中心城市。','城市'],
+  ['深圳',114.06,22.55,'经济特区，科技创新中心。','城市'],
+  ['成都',104.07,30.57,'四川省会，“天府之国”中心。','城市'],
+  ['重庆',106.55,29.56,'直辖市，长江上游经济中心。','城市'],
+  ['武汉',114.30,30.59,'湖北省会，九省通衢。','城市'],
+  ['西安',108.94,34.34,'陕西省会，古都，关中平原。','城市'],
+  ['南京',118.80,32.06,'江苏省会，长江下游古都。','城市'],
+  ['杭州',120.15,30.27,'浙江省会，西湖所在地。','城市'],
+  ['哈尔滨',126.53,45.80,'黑龙江省会，东北北部中心。','城市'],
+  ['沈阳',123.43,41.80,'辽宁省会，东北南部中心。','城市'],
+  ['长春',125.32,43.82,'吉林省会。','城市'],
+  ['兰州',103.83,36.06,'甘肃省会，黄河穿城。','城市'],
+  ['乌鲁木齐',87.62,43.82,'新疆首府，天山北麓。','城市'],
+  ['拉萨',91.14,29.65,'西藏首府，青藏高原。','城市'],
+  ['昆明',102.83,24.88,'云南省会，春城。','城市'],
+  ['贵阳',106.71,26.65,'贵州省会，云贵高原。','城市'],
+  ['长沙',112.94,28.23,'湖南省会，湘江畔。','城市'],
+  ['郑州',113.62,34.75,'河南省会，中原枢纽。','城市'],
+  ['济南',117.00,36.65,'山东省会，泉城。','城市'],
+  ['青岛',120.38,36.07,'海滨城市，山东半岛。','城市'],
+  ['福州',119.30,26.08,'福建省会。','城市'],
+  ['台北',121.56,25.03,'台湾省最大城市。','城市'],
+  ['海口',110.33,20.03,'海南省会。','城市'],
+  ['南宁',108.32,22.82,'广西首府。','城市'],
+  ['呼和浩特',111.75,40.84,'内蒙古首府。','城市'],
+  ['银川',106.27,38.47,'宁夏首府。','城市'],
+  ['西宁',101.78,36.62,'青海首府，青藏高原东北。','城市'],
+  ['太原',112.55,37.87,'山西省会。','城市'],
+  ['石家庄',114.51,38.04,'河北省会。','城市'],
+  ['天津',117.20,39.13,'直辖市，渤海湾。','城市'],
+  ['香港',114.17,22.32,'特别行政区。','城市'],
+  ['澳门',113.55,22.20,'特别行政区。','城市'],
+  // 世界主要城市
+  ['东京',139.69,35.69,'日本首都。','城市'],
+  ['首尔',126.98,37.57,'韩国首都。','城市'],
+  ['新德里',77.21,28.61,'印度首都。','城市'],
+  ['莫斯科',37.62,55.75,'俄罗斯首都。','城市'],
+  ['伦敦',-0.13,51.51,'英国首都。','城市'],
+  ['巴黎',2.35,48.86,'法国首都。','城市'],
+  ['柏林',13.40,52.52,'德国首都。','城市'],
+  ['罗马',12.50,41.90,'意大利首都。','城市'],
+  ['纽约',-74.01,40.71,'美国最大城市。','城市'],
+  ['洛杉矶',-118.24,34.05,'美国西海岸城市。','城市'],
+  ['开罗',31.24,30.04,'埃及首都，尼罗河畔。','城市'],
+  ['开普敦',18.42,-33.92,'南非立法首都。','城市'],
+  ['悉尼',151.21,-33.87,'澳大利亚最大城市。','城市'],
+  ['里约热内卢',-43.17,-22.91,'巴西名城。','城市'],
+  ['新加坡',103.82,1.35,'城市国家，马六甲海峡东口。','城市'],
+  ['曼谷',100.50,13.76,'泰国首都。','城市'],
+  ['雅加达',106.85,-6.21,'印度尼西亚首都。','城市'],
+  // 山脉
+  ['珠穆朗玛峰',86.93,27.99,'世界第一高峰，海拔8848.86米，中尼边界。','山脉'],
+  ['喜马拉雅山脉',86.0,28.5,'世界最高大的山脉，欧亚与印度洋板块碰撞形成。','山脉'],
+  ['昆仑山脉',88.0,36.0,'横贯青藏高原北部。','山脉'],
+  ['天山',86.0,42.0,'新疆中部的东西向山脉。','山脉'],
+  ['阿尔泰山',90.0,48.0,'新疆最北部，中、哈、俄、蒙交界。','山脉'],
+  ['横断山脉',100.0,27.0,'川滇西部南北向山系。','山脉'],
+  ['大兴安岭',122.0,50.0,'东北—西南走向，400mm等降水量线。','山脉'],
+  ['长白山',128.0,42.0,'东北东部，中朝界山。','山脉'],
+  ['秦岭',108.0,34.0,'南北地理分界线。','山脉'],
+  ['阿尔卑斯山脉',10.0,46.5,'欧洲南部高大山脉。','山脉'],
+  ['安第斯山脉',-70.0,-20.0,'世界最长山脉，纵贯南美西部。','山脉'],
+  ['落基山脉',-110.0,45.0,'北美洲西部主要山脉。','山脉'],
+  // 河流
+  ['长江',112.0,30.0,'我国第一大河，世界第三长河，注入东海。','河流'],
+  ['黄河',103.0,37.0,'我国第二长河，“母亲河”，含沙量最大。','河流'],
+  ['尼罗河',31.0,24.0,'世界最长河流，自南向北注入地中海。','河流'],
+  ['亚马孙河',-60.0,-3.0,'世界流量最大河流，南美洲。','河流'],
+  ['密西西比河',-90.0,38.0,'北美洲最长河流。','河流'],
+  ['刚果河',23.0,-1.0,'非洲水量第二大河，水能丰富。','河流'],
+  ['多瑙河',20.0,45.0,'欧洲流经国家最多的河流。','河流'],
+  ['湄公河',105.0,15.0,'东南亚国际河流，我国境内称澜沧江。','河流'],
+  ['恒河',85.0,25.0,'南亚圣河，注入孟加拉湾。','河流'],
+  // 盆地 / 高原 / 平原
+  ['刚果盆地',22.0,-1.5,'世界最大盆地，热带雨林气候。','盆地'],
+  ['西西伯利亚平原',75.0,62.0,'亚洲最大平原。','平原'],
+  ['亚马孙平原',-60.0,-5.0,'世界最大平原，热带雨林。','平原'],
+  ['东欧平原',35.0,55.0,'欧洲最大平原。','平原'],
+  ['撒哈拉沙漠',10.0,23.0,'世界最大沙漠，非洲北部。','沙漠'],
+  ['塔克拉玛干沙漠',83.0,38.5,'我国最大沙漠，塔里木盆地内。','沙漠'],
+  ['戈壁沙漠',105.0,42.0,'蒙古高原南缘荒漠。','沙漠'],
+  ['阿拉伯沙漠',45.0,24.0,'阿拉伯半岛上的沙漠。','沙漠'],
+  ['卡拉哈里沙漠',24.0,-24.0,'非洲南部沙漠。','沙漠'],
+  ['维多利亚大沙漠',125.0,-30.0,'澳大利亚中西部沙漠。','沙漠'],
+  ['巴塔哥尼亚沙漠',-70.0,-45.0,'南美洲南部荒漠。','沙漠'],
+  // 湖泊
+  ['青海湖',100.2,36.9,'我国最大咸水湖。','湖泊'],
+  ['鄱阳湖',116.2,29.1,'我国最大淡水湖。','湖泊'],
+  ['太湖',120.2,31.3,'长江三角洲著名淡水湖。','湖泊'],
+  ['贝加尔湖',108.0,53.5,'世界最深、蓄水量最大淡水湖。','湖泊'],
+  ['里海',51.0,42.0,'世界最大湖泊（咸水）。','湖泊'],
+  ['苏必利尔湖',-87.0,47.5,'世界面积最大淡水湖。','湖泊'],
+  ['维多利亚湖',33.0,-1.5,'非洲最大湖泊。','湖泊'],
+  ['死海',35.5,31.5,'世界陆地最低点，盐度极高。','湖泊'],
+  // 海洋 / 海湾 / 海峡
+  ['渤海',119.0,38.5,'我国内海。','海域'],
+  ['黄海',123.0,35.0,'位于中国大陆与朝鲜半岛间。','海域'],
+  ['东海',123.0,28.0,'长江口以南至台湾海峡。','海域'],
+  ['南海',115.0,15.0,'我国南部边缘海，岛礁众多。','海域'],
+  ['地中海',15.0,35.0,'介于欧、亚、非三洲之间的陆间海。','海域'],
+  ['红海',38.0,20.0,'亚非之间的狭长海域。','海域'],
+  ['波斯湾',51.0,27.0,'世界石油储量最丰富海域。','海域'],
+  ['孟加拉湾',88.0,15.0,'印度洋东北部海湾。','海域'],
+  ['阿拉伯海',65.0,15.0,'印度洋西北部。','海域'],
+  ['马六甲海峡',101.0,2.5,'沟通太平洋与印度洋的咽喉。','海峡'],
+  ['直布罗陀海峡',-5.6,35.9,'地中海通往大西洋。','海峡'],
+  ['霍尔木兹海峡',56.5,26.5,'波斯湾石油外运咽喉。','海峡'],
+  ['台湾海峡',120.0,24.5,'连接东海与南海。','海峡'],
+  ['白令海峡',-169.0,65.5,'亚洲与北美洲、北冰洋与太平洋分界。','海峡'],
+  ['苏伊士运河',32.5,30.5,'亚非分界，沟通地中海与红海。','运河'],
+  ['巴拿马运河',-79.5,9.0,'南北美分界，沟通两洋。','运河'],
+  // 半岛 / 岛屿
+  ['阿拉伯半岛',45.0,22.0,'世界最大半岛。','半岛'],
+  ['印度半岛',78.0,20.0,'南亚向南突出的半岛。','半岛'],
+  ['中南半岛',100.0,15.0,'东南亚大陆部分。','半岛'],
+  ['巴尔干半岛',22.0,42.0,'南欧三大半岛之一。','半岛'],
+  ['斯堪的纳维亚半岛',15.0,62.0,'北欧半岛。','半岛'],
+  ['辽东半岛',122.0,39.0,'辽宁南部。','半岛'],
+  ['山东半岛',121.0,37.0,'黄河下游以东。','半岛'],
+  ['雷州半岛',110.0,20.5,'广东西南部。','半岛'],
+  ['台湾岛',121.0,23.7,'我国第一大岛。','岛屿'],
+  ['海南岛',110.0,19.2,'我国第二大岛。','岛屿'],
+  ['格陵兰岛',-42.0,72.0,'世界最大岛屿。','岛屿'],
+  ['马达加斯加岛',47.0,-20.0,'非洲东南部大岛。','岛屿'],
+  ['火地岛',-68.0,-54.5,'南美洲最南端。','岛屿'],
+  ['好望角',18.5,-34.4,'非洲西南端，航路要冲。','海角']
+];
+
+var searchMarker = null;
+function clearSearchMarker(){ if(searchMarker){ map.removeLayer(searchMarker); searchMarker=null; } }
+
+function doSearch(q, statusEl, listEl){
+  q = (q||'').trim(); statusEl.textContent=''; listEl.style.display='none'; listEl.innerHTML='';
+  if(!q){ return; }
+  var matches = PLACES.filter(function(p){ return p[0].indexOf(q)>=0; });
+  if(matches.length===0){ statusEl.textContent='未找到“'+q+'”，试试更简短的关键词。'; return; }
+  if(matches.length===1){ flyToPlace(matches[0]); return; }
+  statusEl.textContent='找到 '+matches.length+' 个结果，点击定位：';
+  listEl.style.display='block';
+  matches.slice(0,30).forEach(function(p){
+    var li=document.createElement('li');
+    li.innerHTML='<span>'+p[0]+'</span><span class="cat">'+p[3]+'</span>';
+    li.addEventListener('click', function(){ flyToPlace(p); listEl.style.display='none'; });
+    listEl.appendChild(li);
+  });
+}
+function flyToPlace(p){
+  clearSearchMarker();
+  map.flyTo([p[2],p[1]], p[3]==='城市'?9:6, {duration:1.2});
+  searchMarker = L.marker([p[2],p[1]], {
+    icon: L.divIcon({className:'', html:'<div style="width:18px;height:18px;border-radius:50%;background:#e64a19;border:3px solid #fff;box-shadow:0 0 0 4px rgba(230,74,25,.35);"></div>', iconSize:[18,18], iconAnchor:[9,9]})
+  }).addTo(map);
+  searchMarker.bindPopup('<div class="feature-card"><div class="fc-title">'+p[0]+'</div><div class="fc-note">'+(p[3]||'')+'</div></div>').openPopup();
+  if(window._floatInput) window._floatInput.value = p[0];
+}
+
+/* 绑定两个搜索框 */
+var sIn=document.getElementById('searchInput'), sBt=document.getElementById('searchBtn');
+var sInF=document.getElementById('searchInputFloat'), sBtF=document.getElementById('searchBtnFloat');
+window._floatInput = sInF;
+function runSearch(){ doSearch(sIn.value, document.getElementById('searchStatus'), document.getElementById('resultList')); }
+sBt.addEventListener('click', runSearch);
+sIn.addEventListener('keydown', function(e){ if(e.key==='Enter') runSearch(); });
+function runSearchF(){ var q=sInF.value; sIn.value=q; doSearch(q, document.getElementById('searchStatus'), document.getElementById('resultList')); }
+sBtF.addEventListener('click', runSearchF);
+sInF.addEventListener('keydown', function(e){ if(e.key==='Enter') runSearchF(); });
+
+/* ---------- 坐标实时显示 ---------- */
+var coordsBar=document.getElementById('coordsBar');
+map.on('mousemove', function(e){
+  coordsBar.innerHTML='<span>经度 '+e.latlng.lng.toFixed(3)+'</span><span>纬度 '+e.latlng.lat.toFixed(3)+'</span>缩放 '+map.getZoom();
+});
+map.on('zoomend', function(){
+  coordsBar.innerHTML='<span>经度 --</span><span>纬度 --</span>缩放 '+map.getZoom();
+});
+
+/* ---------- 重置视角 / 全屏 ---------- */
+document.getElementById('resetBtn').addEventListener('click', function(){
+  clearSearchMarker(); map.flyTo([34,104],4,{duration:1});
+});
+document.getElementById('fullBtn').addEventListener('click', function(){
+  var el=document.getElementById('app');
+  if(!document.fullscreenElement){ (el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen).call(el); }
+  else{ (document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen).call(document); }
+});
+
+/* ---------- 移动端面板开关 ---------- */
+document.getElementById('panelToggle').addEventListener('click', function(){
+  document.getElementById('panel').classList.toggle('open');
+});
+</script>
+</body>
+</html>
