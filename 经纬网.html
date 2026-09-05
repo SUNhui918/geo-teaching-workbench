@@ -66,7 +66,7 @@
     transition:opacity .15s; pointer-events:none;
   }
   .geo-label.key{color:#ffd166; font-size:13px;}
-  .geo-label.coord{color:#7beaff; font-size:13px; background:rgba(11,18,32,0.75); padding:2px 6px; border:1px solid #223a55; border-radius:4px;}
+  .geo-label.coord{color:#7beaff; font-size:12px; background:rgba(11,18,32,0.85); padding:3px 8px; border:1px solid #223a55; border-radius:6px; font-weight:bold;}
 
   /* 全屏按钮 */
   .fs-btn{
@@ -170,7 +170,7 @@
 
     </div>
     <div class="copyright">
-      <b>制作演示</b><br/>
+      <b>横山桥高中孙慧制作</b><br/>
       底图来源：NASA Blue Marble（卫星影像）。<br/>
       本工具用于经纬网与地球运动的课堂教学演示。
     </div>
@@ -219,7 +219,7 @@
 <script src="three/OrbitControls.js"></script>
 <script>
 /* ============================================================
-   经纬网及其应用 —— 3D 交互教学工具 (闪光动画 & 完整经纬度版)
+   经纬网及其应用 —— 3D 交互教学工具
    ============================================================ */
 var R = 1.0;                 
 var DEG = Math.PI / 180;
@@ -318,7 +318,6 @@ function makeThickParallel(lat, color, opacity, tubeR){
   return torus;
 }
 
-/* 构建所有经纬网 */
 (function buildGrid(){
   for(var lon=30; lon<360; lon+=30) graticuleGroup.add(makeThickMeridian(lon, 0x9fb2c8, 0.6));
   [30, -30, 60, -60].forEach(function(lat){ graticuleGroup.add(makeThickParallel(lat, 0x9fb2c8, 0.6)); });
@@ -338,7 +337,7 @@ function makeThickParallel(lat, color, opacity, tubeR){
   });
 })();
 
-/* 球面标签管理器（3D DOM 投射） */
+/* 球面标签管理器 */
 var labelLayer = document.getElementById('labelLayer');
 var sphereLabels = [];
 function addSphereLabel(text, lon, lat, className){
@@ -346,10 +345,28 @@ function addSphereLabel(text, lon, lat, className){
   div.className = 'geo-label ' + (className || '');
   div.textContent = text;
   labelLayer.appendChild(div);
-  sphereLabels.push({div: div, lon: lon, lat: lat});
+  sphereLabels.push({div: div, lon: lon, lat: lat, dynamic: false});
 }
 
-/* 初始化球面经纬度文字标签 */
+function addDynamicLabel(text, lon, lat, className){
+  var div = document.createElement('div');
+  div.className = 'geo-label ' + (className || '');
+  div.textContent = text;
+  labelLayer.appendChild(div);
+  var obj = {div: div, lon: lon, lat: lat, dynamic: true};
+  sphereLabels.push(obj);
+  return obj;
+}
+
+function clearDynamicLabels(){
+  for(var i = sphereLabels.length - 1; i >= 0; i--){
+    if(sphereLabels[i].dynamic){
+      labelLayer.removeChild(sphereLabels[i].div);
+      sphereLabels.splice(i, 1);
+    }
+  }
+}
+
 (function initSphereLabels(){
   for(var lon=-150; lon<=180; lon+=30){
     if(lon===0) continue;
@@ -369,13 +386,13 @@ function updateSphereLabels(){
   var w = stage.clientWidth, h = stage.clientHeight;
   var camDir = camera.position.clone().normalize();
   sphereLabels.forEach(function(item){
-    var v = lonLatToVec3(item.lon, item.lat, R*1.01);
+    var v = lonLatToVec3(item.lon, item.lat, R*(item.dynamic ? 1.025 : 1.01));
     var proj = v.clone().project(camera);
     if(proj.z > 1 || proj.z < -1){ item.div.style.display = 'none'; return; }
     var x = (proj.x * 0.5 + 0.5) * w;
     var y = (-proj.y * 0.5 + 0.5) * h;
     var facing = v.clone().normalize().dot(camDir);
-    if(facing < 0.05){ item.div.style.display = 'none'; } // 背面隐藏
+    if(facing < 0.05){ item.div.style.display = 'none'; }
     else {
       item.div.style.display = 'block';
       item.div.style.left = x + 'px';
@@ -401,7 +418,7 @@ function addDot(lon, lat, color){
   return dot;
 }
 
-/* 视角预设与自动旋转 */
+/* 视角与动画 */
 var autoRotateChk = document.getElementById('autoRotate');
 var rotateSpeed = document.getElementById('rotateSpeed');
 autoRotateChk.addEventListener('change', function(){ controls.autoRotate = this.checked; });
@@ -431,7 +448,7 @@ presetRow.addEventListener('click', function(e){
   animateCamera(new THREE.Vector3(target[0], target[1], target[2]), new THREE.Vector3(0,0,0));
 });
 
-/* 视图模式切换（3D / 2D） */
+/* 视图模式切换 */
 var currentView = '3d';
 var viewModeRow = document.getElementById('viewModeRow');
 var canvas2d = document.getElementById('canvas2d');
@@ -497,7 +514,6 @@ function draw2D(){
   keyLine(true, 23.5, '#ffd166'); keyLine(true, -23.5, '#ffd166');
   keyLine(true, 66.5, '#4dd0e1'); keyLine(true, -66.5, '#4dd0e1');
 
-  /* 2D 坐标轴刻度及数值 */
   ctx.fillStyle = '#9fb2c8';
   ctx.font = '11px sans-serif';
   ctx.textAlign = 'center';
@@ -566,6 +582,8 @@ function greatCirclePoints(lon1, lat1, lon2, lat2, n){
 
 function renderTopic3D(){
   clearHighlight();
+  clearDynamicLabels();
+  
   if(currentTopic === 'symmetry'){ earthMesh.material.opacity = 0.35; }
   else { earthMesh.material.opacity = 1.0; }
 
@@ -573,6 +591,10 @@ function renderTopic3D(){
   if(currentTopic==='greatcircle'){
     addDot(pt.gcALon, pt.gcALat, 0x00e5ff);
     addDot(pt.gcBLon, pt.gcBLat, 0xff5e5e);
+    
+    addDynamicLabel('A ' + formatCoord(pt.gcALat, pt.gcALon), pt.gcALon, pt.gcALat, 'coord');
+    addDynamicLabel('B ' + formatCoord(pt.gcBLat, pt.gcBLon), pt.gcBLon, pt.gcBLat, 'coord');
+
     var gp = greatCirclePoints(pt.gcALon, pt.gcALat, pt.gcBLon, pt.gcBLat, 120);
     var arcGeo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(gp), 64, 0.006, 8, false);
     hlGroup.add(new THREE.Mesh(arcGeo, new THREE.MeshBasicMaterial({color:0xffd166})));
@@ -582,10 +604,14 @@ function renderTopic3D(){
     if(pt.symType === 'equator'){ tLon = lon; tLat = -lat; }
     else if(pt.symType === 'axis'){ tLon = lon > 0 ? lon - 180 : lon + 180; tLat = lat; }
     else if(pt.symType === 'center'){ tLon = lon > 0 ? lon - 180 : lon + 180; tLat = -lat; }
+    if(tLon > 180) tLon -= 360; if(tLon < -180) tLon += 360;
     
     addDot(lon, lat, 0x00e5ff);
     addDot(tLon, tLat, 0xff5e5e);
     
+    addDynamicLabel('点A ' + formatCoord(lat, lon), lon, lat, 'coord');
+    addDynamicLabel('对称点 ' + formatCoord(tLat, tLon), tLon, tLat, 'coord');
+
     var p1 = lonLatToVec3(lon, lat, R);
     var p2 = lonLatToVec3(tLon, tLat, R);
     var lineGeo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
@@ -604,7 +630,6 @@ function drawTopic2D(ctx, px, py, offX, offY, mapW, mapH){
     dot(px(pt.gcALon), py(pt.gcALat), '#00e5ff'); 
     dot(px(pt.gcBLon), py(pt.gcBLat), '#ff5e5e');
     
-    // 呈现坐标文本
     ctx.font = '12px sans-serif';
     ctx.fillStyle = '#7beaff'; ctx.fillText('A ' + formatCoord(pt.gcALat, pt.gcALon), px(pt.gcALon)+8, py(pt.gcALat)-6);
     ctx.fillStyle = '#ff9e80'; ctx.fillText('B ' + formatCoord(pt.gcBLat, pt.gcBLon), px(pt.gcBLon)+8, py(pt.gcBLat)-6);
@@ -729,19 +754,15 @@ function animate(){
   
   var elapsedTime = clock.getElapsedTime();
   
-  /* 闪光特效逻辑 */
   if(currentTopic === 'lon'){
-    // 经线闪光
     var flash = 0.35 + 0.35 * Math.sin(elapsedTime * 4.0);
     meridianMeshes.forEach(function(m){ m.material.opacity = flash; });
     parallelMeshes.forEach(function(m){ m.material.opacity = 0.2; });
   } else if(currentTopic === 'lat'){
-    // 纬线闪光
     var flash = 0.35 + 0.35 * Math.sin(elapsedTime * 4.0);
     parallelMeshes.forEach(function(m){ m.material.opacity = flash; });
     meridianMeshes.forEach(function(m){ m.material.opacity = 0.2; });
   } else {
-    // 恢复常规透明度
     meridianMeshes.forEach(function(m){ m.material.opacity = m.userData.baseOpacity; });
     parallelMeshes.forEach(function(m){ m.material.opacity = m.userData.baseOpacity; });
   }
