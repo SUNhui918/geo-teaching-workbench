@@ -727,7 +727,7 @@ var searchInputFloatEl = document.getElementById('searchInputFloat');
 
 function escapeReg(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
-function runSearch(q){
+function runSearch(q, autoFly){
   q = (q||'').trim();
   if(!q){ searchListEl.style.display='none'; searchStatusEl.textContent=''; return; }
   var re = new RegExp(escapeReg(q), 'i');
@@ -746,6 +746,10 @@ function runSearch(q){
     searchListEl.appendChild(li);
   });
   searchListEl.style.display='block';
+  // 自动跳转：回车/点搜索时跳到第一个结果；输入时唯一匹配也自动跳
+  if(autoFly || hits.length===1){
+    flyToPlace(hits[0]);
+  }
 }
 
 function flyToPlace(p){
@@ -765,13 +769,13 @@ function flyToPlace(p){
   marker.bindPopup('<div class="feature-card"><div class="fc-title">'+nm+'</div><div class="fc-note">'+note+'</div></div>').openPopup();
 }
 
-document.getElementById('searchBtn').addEventListener('click', function(){ runSearch(searchInputEl.value); });
-searchInputEl.addEventListener('keyup', function(e){ if(e.key==='Enter') runSearch(this.value); });
-searchInputEl.addEventListener('input', function(){ runSearch(this.value); });
+document.getElementById('searchBtn').addEventListener('click', function(){ runSearch(searchInputEl.value, true); });
+searchInputEl.addEventListener('keyup', function(e){ if(e.key==='Enter') runSearch(this.value, true); });
+searchInputEl.addEventListener('input', function(){ runSearch(this.value, false); });
 
-document.getElementById('searchBtnFloat').addEventListener('click', function(){ runSearch(searchInputFloatEl.value); });
-searchInputFloatEl.addEventListener('keyup', function(e){ if(e.key==='Enter') runSearch(this.value); });
-searchInputFloatEl.addEventListener('input', function(){ runSearch(this.value); });
+document.getElementById('searchBtnFloat').addEventListener('click', function(){ runSearch(searchInputFloatEl.value, true); });
+searchInputFloatEl.addEventListener('keyup', function(e){ if(e.key==='Enter') runSearch(this.value, true); });
+searchInputFloatEl.addEventListener('input', function(){ runSearch(this.value, false); });
 
 /* ---------- 坐标实时显示 ---------- */
 var coordsBar=document.getElementById('coordsBar');
