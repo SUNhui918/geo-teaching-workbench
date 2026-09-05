@@ -59,6 +59,27 @@
   #canvas3d:active{cursor:grabbing;}
   #canvas2d{position:absolute;inset:0;width:100%;height:100%;display:none;object-fit:contain;background:#0a1424;}
   .view-hint{position:absolute;left:12px;bottom:12px;z-index:1000;font-size:11px;color:#6f87a6;pointer-events:none;}
+  /* 最短航线浮动参数面板（greatcircle 主题时显示） */
+  .gc-panel{position:absolute;right:20px;bottom:60px;z-index:1000;width:300px;
+    background:rgba(11,18,32,.94);border:1px solid var(--panel-line);border-radius:12px;
+    backdrop-filter:blur(8px);color:var(--txt);box-shadow:0 8px 24px rgba(0,0,0,.5);
+    font-family:"Microsoft YaHei",sans-serif;transition:.25s;}
+  .gc-panel.collapsed{height:46px;overflow:hidden;}
+  .gc-header{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 14px;border-bottom:1px solid var(--panel-line);cursor:pointer;user-select:none;}
+  .gc-panel.collapsed .gc-header{border-bottom:none;}
+  .gc-header .title{font-size:14px;font-weight:700;}
+  .gc-toggle{background:transparent;border:1px solid var(--panel-line);color:var(--txt);
+    padding:3px 10px;border-radius:6px;font-size:11px;cursor:pointer;}
+  .gc-toggle:hover{border-color:var(--accent2);}
+  .gc-body{padding:10px 14px 14px;}
+  .gc-point{font-size:12px;color:var(--accent2);font-weight:600;margin:8px 0 4px;}
+  .gc-point:first-child{margin-top:0;}
+  .gc-row{margin:4px 0;}
+  .gc-row .lab{display:flex;justify-content:space-between;font-size:11px;color:var(--txt-dim);margin-bottom:1px;}
+  .gc-row .val{color:#ffd166;font-weight:600;font-variant-numeric:tabular-nums;}
+  .gc-row input[type=range]{width:100%;height:5px;-webkit-appearance:none;appearance:none;background:#16273e;border-radius:3px;outline:none;cursor:pointer;}
+  .gc-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent2);cursor:pointer;border:none;}
   @media (max-width:760px){
     .panel{position:absolute;z-index:1300;height:100%;transform:translateX(-100%);transition:.25s;box-shadow:0 0 30px rgba(0,0,0,.5);}
     .panel.open{transform:translateX(0);}
@@ -90,15 +111,6 @@
           <button class="opt-btn active" data-preset="side">侧面</button>
           <button class="opt-btn" data-preset="north">北极俯视</button>
           <button class="opt-btn" data-preset="south">南极俯视</button>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-label"><span class="dot" style="background:#ffd166"></span>地球底图</div>
-        <div class="btn-row" id="baseRow">
-          <button class="opt-btn active" data-base="sat">卫星影像</button>
-          <button class="opt-btn" data-base="terrain">分层设色地形</button>
-          <button class="opt-btn" data-base="political">政区图</button>
         </div>
       </div>
 
@@ -142,6 +154,34 @@
     <canvas id="canvas3d"></canvas>
     <canvas id="canvas2d"></canvas>
     <div class="view-hint" id="viewHint">拖拽旋转 · 滚轮缩放 · 按住 Ctrl 平移</div>
+
+    <!-- 最短航线浮动参数面板（仅 greatcircle 主题时显示） -->
+    <div class="gc-panel" id="gcPanel" style="display:none;">
+      <div class="gc-header" id="gcHeader">
+        <span class="title">📐 参数设置</span>
+        <button class="gc-toggle" id="gcToggle">收起</button>
+      </div>
+      <div class="gc-body" id="gcBody">
+        <div class="gc-point">点 A（纬度 / 经度）</div>
+        <div class="gc-row">
+          <div class="lab"><span>纬度</span><span class="val" id="gcALatVal"></span></div>
+          <input type="range" id="gcALatR" min="-90" max="90" step="1" value="40" />
+        </div>
+        <div class="gc-row">
+          <div class="lab"><span>经度</span><span class="val" id="gcALonVal"></span></div>
+          <input type="range" id="gcALonR" min="-180" max="180" step="1" value="116" />
+        </div>
+        <div class="gc-point">点 B（纬度 / 经度）</div>
+        <div class="gc-row">
+          <div class="lab"><span>纬度</span><span class="val" id="gcBLatVal"></span></div>
+          <input type="range" id="gcBLatR" min="-90" max="90" step="1" value="41" />
+        </div>
+        <div class="gc-row">
+          <div class="lab"><span>经度</span><span class="val" id="gcBLonVal"></span></div>
+          <input type="range" id="gcBLonR" min="-180" max="180" step="1" value="-74" />
+        </div>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -155,11 +195,9 @@
 var R = 1.0;                 // 地球半径（场景单位）
 var DEG = Math.PI / 180;
 
-/* ---------- 底图贴图 ---------- */
+/* ---------- 底图贴图（仅卫星影像） ---------- */
 var BASE_MAPS = {
-  sat:       'earth-sat.jpg',
-  terrain:   'earth-terrain.jpg',
-  political: 'earth-political.jpg'
+  sat:       'earth-sat.jpg'
 };
 var currentBase = 'sat';
 var texLoader = new THREE.TextureLoader();
@@ -238,24 +276,97 @@ function makeLine(points, color, dash){
   if(dash) line.material.opacity = 0.55;
   return line;
 }
-/* 经线：每 30° 一条（0,30,60...330） */
+/* ========== 加粗经纬网 ==========
+   用 TubeGeometry（经线）+ TorusGeometry（纬线）真正"加粗"，
+   避开 WebGL Line linewidth 不生效的限制。
+   每条经/纬线在球面外侧用一个 Sprite（Canvas+CanvasTexture）标注名称/度数。*/
+var TUBE_R = 0.0042;        // 普通经纬线管粗细
+var TUBE_R_KEY = 0.0052;    // 关键线管粗细（赤道/本初/回归/极圈）
+var LABEL_R = R * 1.045;    // 文字标签离球心距离
+var labelSpriteList = [];   // 收集所有标签 sprite（用于 2D 平面图时统一隐藏）
+
+/* 加粗经线：沿经度方向（半圆弧，从南极到北极） */
+function makeThickMeridian(lon, color, opacity, tubeR){
+  var pts = [];
+  for(var lat=-90; lat<=90; lat+=3){
+    pts.push(lonLatToVec3(lon, lat, R*1.006));
+  }
+  var curve = new THREE.CatmullRomCurve3(pts);
+  var geo = new THREE.TubeGeometry(curve, 64, tubeR||TUBE_R, 8, false);
+  var mat = new THREE.MeshBasicMaterial({color:color, transparent:true, opacity:opacity, depthWrite:false});
+  return new THREE.Mesh(geo, mat);
+}
+
+/* 加粗纬线：水平圆（旋转 TorusGeometry 让它在水平面） */
+function makeThickParallel(lat, color, opacity, tubeR){
+  var r = Math.cos(lat*DEG) * R * 1.006;
+  var torus = new THREE.Mesh(
+    new THREE.TorusGeometry(r, tubeR||TUBE_R, 8, 96),
+    new THREE.MeshBasicMaterial({color:color, transparent:true, opacity:opacity, depthWrite:false})
+  );
+  torus.rotation.x = Math.PI/2;
+  return torus;
+}
+
+/* 文字标签（Canvas + Sprite，永远面向相机，depthTest:false 确保不被球面遮挡） */
+function makeTextSprite(text, color){
+  var canvas = document.createElement('canvas');
+  canvas.width = 320; canvas.height = 72;
+  var ctx = canvas.getContext('2d');
+  ctx.font = 'bold 30px "Microsoft YaHei","PingFang SC",sans-serif';
+  ctx.fillStyle = color || '#fff';
+  ctx.strokeStyle = 'rgba(0,0,0,0.95)';
+  ctx.lineWidth = 5;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.strokeText(text, 160, 36);
+  ctx.fillText(text, 160, 36);
+  var tex = new THREE.CanvasTexture(canvas);
+  tex.needsUpdate = true;
+  var mat = new THREE.SpriteMaterial({map:tex, transparent:true, depthTest:false});
+  var sprite = new THREE.Sprite(mat);
+  sprite.scale.set(0.18, 0.04, 1);
+  sprite.renderOrder = 5;
+  labelSpriteList.push(sprite);
+  return sprite;
+}
+
+/* 经度文字（带 E/W 后缀） */
+function fmtLonLabel(v){
+  if(v===0) return '本初子午线';
+  return v<180 ? v+'°E' : (360-v)+'°W';
+}
+/* 纬度文字（关键线显示名称，其余用 °N/°S） */
+function fmtLatLabel(v){
+  if(v===0) return '赤道';
+  if(v===23.5) return '北回归线';
+  if(v===-23.5) return '南回归线';
+  if(v===66.5) return '北极圈';
+  if(v===-66.5) return '南极圈';
+  return Math.abs(v)+'°'+(v<0?'S':'N');
+}
+/* 16 进制颜色字符串 */
+function hexColor(n){ return '#' + n.toString(16).padStart(6, '0'); }
+
+/* 经线：每 30° 一条普通灰色经线（0° 由关键线覆盖） */
 (function buildMeridians(){
-  for(var lon=0; lon<360; lon+=30){
-    var pts=[];
-    for(var lat=-90; lat<=90; lat+=3) pts.push([lon, lat]);
-    graticuleGroup.add(makeLine(pts, 0x9fb2c8));
+  for(var lon=30; lon<360; lon+=30){
+    graticuleGroup.add(makeThickMeridian(lon, 0x9fb2c8, 0.6));
+    var sprite = makeTextSprite(fmtLonLabel(lon), '#cfd8e3');
+    sprite.position.copy(lonLatToVec3(lon, 0, LABEL_R));
+    graticuleGroup.add(sprite);
   }
 })();
-/* 纬线：每 30°（-60,-30,0,30,60），赤道单独高亮 */
+/* 标准纬线：±30°、±60° */
 (function buildParallels(){
-  for(var lat=-60; lat<=60; lat+=30){
-    if(lat===0) continue;
-    var pts=[];
-    for(var lon=0; lon<=360; lon+=3) pts.push([lon, lat]);
-    graticuleGroup.add(makeLine(pts, 0x9fb2c8));
-  }
+  [30, -30, 60, -60].forEach(function(lat){
+    graticuleGroup.add(makeThickParallel(lat, 0x9fb2c8, 0.6));
+    var sprite = makeTextSprite(fmtLatLabel(lat), '#cfd8e3');
+    sprite.position.copy(lonLatToVec3(180, lat, LABEL_R));
+    graticuleGroup.add(sprite);
+  });
 })();
-/* 关键线高亮 */
+/* 关键线（更粗 + 醒目颜色 + 文字标签） */
 var KEY_LINES = {
   equator:   {type:'parallel', val:0,     color:0xff5e5e, name:'赤道'},
   prime:     {type:'meridian', val:0,     color:0xff5e5e, name:'本初子午线'},
@@ -266,16 +377,20 @@ var KEY_LINES = {
 };
 (function buildKeyLines(){
   Object.keys(KEY_LINES).forEach(function(k){
-    var cfg = KEY_LINES[k], pts=[];
+    var cfg = KEY_LINES[k];
     if(cfg.type==='parallel'){
-      for(var lon=0; lon<=360; lon+=2) pts.push([lon, cfg.val]);
+      graticuleGroup.add(makeThickParallel(cfg.val, cfg.color, 0.95, TUBE_R_KEY));
     }else{
-      for(var lat=-90; lat<=90; lat+=2) pts.push([cfg.val, lat]);
+      graticuleGroup.add(makeThickMeridian(cfg.val, cfg.color, 0.95, TUBE_R_KEY));
     }
-    var line = makeLine(pts, cfg.color);
-    line.material.opacity = 0.9;
-    line.renderOrder = 1;
-    graticuleGroup.add(line);
+    /* 文字标签位置：关键纬线放 90°E、关键经线放 20°N
+       —— 错开普通经纬标签（普通经线 30°E 间隔赤道放、普通纬线 180° 经度放） */
+    var text = (cfg.type==='meridian') ? '本初子午线' : cfg.name;
+    var sprite = makeTextSprite(text, hexColor(cfg.color));
+    var labelLat = cfg.type==='parallel' ? cfg.val : 20;
+    var labelLon = cfg.type==='meridian' ? cfg.val : 90;
+    sprite.position.copy(lonLatToVec3(labelLon, labelLat, LABEL_R));
+    graticuleGroup.add(sprite);
   });
 })();
 
@@ -306,18 +421,8 @@ function addDot(lon, lat, color){
   return dot;
 }
 
-/* ---------- 底图切换 ---------- */
-document.getElementById('baseRow').addEventListener('click', function(e){
-  var btn = e.target.closest('.opt-btn'); if(!btn) return;
-  var key = btn.getAttribute('data-base');
-  if(key===currentBase) return;
-  currentBase = key;
-  earthMesh.material.map = textures[key];
-  earthMesh.material.needsUpdate = true;
-  Array.prototype.forEach.call(this.children, function(b){ b.classList.remove('active'); });
-  btn.classList.add('active');
-  draw2D();
-});
+/* ---------- 底图（仅卫星影像） ---------- */
+/* 底图固定为 sat，无需切换 */
 
 /* ---------- 视角预设 ---------- */
 var presetRow = document.getElementById('presetRow');
@@ -384,7 +489,7 @@ viewModeRow.addEventListener('click', function(e){
 });
 
 /* ---------- 2D 平面图（等距圆柱投影） ---------- */
-var IMG = { sat:null, terrain:null, political:null };
+var IMG = { sat:null };
 (function loadImages(){
   Object.keys(BASE_MAPS).forEach(function(k){
     var im = new Image();
@@ -446,8 +551,8 @@ var TOPICS = {
   },
   antipode: {
     title: '球对称点（对跖点）',
-    explain: '过球心作直线，与球面相交的两个点互为球对称点（对跖点）。它们连线穿过球心，是地球上距离最远的两点（约 20000 千米）。',
-    key: '纬度数值相等、南北纬相反；经度相差 180°（东经、西经互补）。例：北京（40°N，116°E）的对跖点是（40°S，64°W）。'
+    explain: '地球上的点可与另一个点构成多种"对称"关系。点击地图上 A 点展开，看关于赤道、地轴、地心三种对称。',
+    key: '① 关于赤道对称：纬度数值相等、南北纬相反（N↔S），经度不变。\n② 关于地轴对称：经度相差 180°（东↔西互补），纬度不变。\n③ 关于地心对称（对跖点）：纬度和经度都变（同时满足上面两条），地球上距离最远的两点（约 20000 千米）。'
   },
   greatcircle: {
     title: '两点间的最短航向',
@@ -467,6 +572,12 @@ var P = {
   antipodeLon: 116, antipodeLat: 40,
   gcALon: 116, gcALat: 40, gcBLon: -74, gcBLat: 41   // 北京 -> 纽约
 };
+
+/* ---------- 球对称点交互状态 ---------- */
+var antipodeExpanded = false;   // 点击 A 点后展开 3 个对称点
+var antipodeAMesh = null;       // A 点的 mesh（供 raycaster 点击检测）
+var raycaster = new THREE.Raycaster();
+var ndc = new THREE.Vector2();
 
 /* ---------- 大圆航线（slerp） ---------- */
 function greatCirclePoints(lon1, lat1, lon2, lat2, n){
@@ -505,12 +616,31 @@ function renderTopic3D(){
   }
   else if(currentTopic==='antipode'){
     var aLon=pt.antipodeLon, aLat=pt.antipodeLat;
-    var bLon = aLon>=0 ? aLon-180 : aLon+180;
-    var bLat = -aLat;
-    addDot(aLon, aLat, 0x00e5ff);
-    addDot(bLon, bLat, 0xff5e5e);
-    // 过球心直径连线
-    addLine([[aLon,aLat],[bLon,bLat]], 0xffd166, 2, 0.9);
+    /* 三种对称点（数学关系） */
+    var eqLon = aLon,            eqLat = -aLat;                    // ① 关于赤道对称：纬度取反、经度不变
+    var axLon = aLon>=0 ? aLon-180 : aLon+180, axLat = aLat;      // ② 关于地轴对称：经度 ±180、纬度不变
+    var antLon = axLon,          antLat = -aLat;                   // ③ 关于地心对称（对跖点）：同时满足上面两条
+    /* A 点（青色，可点击，sprite 标签始终显示） */
+    antipodeAMesh = addDot(aLon, aLat, 0x00e5ff);
+    var aLabel = makeTextSprite(
+      'A  '+fmtLat(aLat)+'  '+fmtLon(aLon).replace('°E','°E ').replace('°W','°W '),
+      '#7beaff');
+    aLabel.position.copy(lonLatToVec3(aLon, aLat, R*1.05));
+    hlGroup.add(aLabel);
+    if(antipodeExpanded){
+      /* 展开后显示 3 个对称点 */
+      addDot(eqLon, eqLat, 0xff9e80);
+      var l1 = makeTextSprite('① 赤道对称 '+fmtLat(eqLat)+'  '+fmtLon(eqLon), '#ff9e80');
+      l1.position.copy(lonLatToVec3(eqLon, eqLat, R*1.05)); hlGroup.add(l1);
+
+      addDot(axLon, axLat, 0x7bc96f);
+      var l2 = makeTextSprite('② 地轴对称 '+fmtLat(axLat)+'  '+fmtLon(axLon), '#7bc96f');
+      l2.position.copy(lonLatToVec3(axLon, axLat, R*1.05)); hlGroup.add(l2);
+
+      addDot(antLon, antLat, 0xff5e5e);
+      var l3 = makeTextSprite('③ 对跖点 '+fmtLat(antLat)+'  '+fmtLon(antLon), '#ff5e5e');
+      l3.position.copy(lonLatToVec3(antLon, antLat, R*1.05)); hlGroup.add(l3);
+    }
   }
   else if(currentTopic==='greatcircle'){
     var aLon=pt.gcALon, aLat=pt.gcALat, bLon=pt.gcBLon, bLat=pt.gcBLat;
@@ -541,11 +671,19 @@ function drawTopic2D(ctx, px, py, offX, offY, mapW, mapH){
   }
   else if(currentTopic==='antipode'){
     var aLon=pt.antipodeLon, aLat=pt.antipodeLat;
-    var bLon = aLon>=0 ? aLon-180 : aLon+180, bLat=-aLat;
-    dot(ctx, px(aLon), py(aLat), '#00e5ff'); dot(ctx, px(bLon), py(bLat), '#ff5e5e');
-    ctx.strokeStyle='#ffd166'; ctx.lineWidth=2; ctx.setLineDash([6,4]);
-    ctx.beginPath(); ctx.moveTo(px(aLon),py(aLat)); ctx.lineTo(px(bLon),py(bLat)); ctx.stroke();
-    ctx.setLineDash([]);
+    var eqLon=aLon, eqLat=-aLat;
+    var axLon=aLon>=0?aLon-180:aLon+180, axLat=aLat;
+    var antLon=axLon, antLat=-aLat;
+    dot(ctx, px(aLon), py(aLat), '#00e5ff');
+    if(antipodeExpanded){
+      dot(ctx, px(eqLon), py(eqLat), '#ff9e80');
+      dot(ctx, px(axLon), py(axLat), '#7bc96f');
+      dot(ctx, px(antLon), py(antLat), '#ff5e5e');
+      ctx.font='11px "Microsoft YaHei",sans-serif';
+      ctx.fillStyle='#ff9e80'; ctx.fillText('① 赤道对称', px(eqLon)+8, py(eqLat)-6);
+      ctx.fillStyle='#7bc96f'; ctx.fillText('② 地轴对称', px(axLon)+8, py(axLat)-6);
+      ctx.fillStyle='#ff5e5e'; ctx.fillText('③ 对跖点', px(antLon)+8, py(antLat)-6);
+    }
   }
   else if(currentTopic==='greatcircle'){
     var aLon=pt.gcALon, aLat=pt.gcALat, bLon=pt.gcBLon, bLat=pt.gcBLat;
@@ -583,9 +721,60 @@ function switchTopic(t, btn){
   var cfg = TOPICS[t];
   explainCard.innerHTML = '<div class="t">'+cfg.title+'</div><div class="p">'+cfg.explain+'</div><div class="key">★ '+cfg.key+'</div>';
   buildParams(t);
+  /* gcPanel 浮动面板仅在最短航向主题显示 */
+  var gcPanel = document.getElementById('gcPanel');
+  if(gcPanel){
+    gcPanel.style.display = (t==='greatcircle') ? 'block' : 'none';
+    if(t==='greatcircle' && gcPanel._refresh) gcPanel._refresh();
+  }
   renderTopic3D();
   if(currentView==='2d') draw2D();
 }
+
+/* ---------- 浮动参数面板（gcPanel）初始化 ---------- */
+(function bindGC(){
+  var gcPanel = document.getElementById('gcPanel');
+  if(!gcPanel) return;
+  var gcToggleBtn = document.getElementById('gcToggle');
+  var gcHeader = document.getElementById('gcHeader');
+  gcToggleBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    gcPanel.classList.toggle('collapsed');
+    gcToggleBtn.textContent = gcPanel.classList.contains('collapsed') ? '展开' : '收起';
+  });
+  gcHeader.addEventListener('click', function(){
+    gcPanel.classList.toggle('collapsed');
+    gcToggleBtn.textContent = gcPanel.classList.contains('collapsed') ? '展开' : '收起';
+  });
+  function fmt(v, isLat){
+    if(isLat) return fmtLat(v);
+    return fmtLon(v);
+  }
+  function bind(id, key, isLat){
+    var sl = document.getElementById(id);
+    var val = document.getElementById(id.replace('R','Val'));
+    function upd(){ val.textContent = fmt(parseFloat(sl.value), isLat); }
+    sl.addEventListener('input', function(){
+      P[key] = parseFloat(sl.value);
+      upd();
+      renderTopic3D();
+      if(currentView==='2d') draw2D();
+    });
+    /* 暴露给外部刷新滑块值+显示 */
+    sl._refresh = function(){ sl.value = P[key]; upd(); };
+  }
+  bind('gcALatR','gcALat',true);
+  bind('gcALonR','gcALon',false);
+  bind('gcBLatR','gcBLat',true);
+  bind('gcBLonR','gcBLon',false);
+  /* 暴露：刷新所有滑块 */
+  gcPanel._refresh = function(){
+    ['gcALatR','gcALonR','gcBLatR','gcBLonR'].forEach(function(id){
+      var sl = document.getElementById(id);
+      if(sl && sl._refresh) sl._refresh();
+    });
+  };
+})();
 
 function sliderRow(label, id, min, max, step, val, fmt, onChange){
   var div = document.createElement('div');
@@ -622,17 +811,21 @@ function buildParams(t){
     sliderRow('纬度', 'apLatSlider', -90, 90, 1, P.antipodeLat, fmtLat, function(v){
       P.antipodeLat = v; updateAntipode(); renderTopic3D(); if(currentView==='2d') draw2D();
     });
+    paramArea.insertAdjacentHTML('beforeend',
+      '<div style="display:flex;justify-content:center;padding:6px 0;">'+
+      '<button id="antipodeToggleBtn" class="opt-btn" style="background:var(--accent2);border-color:var(--accent2);color:#fff;font-weight:600;flex:0 0 auto;padding:8px 16px;">▶ 显示三种对称点</button></div>');
+    document.getElementById('antipodeToggleBtn').addEventListener('click', function(){
+      antipodeExpanded = !antipodeExpanded;
+      this.textContent = antipodeExpanded ? '▼ 收起对称点' : '▶ 显示三种对称点';
+      renderTopic3D(); if(currentView==='2d') draw2D();
+    });
+    paramArea.insertAdjacentHTML('beforeend','<div class="hint-line">也可用鼠标<strong>点击球面 A 点</strong>切换展开；显示后每个点带坐标标注。</div>');
     paramArea.insertAdjacentHTML('beforeend','<div class="hint-line" id="antipodeResult"></div>');
     updateAntipode();
   }
   else if(t==='greatcircle'){
-    paramArea.insertAdjacentHTML('beforeend','<div class="point-block"><div class="pt-title">A 点</div></div>');
-    sliderRow('经度', 'gcALonSlider', -180, 180, 1, P.gcALon, fmtLon, function(v){ P.gcALon=v; renderTopic3D(); if(currentView==='2d') draw2D(); });
-    sliderRow('纬度', 'gcALatSlider', -90, 90, 1, P.gcALat, fmtLat, function(v){ P.gcALat=v; renderTopic3D(); if(currentView==='2d') draw2D(); });
-    paramArea.insertAdjacentHTML('beforeend','<div class="point-block"><div class="pt-title">B 点</div></div>');
-    sliderRow('经度', 'gcBLonSlider', -180, 180, 1, P.gcBLon, fmtLon, function(v){ P.gcBLon=v; renderTopic3D(); if(currentView==='2d') draw2D(); });
-    sliderRow('纬度', 'gcBLatSlider', -90, 90, 1, P.gcBLat, fmtLat, function(v){ P.gcBLat=v; renderTopic3D(); if(currentView==='2d') draw2D(); });
-    paramArea.insertAdjacentHTML('beforeend','<div class="hint-line">黄色弧线即大圆航线（球面两点间最短路径）。</div>');
+    paramArea.insertAdjacentHTML('beforeend','<div class="hint-line">请在右侧浮动<strong>「参数设置」面板</strong>中调整点 A、点 B 的纬度/经度，地图上黄色弧线（即大圆航线）将实时更新。</div>');
+    paramArea.insertAdjacentHTML('beforeend','<div class="hint-line" style="margin-top:6px;">💡 <strong>大圆航线</strong>：球面上两点间的最短距离，是过两点及球心的大圆上的劣弧。它通常不是地图（等距圆柱投影）上的直线。</div>');
   }
 }
 function updateAntipode(){
@@ -662,6 +855,34 @@ onResize();
 /* ---------- 移动端面板开关 ---------- */
 document.getElementById('panelToggle').addEventListener('click', function(){
   document.getElementById('panel').classList.toggle('open');
+});
+
+/* ---------- 球对称点：点击 A 点展开 3 种对称 ---------- */
+renderer.domElement.addEventListener('click', function(e){
+  if(currentTopic !== 'antipode' || !antipodeAMesh) return;
+  var rect = renderer.domElement.getBoundingClientRect();
+  ndc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  ndc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(ndc, camera);
+  var hits = raycaster.intersectObject(antipodeAMesh, true);
+  if(hits.length > 0){
+    antipodeExpanded = !antipodeExpanded;
+    renderTopic3D();
+    if(currentView==='2d') draw2D();
+  }
+});
+/* hover 命中 A 点时光标变 pointer */
+renderer.domElement.addEventListener('mousemove', function(e){
+  if(currentTopic !== 'antipode' || !antipodeAMesh){
+    renderer.domElement.style.cursor = '';
+    return;
+  }
+  var rect = renderer.domElement.getBoundingClientRect();
+  ndc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  ndc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(ndc, camera);
+  var hits = raycaster.intersectObject(antipodeAMesh, true);
+  renderer.domElement.style.cursor = hits.length > 0 ? 'pointer' : '';
 });
 
 /* ---------- 渲染循环 ---------- */
