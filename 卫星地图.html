@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>已升级：在线地形图</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; }
+  body {
+    font-family: "Microsoft YaHei","PingFang SC","Hiragino Sans GB",sans-serif;
+    background: linear-gradient(135deg,#1e3c72,#2a5298);
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    text-align:center; padding:24px;
+  }
+  .card {
+    background: rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.25);
+    border-radius:18px; padding:40px 48px; max-width:520px;
+    backdrop-filter: blur(8px);
+  }
+  .card h1 { font-size:26px; margin-bottom:14px; }
+  .card p { font-size:16px; line-height:1.8; opacity:.92; margin-bottom:22px; }
+  .card a {
+    display:inline-block; padding:12px 30px; border-radius:30px;
+    background:#ffd166; color:#1e3c72; font-weight:700; text-decoration:none;
+    font-size:16px; transition:transform .15s;
+  }
+  .card a:hover { transform:translateY(-2px); }
+  .tip { margin-top:16px; font-size:13px; opacity:.7; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>🗺️ 本工具已升级为「在线地形图」</h1>
+    <p>原来的「在线卫星地图」已更名为 <b>在线地形图</b>，并迁移至工作台「地质与地貌」模块。<br/>新版本默认地形底图，更适合中国地形与世界地形的教学。</p>
+    <a href="地形图.html">立即前往在线地形图 →</a>
+    <div class="tip">页面将在 3 秒后自动跳转……</div>
+  </div>
+  <script>
+    setTimeout(function(){ location.href = "地形图.html"; }, 3000);
+  </script>
+</body>
+</html>
