@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>在线卫星地图 · 高中地理教学</title>
+<title>在线地形图 · 高中地理教学</title>
 <link rel="stylesheet" href="./leaflet/leaflet.css" />
 <style>
   :root{
@@ -118,15 +118,15 @@
   <button class="panel-toggle" id="panelToggle">☰ 工具</button>
   <aside class="panel" id="panel">
     <div class="panel-header">
-      <h1>🛰️ 在线卫星地图</h1>
-      <div class="sub">高中地理教学 · 中文标注 · 分界线与地形区</div>
+      <h1>⛰️ 在线地形图</h1>
+      <div class="sub">可用于中国地形和世界地形的教学</div>
     </div>
     <div class="panel-body">
       <div class="section">
         <div class="section-label"><span class="dot"></span>底图类型</div>
         <div class="btn-row" id="baseBtns">
-          <button class="map-btn active" data-base="sat">卫星影像</button>
-          <button class="map-btn" data-base="ter">地形</button>
+          <button class="map-btn" data-base="sat">卫星影像</button>
+          <button class="map-btn active" data-base="ter">地形</button>
           <button class="map-btn" data-base="vec">矢量</button>
         </div>
         <div class="hint-line" id="baseHint"></div>
@@ -228,10 +228,10 @@ buildBases();
 
 /* ---------- 地图初始化 ---------- */
 var map = L.map('map', {center:[34,104], zoom:4, zoomControl:true, attributionControl:true, worldCopyJump:true});
-var currentBase = 'sat';
-bases.sat.addTo(map);
+var currentBase = 'ter';
+bases.ter.addTo(map);
 var chkCia = document.getElementById('chkCia');
-if(useTDT){ tdtLabels.sat.addTo(map); chkCia.checked = true; }
+if(useTDT){ tdtLabels.ter.addTo(map); chkCia.checked = true; }
 else { esriLabels.addTo(map); chkCia.checked = true; }
 
 /* ---------- 底图切换 ---------- */
