@@ -15,14 +15,14 @@
   html,body{margin:0;height:100%;font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB",sans-serif;color:var(--txt);}
   .app{display:flex;height:100vh;width:100vw;overflow:hidden;background:#0a1320;}
   /* 左侧面板 */
-  .panel{width:300px;min-width:300px;background:linear-gradient(180deg,var(--panel-bg),var(--panel-bg2));
+  .panel{width:320px;min-width:320px;background:linear-gradient(180deg,var(--panel-bg),var(--panel-bg2));
     border-right:1px solid var(--panel-line);display:flex;flex-direction:column;height:100%;}
   .panel-header{padding:16px 18px 10px;border-bottom:1px solid var(--panel-line);}
   .panel-header h1{margin:0;font-size:18px;letter-spacing:1px;}
   .panel-header .sub{margin-top:4px;font-size:12px;color:var(--txt-dim);}
   .panel-body{flex:1;overflow-y:auto;padding:14px 16px;}
-  .section{margin-bottom:20px;}
-  .section-label{font-size:13px;font-weight:600;color:var(--txt);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+  .section{margin-bottom:6px;}
+  .section-label{font-size:13px;font-weight:600;color:var(--txt);margin:14px 0 8px;display:flex;align-items:center;gap:6px;}
   .section-label .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);}
   .btn-row{display:flex;gap:8px;flex-wrap:wrap;}
   .map-btn{flex:1;min-width:78px;padding:9px 6px;border:1px solid var(--panel-line);background:#16273e;color:var(--txt);
@@ -31,8 +31,15 @@
   .map-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
   .chk{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;font-size:13px;}
   .chk:hover{background:#16273e;}
-  .chk input{width:16px;height:16px;accent-color:var(--accent);}
+  .chk input{width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;}
+  .chk .swatch{width:16px;height:4px;border-radius:2px;flex-shrink:0;}
   .hint-line{font-size:11px;color:var(--txt-dim);margin-top:6px;line-height:1.5;}
+  /* 分界线列表 */
+  .boundary-list{display:flex;flex-direction:column;gap:1px;}
+  .sub-actions{display:flex;gap:8px;margin-top:8px;}
+  .sub-btn{flex:1;padding:6px 4px;border:1px solid var(--panel-line);background:#16273e;color:var(--txt);border-radius:7px;cursor:pointer;font-size:12px;}
+  .sub-btn:hover{border-color:var(--accent2);}
+  .divider{height:1px;background:var(--panel-line);margin:14px 0;}
   /* 搜索 */
   .search-box{display:flex;gap:8px;}
   .search-box input{flex:1;padding:9px 10px;border-radius:8px;border:1px solid var(--panel-line);background:#0c1828;color:var(--txt);font-size:13px;outline:none;}
@@ -50,6 +57,11 @@
   .copyright b{color:var(--txt);}
   .panel-toggle{display:none;position:absolute;top:10px;left:10px;z-index:1200;background:var(--panel-bg);color:var(--txt);
     border:1px solid var(--panel-line);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;}
+  /* tk 输入 */
+  .tk-row{display:flex;gap:8px;}
+  .tk-row input{flex:1;min-width:0;padding:8px 10px;border-radius:8px;border:1px solid var(--panel-line);background:#0c1828;color:var(--txt);font-size:12px;outline:none;}
+  .tk-row input:focus{border-color:var(--accent2);}
+  .tk-row button{padding:0 12px;border:none;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:12px;flex-shrink:0;}
   /* 地图区 */
   .stage{flex:1;position:relative;height:100%;}
   #map{position:absolute;inset:0;}
@@ -101,6 +113,32 @@
         <div class="hint-line" id="terrainHint">勾选后在图上标出主要高原、盆地、平原中心点（示意位置）。</div>
       </div>
 
+      <div class="divider"></div>
+
+      <div class="section">
+        <div class="section-label"><span class="dot" style="background:#ff5e5e"></span>重要地理分界线（示意）</div>
+        <div class="boundary-list" id="boundaryList"></div>
+        <div class="sub-actions">
+          <button class="sub-btn" id="bdAll">全选</button>
+          <button class="sub-btn" id="bdNone">全不选</button>
+        </div>
+        <div class="hint-line">各线为教学示意位置（依据教材经典分界，非精确行政边界）。</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section">
+        <div class="section-label"><span class="dot" style="background:#ffd166"></span>中文标注（天地图）</div>
+        <div class="tk-row">
+          <input id="tkInput" type="text" placeholder="粘贴你的天地图 tk（免费）" autocomplete="off" spellcheck="false" />
+          <button id="tkSave">启用</button>
+        </div>
+        <label class="chk"><input type="checkbox" id="chkCia" disabled /> <span>中文注记叠加</span></label>
+        <div class="hint-line" id="tkHint">未填入 tk 时地图为英文/无中文。到 <b>tianditu.gov.cn</b> 免费注册获取 tk，粘贴后即显示中文地名（卫星/地形/矢量均支持），tk 会本地保存，下次自动生效。</div>
+      </div>
+
+      <div class="divider"></div>
+
       <div class="section">
         <div class="section-label"><span class="dot"></span>地名搜索</div>
         <div class="search-box">
@@ -122,7 +160,7 @@
     <div class="copyright">
       <b>高中地理智能教学工作台 · 自制教学工具</b><br/>
       底图来源：Esri ArcGIS Online / OpenStreetMap / 天地图（国家基础地理信息中心）。<br/>
-      坐标与要素位置为示意中心点，仅供教学定位参考。
+      坐标、分界线与要素位置为示意，仅供教学定位参考。
     </div>
   </aside>
 
@@ -141,13 +179,15 @@
 <script src="./leaflet/leaflet.js"></script>
 <script>
 /* ============================================================
-   配置区
+   中文标注（天地图）配置
    ------------------------------------------------------------
-   如需「带中文标注」的天地图底图，请到 https://www.tianditu.gov.cn/
-   免费注册并在「应用管理」中创建应用，获取 tk（开发授权码）。
-   把下方字符串替换为你自己的 tk 即可；留空则使用 Esri / OSM 底图。
+   原参考网页使用的是作者自己的天地图 tk，不能挪用。
+   请到 https://www.tianditu.gov.cn/ 免费注册，在「应用管理」
+   创建应用获取 tk（开发授权码）。粘贴到左侧输入框即可。
+   tk 会保存在浏览器 localStorage，下次打开自动生效。
    ============================================================ */
-var TIANDITU_TK = "";   // ← 在此填入你自己的天地图 tk（可选）
+var TIANDITU_TK = '';
+try { TIANDITU_TK = localStorage.getItem('tdt_tk') || ''; } catch(e) {}
 
 /* ---------- 底图定义 ---------- */
 var esriImg = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -167,23 +207,28 @@ function tdt(layer){
 }
 
 var useTDT = (TIANDITU_TK && TIANDITU_TK.length>0);
-if(!useTDT){ document.getElementById('chkLabels').checked = true; }  // Esri 模式默认显示标注
-var bases = {};
-if(useTDT){
-  bases = {
-    sat: L.layerGroup([tdt('img'), tdt('cia')]),
-    ter: L.layerGroup([tdt('ter'), tdt('cta')]),
-    vec: L.layerGroup([tdt('vec'), tdt('cva')])
-  };
-}else{
-  bases = { sat: esriImg, ter: esriTerrain, vec: osmVec };
+var bases = {};        // 底图（不含注记）
+var tdtLabels = null;  // 天地图中文注记层（按底图类型）
+function buildBases(){
+  if(useTDT){
+    bases = {
+      sat: L.layerGroup([tdt('img')]),
+      ter: L.layerGroup([tdt('ter')]),
+      vec: L.layerGroup([tdt('vec')])
+    };
+    tdtLabels = { sat: tdt('cia'), ter: tdt('cta'), vec: tdt('cva') };
+  }else{
+    bases = { sat: esriImg, ter: esriTerrain, vec: osmVec };
+    tdtLabels = null;
+  }
 }
+buildBases();
 
 /* ---------- 地图初始化 ---------- */
 var map = L.map('map', {center:[34,104], zoom:4, zoomControl:true, attributionControl:true, worldCopyJump:true});
 var currentBase = 'sat';
 bases.sat.addTo(map);
-if(!useTDT){ esriLabels.addTo(map); }   // Esri 模式下默认带标注
+if(!useTDT){ esriLabels.addTo(map); }   // Esri 模式默认带英文/拼音标注
 
 /* ---------- 底图切换 ---------- */
 var baseBtns = document.getElementById('baseBtns');
@@ -191,13 +236,15 @@ baseBtns.addEventListener('click', function(e){
   var btn = e.target.closest('.map-btn'); if(!btn) return;
   var key = btn.getAttribute('data-base');
   if(key===currentBase) return;
+  if(useTDT && tdtLabels[currentBase] && map.hasLayer(tdtLabels[currentBase])) map.removeLayer(tdtLabels[currentBase]);
   map.removeLayer(bases[currentBase]);
   bases[key].addTo(map);
   currentBase = key;
   Array.prototype.forEach.call(baseBtns.children, function(b){ b.classList.remove('active'); });
   btn.classList.add('active');
-  // Esri 模式下，矢量底图不需要叠加地名标注层
-  if(!useTDT){
+  if(useTDT){
+    if(document.getElementById('chkCia').checked) tdtLabels[key].addTo(map);
+  }else{
     if(key==='vec'){ if(map.hasLayer(esriLabels)) map.removeLayer(esriLabels); }
     else { if(document.getElementById('chkLabels').checked) esriLabels.addTo(map); }
   }
@@ -206,16 +253,77 @@ baseBtns.addEventListener('click', function(e){
 /* 底图提示 */
 document.getElementById('baseHint').textContent = useTDT
   ? '已启用天地图（含中文标注）。'
-  : '当前使用 Esri 卫星影像 / OSM 矢量；在源码顶部填入天地图 tk 可获中文标注底图。';
+  : '当前使用 Esri 卫星影像 / OSM 矢量；在下方填入天地图 tk 可获中文标注底图。';
 
 /* ---------- 地名标注开关（仅 Esri 模式有效） ---------- */
 var chkLabels = document.getElementById('chkLabels');
-if(useTDT){ chkLabels.checked = true; chkLabels.disabled = true; chkLabels.parentElement.style.opacity=.6;
+if(useTDT){ chkLabels.checked=false; chkLabels.disabled=true; chkLabels.parentElement.style.opacity=.6;
   chkLabels.parentElement.title='天地图底图已含中文标注'; }
+else { chkLabels.checked = true; }
 chkLabels.addEventListener('change', function(){
   if(useTDT) return;
   if(currentBase==='vec') return; // 矢量底图不叠加
   if(this.checked) esriLabels.addTo(map); else map.removeLayer(esriLabels);
+});
+
+/* ---------- 重要地理分界线（示意） ---------- */
+/* 坐标写法为 [经度, 纬度]，绘制时转为 Leaflet 的 [纬度, 经度] */
+var BOUNDARIES = {
+  steps: { name:'地势三级阶梯界线', color:'#ff5e5e', dash:'6,4', lines:[
+    [[86,36],[94,38],[98,37],[100,30],[102,27]],                                  // 一、二级：昆仑—祁连—横断
+    [[122,50],[118,43],[116,40],[114,38],[112,35],[110,31],[110,27]]             // 二、三级：大兴安岭—太行—巫山—雪峰山
+  ]},
+  monsoon: { name:'季风区与非季风区分界', color:'#ffd166', dash:null, lines:[
+    [[124,50],[120,45],[110,41],[106,38],[100,35],[95,34],[88,32],[84,30]]       // 大兴安岭—阴山—贺兰山—巴颜喀拉—冈底斯
+  ]},
+  qh: { name:'秦岭—淮河线（南北分界）', color:'#4dd0e1', dash:null, lines:[
+    [[106,34],[108,34],[112,33],[115,33],[119,33],[121,33]]
+  ]},
+  drywet: { name:'干湿地区界线（800/400/200mm）', color:'#b388ff', dash:'2,5', lines:[
+    [[106,34],[108,34],[112,33],[115,33],[119,33]],                              // 800mm 湿润/半湿润 ≈ 秦淮
+    [[122,50],[118,44],[115,41],[110,38],[104,36],[98,35],[92,31],[88,29],[84,28]], // 400mm 半湿润/半干旱
+    [[110,41],[106,38],[100,37],[95,34],[88,32],[84,30]]                         // 200mm 半干旱/干旱
+  ]},
+  tembelt: { name:'温度带界线', color:'#ff9e80', dash:'4,4', lines:[
+    [[106,34],[108,34],[112,33],[115,33],[119,33]],                              // 暖温/亚热带 ≈ 秦淮
+    [[120,42],[115,41],[110,40],[105,38],[100,37]],                              // 中温/暖温带 ≈ 长城
+    [[110,21],[108,22],[105,23],[102,24]]                                        // 亚热/热带 ≈ 雷州—滇南
+  ]},
+  regions: { name:'四大地理区域界线', color:'#80cbc4', dash:'1,6', lines:[
+    [[106,34],[108,34],[112,33],[115,33],[119,33]],                              // 北方/南方 ≈ 秦淮
+    [[122,50],[118,44],[115,41],[110,38],[104,36],[98,35],[92,31],[88,29],[84,28]], // 北方/西北 ≈ 400mm
+    [[86,36],[94,38],[98,37],[100,30],[102,27]]                                  // 青藏地区界 ≈ 一二级阶梯
+  ]}
+};
+var boundaryLayers = {};
+var boundaryListEl = document.getElementById('boundaryList');
+Object.keys(BOUNDARIES).forEach(function(k){
+  var cfg = BOUNDARIES[k];
+  var grp = L.layerGroup();
+  cfg.lines.forEach(function(line){
+    var latlngs = line.map(function(p){ return [p[1], p[0]]; });
+    L.polyline(latlngs, {color:cfg.color, weight:2.5, opacity:.95, dashArray:cfg.dash||null}).addTo(grp);
+  });
+  boundaryLayers[k] = grp;
+  var lbl = document.createElement('label');
+  lbl.className = 'chk';
+  lbl.innerHTML = '<input type="checkbox" data-bd="'+k+'"><span class="swatch" style="background:'+cfg.color+'"></span><span>'+cfg.name+'</span>';
+  boundaryListEl.appendChild(lbl);
+});
+boundaryListEl.addEventListener('change', function(e){
+  var cb = e.target; if(!cb.dataset || !cb.dataset.bd) return;
+  var k = cb.dataset.bd;
+  if(cb.checked) boundaryLayers[k].addTo(map); else map.removeLayer(boundaryLayers[k]);
+});
+document.getElementById('bdAll').addEventListener('click', function(){
+  boundaryListEl.querySelectorAll('input[type=checkbox]').forEach(function(cb){
+    cb.checked = true; boundaryLayers[cb.dataset.bd].addTo(map);
+  });
+});
+document.getElementById('bdNone').addEventListener('click', function(){
+  boundaryListEl.querySelectorAll('input[type=checkbox]').forEach(function(cb){
+    cb.checked = false; map.removeLayer(boundaryLayers[cb.dataset.bd]);
+  });
 });
 
 /* ---------- 中国主要地形区（示意点） ---------- */
@@ -414,6 +522,46 @@ sIn.addEventListener('keydown', function(e){ if(e.key==='Enter') runSearch(); })
 function runSearchF(){ var q=sInF.value; sIn.value=q; doSearch(q, document.getElementById('searchStatus'), document.getElementById('resultList')); }
 sBtF.addEventListener('click', runSearchF);
 sInF.addEventListener('keydown', function(e){ if(e.key==='Enter') runSearchF(); });
+
+/* ---------- 中文注记（天地图）开关与 tk 启用 ---------- */
+var tkInput = document.getElementById('tkInput');
+var tkSave = document.getElementById('tkSave');
+var chkCia = document.getElementById('chkCia');
+var tkHint = document.getElementById('tkHint');
+tkInput.value = TIANDITU_TK;
+if(useTDT){ chkCia.disabled=false; chkCia.checked=true; chkCia.parentElement.style.opacity=1; tkHint.textContent='已启用天地图中文底图（tk 已本地保存）。'; }
+else { chkCia.disabled=true; chkCia.parentElement.style.opacity=.6; chkCia.parentElement.title='需先填入天地图 tk'; }
+
+chkCia.addEventListener('change', function(){
+  if(!useTDT) return;
+  if(this.checked) tdtLabels[currentBase].addTo(map); else map.removeLayer(tdtLabels[currentBase]);
+});
+
+tkSave.addEventListener('click', function(){
+  var v = (tkInput.value||'').trim();
+  TIANDITU_TK = v; useTDT = !!v;
+  try { if(v) localStorage.setItem('tdt_tk', v); else localStorage.removeItem('tdt_tk'); } catch(e){}
+  // 移除当前底图与注记
+  map.removeLayer(bases[currentBase]);
+  if(tdtLabels && map.hasLayer(tdtLabels[currentBase])) map.removeLayer(tdtLabels[currentBase]);
+  if(!useTDT && map.hasLayer(esriLabels)) map.removeLayer(esriLabels);
+  // 重建底图
+  buildBases();
+  bases[currentBase].addTo(map);
+  if(useTDT){
+    chkCia.disabled=false; chkCia.parentElement.style.opacity=1; chkCia.parentElement.removeAttribute('title');
+    chkCia.checked=true; tdtLabels[currentBase].addTo(map);
+    chkLabels.disabled=true; chkLabels.checked=false; chkLabels.parentElement.style.opacity=.6;
+    tkHint.textContent='已启用天地图中文底图（tk 已本地保存）。';
+    document.getElementById('baseHint').textContent='已启用天地图（含中文标注）。';
+  }else{
+    chkCia.disabled=true; chkCia.checked=false; chkCia.parentElement.style.opacity=.6; chkCia.parentElement.title='需先填入天地图 tk';
+    chkLabels.disabled=false; chkLabels.checked=true; chkLabels.parentElement.style.opacity=1; chkLabels.parentElement.removeAttribute('title');
+    esriLabels.addTo(map);
+    tkHint.textContent='未填入 tk 时地图为英文/无中文。到 tianditu.gov.cn 免费注册获取 tk，粘贴后即显示中文地名。';
+    document.getElementById('baseHint').textContent='当前使用 Esri 卫星影像 / OSM 矢量；在下方填入天地图 tk 可获中文标注底图。';
+  }
+});
 
 /* ---------- 坐标实时显示 ---------- */
 var coordsBar=document.getElementById('coordsBar');
