@@ -168,8 +168,10 @@
       <div class="section">
         <div class="section-label"><span class="dot"></span>底图类型</div>
         <div class="btn-row" id="baseBtns">
+          <button class="map-btn active" data-base="imgter">影像+晕渲</button>
+          <button class="map-btn" data-base="vecter">矢量+晕渲</button>
+          <button class="map-btn" data-base="ter">地形晕渲</button>
           <button class="map-btn" data-base="sat">卫星影像</button>
-          <button class="map-btn active" data-base="ter">地形</button>
           <button class="map-btn" data-base="vec">矢量</button>
         </div>
         <div class="hint-line" id="baseHint"></div>
@@ -286,11 +288,44 @@ var esriTerrain = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/servi
 var osmVec = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
   {maxZoom:19, attribution:'&copy; OpenStreetMap contributors', subdomains:'abc'});
 
-function tdt(layer){
+/* 实测结论（天地图 WMTS）：
+   - img / vec / cia / cva 最高到 18 级
+   - ter（地形晕渲）/ cta（地形注记）仅到 14 级；超过返回不透明纯色瓦片
+     （ter 为 RGB(163,185,206) 淡蓝灰，会整片盖住画面 —— 必须限制级别）
+   - ter 瓦片本身不透明（RGB 无 alpha），作为叠加层时必须用半透明混合 */
+var TDT_TOP_ZOOM = 18;   // 天地图影像/矢量最高级别
+var TER_TOP_ZOOM = 14;   // 地形晕渲/注记最高级别
+var HILLSHADE_OPACITY = 0.45;  // 晕渲叠加不透明度（保留底图细节的同时体现起伏）
+
+function tdt(layer, opts){
+  var o = {
+    subdomains:['0','1','2','3','4','5','6','7'],
+    /* detectRetina 在高清屏会把图层 maxZoom 减 1，故此处 +1 补偿，保证 18 级仍可显示 */
+    maxZoom: TDT_TOP_ZOOM + 1,
+    maxNativeZoom: TDT_TOP_ZOOM,   // 钳制实际请求级别，避免请求不存在的 19 级
+    detectRetina: true,            // 高清屏/4K 投影超采样，画面更锐利
+    attribution:'&copy; 天地图'
+  };
+  if(opts){ for(var k in opts){ o[k] = opts[k]; } }
   return L.tileLayer(
     'https://t{s}.tianditu.gov.cn/'+layer+'_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER='+layer+
     '&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&tk='+TIANDITU_TK,
-    {subdomains:['0','1','2','3','4','5','6','7'], maxZoom:18, attribution:'&copy; 天地图'});
+    o);
+}
+
+/* 地形晕渲层：限制在 14 级以内（杜绝糊屏）；晕渲为柔和图层，
+   超采样收益低却会让请求量翻 4 倍，故关闭 detectRetina */
+function tdtHillshade(opacity){
+  return tdt('ter', {
+    maxZoom: TER_TOP_ZOOM,
+    maxNativeZoom: TER_TOP_ZOOM,
+    detectRetina: false,
+    opacity: (typeof opacity === 'number') ? opacity : 1
+  });
+}
+/* 地形注记（cta）：同样仅到 14 级 */
+function tdtTerLabel(){
+  return tdt('cta', {maxZoom: TER_TOP_ZOOM, maxNativeZoom: TER_TOP_ZOOM, detectRetina: false});
 }
 
 var useTDT = (TIANDITU_TK && TIANDITU_TK.length>0);
@@ -299,24 +334,36 @@ var tdtLabels = null;  // 天地图中文注记层（按底图类型）
 function buildBases(){
   if(useTDT){
     bases = {
-      sat: L.layerGroup([tdt('img')]),
-      ter: L.layerGroup([tdt('ter')]),
-      vec: L.layerGroup([tdt('vec')])
+      /* 影像 / 矢量 打底（可到 18 级） + 半透明地形晕渲（14 级）→ 放大后依然高清且有立体感 */
+      imgter: L.layerGroup([tdt('img'), tdtHillshade(HILLSHADE_OPACITY)]),
+      vecter: L.layerGroup([tdt('vec'), tdtHillshade(HILLSHADE_OPACITY)]),
+      /* 纯地形晕渲（不透明，单独使用；上限 14 级） */
+      ter:    L.layerGroup([tdtHillshade(1)]),
+      sat:    L.layerGroup([tdt('img')]),
+      vec:    L.layerGroup([tdt('vec')])
     };
-    tdtLabels = { sat: tdt('cia'), ter: tdt('cta'), vec: tdt('cva') };
+    tdtLabels = { imgter: tdt('cia'), vecter: tdt('cva'), ter: tdtTerLabel(), sat: tdt('cia'), vec: tdt('cva') };
   }else{
-    bases = { sat: esriImg, ter: esriTerrain, vec: osmVec };
+    bases = {
+      imgter: L.layerGroup([esriImg, esriTerrain]),
+      vecter: L.layerGroup([osmVec, esriTerrain]),
+      sat: esriImg, ter: esriTerrain, vec: osmVec
+    };
     tdtLabels = null;
   }
 }
 buildBases();
 
 /* ---------- 地图初始化 ---------- */
-var map = L.map('map', {center:[34,104], zoom:4, zoomControl:true, attributionControl:true, worldCopyJump:true});
-var currentBase = 'ter';
-bases.ter.addTo(map);
+var map = L.map('map', {center:[34,104], zoom:4, maxZoom:TDT_TOP_ZOOM, zoomControl:true, attributionControl:true, worldCopyJump:true});
+/* 各底图模式的最大缩放级别：纯地形晕渲受天地图数据上限限制（14 级） */
+var BASE_TOP_ZOOM = { imgter:TDT_TOP_ZOOM, vecter:TDT_TOP_ZOOM, ter:TER_TOP_ZOOM, sat:TDT_TOP_ZOOM, vec:TDT_TOP_ZOOM };
+if(!useTDT){ BASE_TOP_ZOOM.ter = 13; }   // Esri 晕渲层最高 13 级
+var currentBase = 'imgter';   // 默认：影像 + 地形晕渲（细节最丰富、放大仍清晰）
+map.setMaxZoom(BASE_TOP_ZOOM[currentBase]);
+bases[currentBase].addTo(map);
 var chkCia = document.getElementById('chkCia');
-if(useTDT){ tdtLabels.ter.addTo(map); chkCia.checked = true; }
+if(useTDT){ tdtLabels[currentBase].addTo(map); chkCia.checked = true; }
 else { esriLabels.addTo(map); chkCia.checked = true; }
 
 /* ---------- 底图切换 ---------- */
@@ -327,6 +374,10 @@ baseBtns.addEventListener('click', function(e){
   if(key===currentBase) return;
   if(useTDT && tdtLabels[currentBase] && map.hasLayer(tdtLabels[currentBase])) map.removeLayer(tdtLabels[currentBase]);
   map.removeLayer(bases[currentBase]);
+  /* 同步该底图的最大缩放级别（纯地形晕渲上限 14 级），必要时先缩回可支持范围 */
+  var topZoom = BASE_TOP_ZOOM[key] || TDT_TOP_ZOOM;
+  if(map.getZoom() > topZoom) map.setZoom(topZoom);
+  map.setMaxZoom(topZoom);
   bases[key].addTo(map);
   currentBase = key;
   Array.prototype.forEach.call(baseBtns.children, function(b){ b.classList.remove('active'); });
@@ -341,7 +392,7 @@ baseBtns.addEventListener('click', function(e){
 
 /* 底图提示 */
 document.getElementById('baseHint').textContent = useTDT
-  ? '天地图中文底图（卫星 / 地形 / 矢量均含中文注记）。'
+  ? '影像+晕渲 / 矢量+晕渲可放大到 18 级；纯地形晕渲最高 14 级（天地图晕渲数据上限）。均含中文注记。'
   : '当前使用 Esri 卫星影像 / OSM 矢量；填入天地图 tk 可获中文标注底图。';
 
 /* ---------- 中文注记开关 ---------- */
