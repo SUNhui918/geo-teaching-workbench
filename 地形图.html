@@ -169,7 +169,23 @@
       <div class="section">
         <div class="section-label"><span class="dot"></span>图层显示</div>
         <label class="chk"><input type="checkbox" id="chkCia" /> <span>中文地名注记</span></label>
-        <div id="terrainGroups"></div>
+
+        <div class="grp open zone-parent" id="chinaTerrainWrap">
+          <div class="grp-head"><span class="caret">▶</span><span class="swatch" style="width:14px;height:4px;border-radius:2px;background:#c792ea"></span><span>中国地形区</span><span class="cnt">5 类</span></div>
+          <div class="grp-body">
+            <div id="terrainGroups"></div>
+          </div>
+          <div class="grp-actions"><button data-parent-all="china">全部显示</button><button data-parent-none="china">清除</button></div>
+        </div>
+
+        <div class="grp open zone-parent" id="worldTerrainWrap">
+          <div class="grp-head"><span class="caret">▶</span><span class="swatch" style="width:14px;height:4px;border-radius:2px;background:#457b9d"></span><span>世界地形区</span><span class="cnt">17 个区域</span></div>
+          <div class="grp-body">
+            <div id="worldTerrainGroups"></div>
+          </div>
+          <div class="grp-actions"><button data-parent-all="world">全部显示</button><button data-parent-none="world">清除</button></div>
+        </div>
+
         <div class="hint-line">勾选后在图上标出相应地形区的示意位置并显示名称。</div>
       </div>
 
@@ -197,7 +213,7 @@
 
       <div class="legend-box open" id="legendBox">
         <div class="legend-head"><span class="caret">▶</span><span>🗺️ 图例</span></div>
-        <div class="legend-body">
+        <div class="legend-body" id="legendBody">
           <div class="lg-title">搜索结果</div>
           <div class="lg-row"><span class="lg-dot" style="background:#ff5e5e"></span> 定位点（红圈）</div>
           <div class="lg-row"><span class="lg-label">地名</span> 地名注记</div>
@@ -514,6 +530,169 @@ var TERRAIN_ZONES = {
     ]
   }
 };
+
+/* ---------- 世界纯地形区分类图层（无注释，仅显示地名和位置） ---------- */
+var WORLD_TERRAIN_ZONES = {
+    east_asia: {
+        name: '东亚', color: '#ffb703', items: [
+            ['青藏高原', 88.0, 33.0],
+            ['内蒙古高原', 112.0, 42.0],
+            ['黄土高原', 109.0, 36.0],
+            ['云贵高原', 103.0, 26.0],
+            ['东北平原', 125.0, 46.0],
+            ['华北平原', 116.0, 36.0],
+            ['长江中下游平原', 113.0, 30.0],
+            ['喜马拉雅山脉', 86.0, 28.5],
+            ['昆仑山脉', 85.0, 36.0],
+            ['天山山脉', 85.0, 42.5],
+            ['秦岭', 108.0, 34.0],
+            ['大兴安岭', 122.0, 50.0],
+            ['东南丘陵', 114.0, 26.0],
+            ['山东丘陵', 118.0, 36.5],
+            ['辽东丘陵', 123.0, 40.0],
+            ['蒙古高原', 106.0, 45.0],
+            ['朝鲜半岛', 127.0, 40.0],
+            ['日本群岛', 138.0, 36.0]
+        ]
+    },
+    japan: {
+        name: '日本', color: '#fb8500', items: [
+            ['北海道岛', 142.8, 43.4],
+            ['本州岛', 138.0, 36.0],
+            ['四国岛', 133.5, 33.8],
+            ['九州岛', 130.8, 32.5],
+            ['富士山', 138.7, 35.3],
+            ['关东平原', 140.0, 36.0]
+        ]
+    },
+    southeast_asia: {
+        name: '东南亚', color: '#8ecae6', items: [
+            ['中南半岛', 102.0, 16.0],
+            ['马来群岛', 115.0, 0.0]
+        ]
+    },
+    south_asia: {
+        name: '南亚', color: '#219ebc', items: [
+            ['喜马拉雅山脉', 86.0, 28.0],
+            ['印度河平原', 71.0, 29.0],
+            ['恒河平原', 84.0, 25.5],
+            ['德干高原', 77.0, 17.0],
+            ['东高止山脉', 82.5, 17.5],
+            ['西高止山脉', 74.0, 15.0]
+        ]
+    },
+    india: {
+        name: '印度', color: '#023047', items: [
+            ['德干高原', 77.0, 17.0],
+            ['恒河平原', 84.0, 25.5],
+            ['印度河平原', 71.0, 29.0],
+            ['东高止山脉', 82.5, 17.5],
+            ['西高止山脉', 74.0, 15.0]
+        ]
+    },
+    central_asia: {
+        name: '中亚', color: '#ffb703', items: [
+            ['里海沿岸平原', 50.0, 47.0],
+            ['哈萨克丘陵', 70.0, 48.0],
+            ['图兰平原', 60.0, 45.0],
+            ['帕米尔高原', 72.0, 38.0]
+        ]
+    },
+    west_asia: {
+        name: '西亚', color: '#e07a5f', items: [
+            ['阿拉伯高原', 43.0, 24.0],
+            ['美索不达米亚平原', 44.0, 32.0],
+            ['伊朗高原', 57.0, 32.0],
+            ['安纳托利亚高原', 32.0, 39.0]
+        ]
+    },
+    africa: {
+        name: '非洲', color: '#f4a261', items: [
+            ['埃塞俄比亚高原', 38.0, 9.0],
+            ['东非大裂谷', 36.0, -3.0],
+            ['撒哈拉沙漠', 15.0, 23.0],
+            ['东非高原', 36.0, -3.0],
+            ['南非高原', 26.0, -26.0],
+            ['刚果盆地', 22.0, -0.5],
+            ['乞力马扎罗山', 37.3, -3.0],
+            ['阿特拉斯山脉', -5.0, 32.0]
+        ]
+    },
+    egypt: {
+        name: '埃及', color: '#e76f51', items: [
+            ['撒哈拉沙漠', 27.0, 25.0],
+            ['尼罗河三角洲', 31.2, 30.8]
+        ]
+    },
+    western_europe: {
+        name: '欧洲西部', color: '#2a9d8f', items: [
+            ['波德平原', 13.0, 53.0],
+            ['比利牛斯山脉', 0.5, 42.6],
+            ['阿尔卑斯山脉', 10.0, 46.5],
+            ['巴黎盆地', 2.5, 48.8],
+            ['西欧平原', 3.0, 50.0]
+        ]
+    },
+    russia_ee: {
+        name: '欧洲东部与俄罗斯', color: '#264653', items: [
+            ['东欧平原', 40.0, 55.0],
+            ['西西伯利亚平原', 75.0, 60.0],
+            ['中西伯利亚高原', 100.0, 63.0],
+            ['东西伯利亚山地', 120.0, 65.0],
+            ['乌拉尔山脉', 60.0, 58.0],
+            ['高加索山脉', 42.0, 43.2]
+        ]
+    },
+    north_america: {
+        name: '北美洲', color: '#457b9d', items: [
+            ['落基山脉', -115.0, 45.0],
+            ['中央大平原', -95.0, 40.0],
+            ['阿巴拉契亚山脉', -80.0, 38.0],
+            ['拉布拉多高原', -70.0, 55.0]
+        ]
+    },
+    united_states: {
+        name: '美国', color: '#1d3557', items: [
+            ['科迪勒拉山系', -120.0, 40.0],
+            ['密西西比平原', -90.0, 33.0],
+            ['科罗拉多高原', -110.0, 36.0],
+            ['大盆地', -117.0, 39.0],
+            ['中央大平原', -95.0, 40.0]
+        ]
+    },
+    latin_america: {
+        name: '拉丁美洲', color: '#6a040f', items: [
+            ['拉普拉塔平原', -60.0, -30.0],
+            ['巴塔哥尼亚高原', -68.0, -45.0],
+            ['亚马孙平原', -60.0, -3.0],
+            ['安第斯山脉', -70.0, -32.0],
+            ['巴西高原', -48.0, -17.0],
+            ['墨西哥高原', -102.0, 22.0]
+        ]
+    },
+    brazil: {
+        name: '巴西', color: '#9d0208', items: [
+            ['巴西高原', -48.0, -17.0],
+            ['亚马孙平原', -60.0, -3.0],
+            ['圭亚那高原', -60.0, 3.0]
+        ]
+    },
+    oceania_australia: {
+        name: '大洋洲与澳大利亚', color: '#38b000', items: [
+            ['大分水岭', 148.0, -25.0],
+            ['大自流盆地', 142.0, -28.0],
+            ['西部高原', 125.0, -25.0],
+            ['墨累-达令盆地', 145.0, -32.0]
+        ]
+    },
+    polar_regions: {
+        name: '南极地区', color: '#70d6ff', items: [
+            ['南极高原', 0.0, -85.0],
+            ['文森山', -85.4, -78.6]
+        ]
+    }
+};
+
 var zoneLayers = {};
 var zoneGroupsEl = document.getElementById('terrainGroups');
 Object.keys(TERRAIN_ZONES).forEach(function(k){
@@ -565,6 +744,96 @@ zoneGroupsEl.addEventListener('change', function(e){
   var k = cb.dataset.zone;
   if(cb.checked) zoneLayers[k].addTo(map); else map.removeLayer(zoneLayers[k]);
 });
+
+/* ---------- 世界地形区（分类图层，图上显示名称，无说明） ---------- */
+var worldGroupsEl = document.getElementById('worldTerrainGroups');
+var worldZoneLayers = {};
+Object.keys(WORLD_TERRAIN_ZONES).forEach(function(k){
+  var cfg = WORLD_TERRAIN_ZONES[k];
+  var grp = L.layerGroup();
+  cfg.items.forEach(function(d){
+    var nm = d[0], lon = d[1], lat = d[2];
+    var m = L.circleMarker([lat, lon], {radius:5, color:'#fff', weight:1.5, fillColor:cfg.color, fillOpacity:.85});
+    m.bindPopup('<div class="feature-card"><div class="fc-title">'+nm+'</div></div>');
+    grp.addLayer(m);
+    makeLabel(lat, lon, nm, cfg.color, 'zonename').addTo(grp);
+  });
+  worldZoneLayers[k] = grp;
+  var box = document.createElement('div');
+  box.className = 'grp';
+  box.innerHTML =
+    '<div class="grp-head"><span class="caret">▶</span><span class="swatch" style="width:14px;height:4px;border-radius:2px;background:'+cfg.color+'"></span><span>'+cfg.name+'</span><span class="cnt">'+cfg.items.length+' 个</span></div>' +
+    '<div class="grp-body">' +
+      '<label class="chk"><input type="checkbox" data-zone="'+k+'"><span>全部显示（含名称）</span></label>' +
+    '</div>' +
+    '<div class="grp-actions"><button data-zone-all="'+k+'">全选</button><button data-zone-none="'+k+'">清除</button></div>';
+  worldGroupsEl.appendChild(box);
+});
+worldGroupsEl.addEventListener('click', function(e){
+  var head = e.target.closest('.grp-head');
+  if(head){ head.parentElement.classList.toggle('open'); return; }
+  var bAll = e.target.closest('button[data-zone-all]');
+  if(bAll){
+    var k1 = bAll.getAttribute('data-zone-all');
+    var cb1 = worldGroupsEl.querySelector('input[data-zone="'+k1+'"]');
+    cb1.checked = true; worldZoneLayers[k1].addTo(map);
+    return;
+  }
+  var bNone = e.target.closest('button[data-zone-none]');
+  if(bNone){
+    var k2 = bNone.getAttribute('data-zone-none');
+    var cb2 = worldGroupsEl.querySelector('input[data-zone="'+k2+'"]');
+    cb2.checked = false; map.removeLayer(worldZoneLayers[k2]);
+    return;
+  }
+});
+worldGroupsEl.addEventListener('change', function(e){
+  var cb = e.target; if(!cb.dataset || !cb.dataset.zone) return;
+  var k = cb.dataset.zone;
+  if(cb.checked) worldZoneLayers[k].addTo(map); else map.removeLayer(worldZoneLayers[k]);
+});
+
+/* 父级面板：展开/收起 + 全部显示/清除 */
+function wireParentToggle(wrapEl){
+  wrapEl.addEventListener('click', function(e){
+    var head = e.target.closest('.grp-head');
+    if(head && head.parentElement === wrapEl){ head.parentElement.classList.toggle('open'); }
+  });
+}
+function wireParentAllNone(wrapEl, layersStore){
+  wrapEl.addEventListener('click', function(e){
+    var bAll = e.target.closest('button[data-parent-all]');
+    if(bAll){
+      Object.keys(layersStore).forEach(function(k){ layersStore[k].addTo(map); });
+      wrapEl.querySelectorAll('input[data-zone]').forEach(function(cb){ cb.checked = true; });
+      return;
+    }
+    var bNone = e.target.closest('button[data-parent-none]');
+    if(bNone){
+      Object.keys(layersStore).forEach(function(k){ map.removeLayer(layersStore[k]); });
+      wrapEl.querySelectorAll('input[data-zone]').forEach(function(cb){ cb.checked = false; });
+      return;
+    }
+  });
+}
+wireParentToggle(document.getElementById('chinaTerrainWrap'));
+wireParentAllNone(document.getElementById('chinaTerrainWrap'), zoneLayers);
+wireParentToggle(document.getElementById('worldTerrainWrap'));
+wireParentAllNone(document.getElementById('worldTerrainWrap'), worldZoneLayers);
+
+/* 世界地形区图例（动态生成，与数据同步） */
+(function(){
+  var lb = document.getElementById('legendBody');
+  if(!lb) return;
+  var title = document.createElement('div'); title.className='lg-title'; title.textContent='世界地形区';
+  lb.appendChild(title);
+  Object.keys(WORLD_TERRAIN_ZONES).forEach(function(k){
+    var cfg = WORLD_TERRAIN_ZONES[k];
+    var row = document.createElement('div'); row.className='lg-row';
+    row.innerHTML = '<span class="lg-swatch" style="background:'+cfg.color+'"></span> '+cfg.name;
+    lb.appendChild(row);
+  });
+})();
 
 /* ---------- 地名搜索 ---------- */
 /* 数据格式：[名称, 经度, 纬度, 介绍, 类别] */
