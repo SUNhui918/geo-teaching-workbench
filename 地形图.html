@@ -44,6 +44,14 @@
   .grp-head .cnt{font-size:11px;color:var(--txt-dim);margin-left:auto;flex-shrink:0;}
   .grp-body{display:none;padding:2px 0 4px;}
   .grp.open .grp-body{display:block;}
+  /* 子分类行：标题右侧内联勾选框 */
+  .grp-row{display:flex;align-items:center;gap:8px;padding:6px 10px;font-size:13px;border-top:1px solid var(--panel-line);}
+  .grp-row .swatch{width:14px;height:4px;border-radius:2px;flex-shrink:0;}
+  .grp-row .grp-name{flex-shrink:0;}
+  .grp-row .cnt{font-size:11px;color:var(--txt-dim);}
+  .chk-inline{display:flex;align-items:center;gap:5px;margin-left:auto;font-size:12px;cursor:pointer;flex-shrink:0;}
+  .chk-inline input{width:15px;height:15px;accent-color:var(--accent);flex-shrink:0;}
+  .master{margin-left:auto;}
   .grp-actions{display:flex;gap:6px;padding:4px 8px 8px;}
   .grp-actions button{flex:1;padding:5px 4px;border:1px solid var(--panel-line);background:#16273e;color:var(--txt);
     border-radius:7px;cursor:pointer;font-size:11px;}
@@ -171,14 +179,14 @@
         <label class="chk"><input type="checkbox" id="chkCia" /> <span>中文地名注记</span></label>
 
         <div class="grp open zone-parent" id="chinaTerrainWrap">
-          <div class="grp-head"><span class="caret">▶</span><span class="swatch" style="width:14px;height:4px;border-radius:2px;background:#c792ea"></span><span>中国地形区</span><span class="cnt">5 类</span></div>
+          <div class="grp-head"><span class="caret">▶</span><span class="swatch" style="width:14px;height:4px;border-radius:2px;background:#c792ea"></span><span>中国地形区</span><span class="cnt">5 类</span><label class="chk-inline master"><input type="checkbox" data-master="china"><span>全显</span></label></div>
           <div class="grp-body">
             <div id="terrainGroups"></div>
           </div>
         </div>
 
         <div class="grp open zone-parent" id="worldTerrainWrap">
-          <div class="grp-head"><span class="caret">▶</span><span class="swatch" style="width:14px;height:4px;border-radius:2px;background:#457b9d"></span><span>世界地形区</span><span class="cnt">17 个区域</span></div>
+          <div class="grp-head"><span class="caret">▶</span><span class="swatch" style="width:14px;height:4px;border-radius:2px;background:#457b9d"></span><span>世界地形区</span><span class="cnt">17 个区域</span><label class="chk-inline master"><input type="checkbox" data-master="world"><span>全显</span></label></div>
           <div class="grp-body">
             <div id="worldTerrainGroups"></div>
           </div>
@@ -707,14 +715,14 @@ Object.keys(TERRAIN_ZONES).forEach(function(k){
   });
   zoneLayers[k] = grp;
 
-  // 面板分组
+  // 面板分组（单行：标题右侧内联勾选框）
   var box = document.createElement('div');
-  box.className = 'grp';
+  box.className = 'grp-row';
   box.innerHTML =
-    '<div class="grp-head"><span class="caret">▶</span><span class="swatch" style="width:14px;height:4px;border-radius:2px;background:'+cfg.color+'"></span><span>'+cfg.name+'</span><span class="cnt">'+cfg.items.length+' 个</span></div>' +
-    '<div class="grp-body">' +
-      '<label class="chk"><input type="checkbox" data-zone="'+k+'"><span>显示（含名称）</span></label>' +
-    '</div>';
+    '<span class="swatch" style="width:14px;height:4px;border-radius:2px;background:'+cfg.color+'"></span>' +
+    '<span class="grp-name">'+cfg.name+'</span>' +
+    '<span class="cnt">'+cfg.items.length+' 个</span>' +
+    '<label class="chk-inline"><input type="checkbox" data-zone="'+k+'"><span>显示</span></label>';
   zoneGroupsEl.appendChild(box);
 });
 // 分组展开/收起
@@ -743,12 +751,12 @@ Object.keys(WORLD_TERRAIN_ZONES).forEach(function(k){
   });
   worldZoneLayers[k] = grp;
   var box = document.createElement('div');
-  box.className = 'grp';
+  box.className = 'grp-row';
   box.innerHTML =
-    '<div class="grp-head"><span class="caret">▶</span><span class="swatch" style="width:14px;height:4px;border-radius:2px;background:'+cfg.color+'"></span><span>'+cfg.name+'</span><span class="cnt">'+cfg.items.length+' 个</span></div>' +
-    '<div class="grp-body">' +
-      '<label class="chk"><input type="checkbox" data-zone="'+k+'"><span>显示（含名称）</span></label>' +
-    '</div>';
+    '<span class="swatch" style="width:14px;height:4px;border-radius:2px;background:'+cfg.color+'"></span>' +
+    '<span class="grp-name">'+cfg.name+'</span>' +
+    '<span class="cnt">'+cfg.items.length+' 个</span>' +
+    '<label class="chk-inline"><input type="checkbox" data-zone="'+k+'"><span>显示</span></label>';
   worldGroupsEl.appendChild(box);
 });
 worldGroupsEl.addEventListener('click', function(e){
@@ -764,12 +772,34 @@ worldGroupsEl.addEventListener('change', function(e){
 /* 父级面板：展开/收起 */
 function wireParentToggle(wrapEl){
   wrapEl.addEventListener('click', function(e){
+    if(e.target.closest('input, label')) return;   // 点击复选框不折叠面板
     var head = e.target.closest('.grp-head');
     if(head && head.parentElement === wrapEl){ head.parentElement.classList.toggle('open'); }
   });
 }
 wireParentToggle(document.getElementById('chinaTerrainWrap'));
 wireParentToggle(document.getElementById('worldTerrainWrap'));
+
+/* 父级主复选框：打钩=显示该面板全部地形区，取消=全部隐藏；并随子框状态联动 */
+function wireMaster(masterCb, layersStore, container){
+  if(!masterCb) return;
+  masterCb.addEventListener('change', function(){
+    var on = masterCb.checked;
+    Object.keys(layersStore).forEach(function(k){
+      if(on) layersStore[k].addTo(map); else map.removeLayer(layersStore[k]);
+      var cb = container.querySelector('input[data-zone="'+k+'"]');
+      if(cb) cb.checked = on;
+    });
+  });
+  container.addEventListener('change', function(e){
+    var cb = e.target; if(!cb.dataset || !cb.dataset.zone) return;
+    var allOn = true;
+    container.querySelectorAll('input[data-zone]').forEach(function(x){ if(!x.checked) allOn = false; });
+    masterCb.checked = allOn;
+  });
+}
+wireMaster(document.querySelector('input[data-master="china"]'), zoneLayers, zoneGroupsEl);
+wireMaster(document.querySelector('input[data-master="world"]'), worldZoneLayers, worldGroupsEl);
 
 /* 世界地形区图例（动态生成，与数据同步） */
 (function(){
