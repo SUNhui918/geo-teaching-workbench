@@ -104,15 +104,15 @@
   .feature-card .fc-note{color:var(--txt-dim);line-height:1.5;}
   /* 地图上的地名标签 */
   .geo-label{
-    font-size:12px;line-height:1.2;white-space:nowrap;font-weight:700;
+    font-size:24px;line-height:1.2;white-space:nowrap;font-weight:700;
     color:#fff;text-shadow:0 0 3px rgba(0,0,0,.95),0 0 6px rgba(0,0,0,.8),0 1px 2px rgba(0,0,0,.9);
     pointer-events:auto;cursor:default;
   }
   .geo-label .ldot{display:inline-block;width:7px;height:7px;border-radius:50%;
     border:1.5px solid #fff;box-shadow:0 0 4px rgba(0,0,0,.8);margin-right:3px;vertical-align:middle;}
   .geoname-wrap{display:flex;align-items:center;gap:5px;}
-  .geoname{font-size:11px;color:#2f9e6e;background:rgba(255,255,255,.92);border-radius:3px;padding:1px 5px;box-shadow:0 1px 3px rgba(0,0,0,.5);white-space:nowrap;font-weight:600;}
-  .zonename{font-size:11px;color:#fff;background:rgba(20,40,70,.9);border-radius:3px;padding:1px 5px;box-shadow:0 1px 3px rgba(0,0,0,.5);white-space:nowrap;font-weight:600;}
+  .geoname{font-size:22px;color:#2f9e6e;background:rgba(255,255,255,.92);border-radius:3px;padding:1px 5px;box-shadow:0 1px 3px rgba(0,0,0,.5);white-space:nowrap;font-weight:600;}
+  .zonename{font-size:22px;color:#fff;background:rgba(20,40,70,.9);border-radius:3px;padding:1px 5px;box-shadow:0 1px 3px rgba(0,0,0,.5);white-space:nowrap;font-weight:600;}
   /* 搜索结果地名注记 */
   .search-label{
     font-size:13px;font-weight:700;color:#fff;white-space:nowrap;
@@ -168,9 +168,9 @@
       <div class="section">
         <div class="section-label"><span class="dot"></span>底图类型</div>
         <div class="btn-row" id="baseBtns">
-          <button class="map-btn" data-base="vecter">矢量+晕渲</button>
-          <button class="map-btn" data-base="ter">地形晕渲</button>
           <button class="map-btn active" data-base="sat">卫星影像</button>
+          <button class="map-btn" data-base="ter">地形</button>
+          <button class="map-btn" data-base="vecter">矢量</button>
         </div>
         <div class="hint-line" id="baseHint"></div>
       </div>
@@ -387,7 +387,7 @@ baseBtns.addEventListener('click', function(e){
 
 /* 底图提示 */
 document.getElementById('baseHint').textContent = useTDT
-  ? '卫星影像 / 矢量+晕渲可放大到 18 级；纯地形晕渲最高 14 级（天地图晕渲数据上限）。注记已放大，字更清晰。'
+  ? '卫星影像 / 矢量可放大到 18 级；纯地形晕渲最高 14 级（天地图晕渲数据上限）。注记已放大，字更清晰。'
   : '当前使用 Esri 卫星影像 / OSM 矢量；填入天地图 tk 可获中文标注底图。';
 
 /* ---------- 中文注记开关 ---------- */
