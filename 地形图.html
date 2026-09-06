@@ -175,7 +175,6 @@
           <div class="grp-body">
             <div id="terrainGroups"></div>
           </div>
-          <div class="grp-actions"><button data-parent-all="china">全部显示</button><button data-parent-none="china">清除</button></div>
         </div>
 
         <div class="grp open zone-parent" id="worldTerrainWrap">
@@ -183,7 +182,6 @@
           <div class="grp-body">
             <div id="worldTerrainGroups"></div>
           </div>
-          <div class="grp-actions"><button data-parent-all="world">全部显示</button><button data-parent-none="world">清除</button></div>
         </div>
 
         <div class="hint-line">勾选后在图上标出相应地形区的示意位置并显示名称。</div>
@@ -715,29 +713,14 @@ Object.keys(TERRAIN_ZONES).forEach(function(k){
   box.innerHTML =
     '<div class="grp-head"><span class="caret">▶</span><span class="swatch" style="width:14px;height:4px;border-radius:2px;background:'+cfg.color+'"></span><span>'+cfg.name+'</span><span class="cnt">'+cfg.items.length+' 个</span></div>' +
     '<div class="grp-body">' +
-      '<label class="chk"><input type="checkbox" data-zone="'+k+'"><span>全部显示（含名称）</span></label>' +
-    '</div>' +
-    '<div class="grp-actions"><button data-zone-all="'+k+'">全选</button><button data-zone-none="'+k+'">清除</button></div>';
+      '<label class="chk"><input type="checkbox" data-zone="'+k+'"><span>显示（含名称）</span></label>' +
+    '</div>';
   zoneGroupsEl.appendChild(box);
 });
 // 分组展开/收起
 zoneGroupsEl.addEventListener('click', function(e){
   var head = e.target.closest('.grp-head');
-  if(head){ head.parentElement.classList.toggle('open'); return; }
-  var bAll = e.target.closest('button[data-zone-all]');
-  if(bAll){
-    var k1 = bAll.getAttribute('data-zone-all');
-    var cb1 = zoneGroupsEl.querySelector('input[data-zone="'+k1+'"]');
-    cb1.checked = true; zoneLayers[k1].addTo(map);
-    return;
-  }
-  var bNone = e.target.closest('button[data-zone-none]');
-  if(bNone){
-    var k2 = bNone.getAttribute('data-zone-none');
-    var cb2 = zoneGroupsEl.querySelector('input[data-zone="'+k2+'"]');
-    cb2.checked = false; map.removeLayer(zoneLayers[k2]);
-    return;
-  }
+  if(head){ head.parentElement.classList.toggle('open'); }
 });
 zoneGroupsEl.addEventListener('change', function(e){
   var cb = e.target; if(!cb.dataset || !cb.dataset.zone) return;
@@ -764,28 +747,13 @@ Object.keys(WORLD_TERRAIN_ZONES).forEach(function(k){
   box.innerHTML =
     '<div class="grp-head"><span class="caret">▶</span><span class="swatch" style="width:14px;height:4px;border-radius:2px;background:'+cfg.color+'"></span><span>'+cfg.name+'</span><span class="cnt">'+cfg.items.length+' 个</span></div>' +
     '<div class="grp-body">' +
-      '<label class="chk"><input type="checkbox" data-zone="'+k+'"><span>全部显示（含名称）</span></label>' +
-    '</div>' +
-    '<div class="grp-actions"><button data-zone-all="'+k+'">全选</button><button data-zone-none="'+k+'">清除</button></div>';
+      '<label class="chk"><input type="checkbox" data-zone="'+k+'"><span>显示（含名称）</span></label>' +
+    '</div>';
   worldGroupsEl.appendChild(box);
 });
 worldGroupsEl.addEventListener('click', function(e){
   var head = e.target.closest('.grp-head');
-  if(head){ head.parentElement.classList.toggle('open'); return; }
-  var bAll = e.target.closest('button[data-zone-all]');
-  if(bAll){
-    var k1 = bAll.getAttribute('data-zone-all');
-    var cb1 = worldGroupsEl.querySelector('input[data-zone="'+k1+'"]');
-    cb1.checked = true; worldZoneLayers[k1].addTo(map);
-    return;
-  }
-  var bNone = e.target.closest('button[data-zone-none]');
-  if(bNone){
-    var k2 = bNone.getAttribute('data-zone-none');
-    var cb2 = worldGroupsEl.querySelector('input[data-zone="'+k2+'"]');
-    cb2.checked = false; map.removeLayer(worldZoneLayers[k2]);
-    return;
-  }
+  if(head){ head.parentElement.classList.toggle('open'); }
 });
 worldGroupsEl.addEventListener('change', function(e){
   var cb = e.target; if(!cb.dataset || !cb.dataset.zone) return;
@@ -793,33 +761,15 @@ worldGroupsEl.addEventListener('change', function(e){
   if(cb.checked) worldZoneLayers[k].addTo(map); else map.removeLayer(worldZoneLayers[k]);
 });
 
-/* 父级面板：展开/收起 + 全部显示/清除 */
+/* 父级面板：展开/收起 */
 function wireParentToggle(wrapEl){
   wrapEl.addEventListener('click', function(e){
     var head = e.target.closest('.grp-head');
     if(head && head.parentElement === wrapEl){ head.parentElement.classList.toggle('open'); }
   });
 }
-function wireParentAllNone(wrapEl, layersStore){
-  wrapEl.addEventListener('click', function(e){
-    var bAll = e.target.closest('button[data-parent-all]');
-    if(bAll){
-      Object.keys(layersStore).forEach(function(k){ layersStore[k].addTo(map); });
-      wrapEl.querySelectorAll('input[data-zone]').forEach(function(cb){ cb.checked = true; });
-      return;
-    }
-    var bNone = e.target.closest('button[data-parent-none]');
-    if(bNone){
-      Object.keys(layersStore).forEach(function(k){ map.removeLayer(layersStore[k]); });
-      wrapEl.querySelectorAll('input[data-zone]').forEach(function(cb){ cb.checked = false; });
-      return;
-    }
-  });
-}
 wireParentToggle(document.getElementById('chinaTerrainWrap'));
-wireParentAllNone(document.getElementById('chinaTerrainWrap'), zoneLayers);
 wireParentToggle(document.getElementById('worldTerrainWrap'));
-wireParentAllNone(document.getElementById('worldTerrainWrap'), worldZoneLayers);
 
 /* 世界地形区图例（动态生成，与数据同步） */
 (function(){
