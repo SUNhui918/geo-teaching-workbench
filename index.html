@@ -14,6 +14,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>地理智能化教学工作台</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2bb8a3">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="地理工作台">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <style>
         :root {
             --bg: #f6f8fb;
@@ -597,6 +603,7 @@
                     <input type="text" class="nav-search-input" id="navSearch" placeholder="搜索资源..." oninput="handleSearch()">
                 </div>
                 <button class="nav-icon-btn" id="themeToggle" onclick="toggleTheme()" title="切换明暗主题">🌙</button>
+                <button class="nav-icon-btn" id="installBtn" title="安装应用到桌面/手机">📲</button>
             </div>
         </div>
         <div class="nav-row nav-row-2">
@@ -900,5 +907,61 @@
 (function(){var e=document.getElementById("wm-now");function p(n){return (n<10?"0":"")+n}function t(){var d=new Date();e.textContent="当前时间 "+d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes())}t();setInterval(t,30000)})();
 </script>
 <div id='wb-copyright-note'>本教学工作台由横山桥高级中学孙慧原创，仅供教学使用，未经许可不得商用</div>
+
+<!-- 安装应用引导弹窗 -->
+<div id="installModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(15,30,40,.55);align-items:center;justify-content:center;" onclick="if(event.target===this)closeInstall()">
+  <div style="background:#fff;max-width:460px;width:90%;border-radius:18px;padding:24px 22px;box-shadow:0 20px 60px rgba(0,0,0,.3);font-family:-apple-system,'Microsoft YaHei',sans-serif;color:#2d3a4a;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+      <span style="font-size:30px;line-height:1;">📲</span>
+      <h3 style="margin:0;font-size:18px;">安装到设备</h3>
+    </div>
+    <p style="font-size:14px;line-height:1.75;margin:8px 0 16px;color:#566;" id="installTip"></p>
+    <button onclick="closeInstall()" style="width:100%;padding:11px;border:0;border-radius:12px;background:#2bb8a3;color:#fff;font-size:15px;cursor:pointer;">知道了</button>
+  </div>
+</div>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js').catch(function (err) {
+        console.warn('SW 注册失败:', err);
+      });
+    });
+  }
+  /* 安装应用引导：电脑/安卓可用原生安装弹窗；iOS 需手动“添加到主屏幕”，这里给出分步指引 */
+  var deferredPrompt = null;
+  var installBtn = document.getElementById('installBtn');
+  if (installBtn) {
+    // 已作为安装后的独立应用运行时，隐藏按钮
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+      installBtn.style.display = 'none';
+    }
+    installBtn.addEventListener('click', function () {
+      var ua = navigator.userAgent;
+      var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function () { deferredPrompt = null; });
+        return;
+      }
+      var tip;
+      if (isIOS) {
+        tip = '苹果手机：用 Safari 打开本页面 → 点底部「分享」按钮（方形带向上箭头）→ 选「添加到主屏幕」→ 主屏即生成应用图标，可像原生 App 全屏使用。';
+      } else if (/Android/.test(ua)) {
+        tip = '安卓手机：点浏览器右上角菜单 →「安装应用 / 添加到主屏幕」（Chrome 会直接弹出安装提示，点「安装」即可）。';
+      } else {
+        tip = '电脑（Chrome / Edge）：地址栏右侧会出现「安装」图标，点一下即可安装到桌面；也可在浏览器菜单选「安装 高中地理智能化教学工作台」。';
+      }
+      document.getElementById('installTip').textContent = tip;
+      document.getElementById('installModal').style.display = 'flex';
+    });
+  }
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+  function closeInstall(){ var m=document.getElementById('installModal'); if(m) m.style.display='none'; }
+  window.closeInstall = closeInstall;
+</script>
 </body>
 </html>
