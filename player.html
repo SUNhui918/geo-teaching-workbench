@@ -89,8 +89,6 @@
 const params = new URLSearchParams(location.search);
 const swf = params.get('swf') || '';
 const names = {
-  'swf/sunrise_0.swf': '太阳周日视运动演示动画',
-  'swf/gongzhuan_0.swf': '公转的意义',
   'swf/diqiuyundong_0.swf': '地球的运动 Flash 课件',
 };
 if (names[swf]) document.getElementById('pageTitle').textContent = '🎬 ' + names[swf];
