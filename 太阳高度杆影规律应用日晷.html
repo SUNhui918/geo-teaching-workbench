@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<!-- 本页面由横山桥高级中学 孙慧制作，仅供教学使用，未经许可不得商用 -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>太阳高度 · 杆影、规律、应用与日晷</title>
+<style>
+:root{--bg:#0d1630;--card:#172656;--card2:#1d2f68;--line:#2c4185;--text:#e8eeff;--muted:#9fb0dd;--accent:#ffb02e;--blue:#4da3ff;--green:#5fd38a;--red:#ff6b6b;
+  --summer:#ff7a59;--equinox:#5fd38a;--winter:#58a6ff}
+*{box-sizing:border-box}
+html,body{margin:0;background:radial-gradient(1200px 700px at 30% -10%,#1d2f6b 0%,var(--bg) 60%);color:var(--text);font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;min-height:100vh}
+button{font-family:inherit}
+header{padding:12px 20px 4px;display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+header h1{margin:0;font-size:27px;letter-spacing:2px} header h1 span{color:var(--accent)}
+header p{margin:0;color:var(--muted);font-size:15px}
+header .school{margin-left:auto;font-size:13px;color:var(--muted);text-align:right;line-height:1.5}
+.tabs{display:flex;gap:6px;padding:6px 18px 0;flex-wrap:wrap}
+.tab{background:var(--card);border:1px solid var(--line);color:var(--muted);border-radius:12px 12px 0 0;padding:9px 16px;cursor:pointer;font-size:15px;text-align:left}
+.tab b{display:block;color:var(--text);font-size:16px}
+.tab.on{background:var(--card2);border-color:var(--accent);border-bottom-color:transparent}
+.tab.on b{color:var(--accent)}
+.mod{display:none;padding:10px 18px 18px}.mod.on{display:block}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:14px;align-items:start}
+.stage{background:linear-gradient(180deg,#0a1129,#0e1838);border:1px solid var(--line);border-radius:16px;position:relative;overflow:hidden}
+.stage canvas{display:block;width:100%;touch-action:none}
+.cvbig{height:clamp(420px,calc(100vh - 330px),720px)}
+.cvchart{height:200px;border-top:1px solid var(--line)}
+.vbar{position:absolute;top:10px;right:10px;display:flex;gap:6px;flex-wrap:wrap;z-index:2}
+.btn{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:7px 12px;font-size:14.5px;cursor:pointer}
+.btn:hover{border-color:var(--blue)} .btn.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+.btn.acc{background:var(--accent);border-color:var(--accent);color:#1a1300;font-weight:700}
+.panel{display:flex;flex-direction:column;gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 13px}
+.card h3{margin:0 0 6px;font-size:16px;display:flex;align-items:center;gap:8px}
+.card h3 .val{margin-left:auto;color:var(--accent);font-size:18px;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:12px;border-radius:6px;background:#2a3a70;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:4px solid var(--accent);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:4px solid var(--accent);cursor:pointer}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.chip{background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:4px 10px;font-size:13.5px;cursor:pointer}
+.chip:hover{border-color:var(--blue)} .chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.row{display:flex;align-items:center;gap:8px;margin-top:7px}
+.play{width:40px;height:40px;border-radius:50%;border:none;background:var(--accent);color:#1a1300;font-size:17px;cursor:pointer;font-weight:700;flex:none}
+.read{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:14.5px;margin:0}
+.read dt{color:var(--muted)} .read dd{margin:0;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+.q{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px}
+.q .t{font-size:15px;font-weight:600;line-height:1.55}
+.q .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.q .acts .btn{font-size:13px;padding:5px 10px}
+.why{display:none;font-size:14px;line-height:1.7;background:#1a2f22;border-left:3px solid var(--green);padding:7px 10px;border-radius:6px;margin-top:6px}
+.q.rev .why{display:block}
+.opt{display:block;width:100%;text-align:left;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:14px;cursor:pointer;margin-top:5px}
+.opt.pick{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)} .opt.right{background:#1e5a3a;border-color:var(--green)} .opt.wrong{background:#5a1e2a;border-color:var(--red)}
+.sub{display:flex;gap:6px;margin:0 0 10px;flex-wrap:wrap}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.two canvas{height:clamp(360px,calc(100vh - 380px),560px)}
+.two canvas+canvas{border-left:1px solid var(--line)}
+.tip{font-size:14px;line-height:1.7;color:#cfe0ff;background:#12204c;border-left:3px solid var(--blue);padding:7px 10px;border-radius:6px}
+.big{font-size:20px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums}
+table.sm{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:6px}
+table.sm th,table.sm td{border:1px solid var(--line);padding:4px 6px;text-align:center}
+table.sm th{background:var(--card2)}
+input[type=number]{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:15px;width:90px;font-family:inherit}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:6px 0 20px}
+@media (max-width:1080px){.grid{grid-template-columns:1fr}.cvbig{height:min(80vw,70vh)}}
+@media (max-width:640px){header h1{font-size:21px} header .school{display:none}.mod{padding:8px}.two{grid-template-columns:1fr}.two canvas{height:86vw}.two canvas+canvas{border-left:none;border-top:1px solid var(--line)}.tab{padding:7px 10px;font-size:12px}.tab b{font-size:14px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>☀ 太阳高度 · <span>杆影、规律、应用与日晷</span></h1>
+  <p>先观察、再测量、自己画出规律</p>
+  <div class="school">常州市武进区横山桥高级中学 · 地理教研组<br>仅限课堂教学使用</div>
+</header>
+<div class="tabs" id="tabs">
+  <button class="tab on" data-m="m1"><b>① 杆影的日变化</b>任意地点、任意一天</button>
+  <button class="tab" data-m="m2"><b>② 正午太阳高度的变化规律</b>纬度分布 · 季节变化</button>
+  <button class="tab" data-m="m3"><b>③ 正午太阳高度的应用</b>楼间距 · 热水器 · 测纬度</button>
+  <button class="tab" data-m="m4"><b>④ 拓展：日晷</b>赤道式日晷为什么能计时</button>
+</div>
+
+<!-- ============ 模块一 ============ -->
+<section class="mod on" id="m1">
+  <div class="grid">
+    <div class="stage">
+      <div class="vbar"><button class="btn on" data-v1="3d">立体视图</button><button class="btn" data-v1="top">俯视（日影图）</button></div>
+      <canvas id="c1" class="cvbig"></canvas>
+      <canvas id="c1b" class="cvchart"></canvas>
+    </div>
+    <div class="panel">
+      <div class="card"><h3>🌐 纬度 <span class="val" id="m1lat"></span></h3><input type="range" id="m1latR" min="-90" max="90" step="0.1"><div class="chips" id="m1places"></div></div>
+      <div class="card"><h3>📅 日期 <span class="val" id="m1date"></span></h3><input type="range" id="m1doyR" min="1" max="365" step="1"><div class="chips" id="m1terms"></div></div>
+      <div class="card"><h3>⏱ 地方时 <span class="val" id="m1time"></span></h3><input type="range" id="m1tR" min="0" max="24" step="0.0167">
+        <div class="row"><button class="play" id="m1play">▶</button><span style="font-size:14px;color:var(--muted)">播放一天（竿高 1 米）</span></div></div>
+      <div class="card"><h3>📊 观测数据</h3><dl class="read" id="m1read"></dl></div>
+      <div id="m1qs"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 模块二 ============ -->
+<section class="mod" id="m2">
+  <div class="sub"><button class="btn on" data-p2="lat">A. 同一天，不同纬度</button><button class="btn" data-p2="season">B. 同一地，不同季节</button></div>
+  <div class="grid">
+    <div class="stage"><div class="two"><canvas id="c2a"></canvas><canvas id="c2b"></canvas></div></div>
+    <div class="panel" id="m2panel"></div>
+  </div>
+</section>
+
+<!-- ============ 模块三 ============ -->
+<section class="mod" id="m3">
+  <div class="sub"><button class="btn on" data-p3="bld">楼间距</button><button class="btn" data-p3="solar">太阳能热水器</button><button class="btn" data-p3="lat">用竿影测纬度</button></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c3" class="cvbig"></canvas></div>
+    <div class="panel" id="m3panel"></div>
+  </div>
+</section>
+
+<!-- ============ 模块四 ============ -->
+<section class="mod" id="m4">
+  <div class="grid">
+    <div class="stage"><div class="vbar"><button class="btn" id="m4reset">⟲ 复位视角</button></div><canvas id="c4" class="cvbig"></canvas></div>
+    <div class="panel">
+      <div class="card"><h3>🌐 纬度 <span class="val" id="m4lat"></span></h3><input type="range" id="m4latR" min="5" max="85" step="0.1"><div class="chips" id="m4places"></div></div>
+      <div class="card"><h3>📅 日期 <span class="val" id="m4date"></span></h3><input type="range" id="m4doyR" min="1" max="365" step="1"><div class="chips" id="m4terms"></div></div>
+      <div class="card"><h3>⏱ 地方时 <span class="val" id="m4time"></span></h3><input type="range" id="m4tR" min="0" max="24" step="0.0167">
+        <div class="row"><button class="play" id="m4play">▶</button><span style="font-size:14px;color:var(--muted)">播放一天</span></div></div>
+      <div class="card"><h3>📊 晷影</h3><dl class="read" id="m4read"></dl></div>
+      <div id="m4qs"></div>
+    </div>
+  </div>
+</section>
+<footer>横山桥高中地理教研组 · 太阳高度交互课件 · 时间均为地方时；太阳直射点按二分二至（3/21、6/22、9/23、12/22）简化计算，黄赤交角取 23°26′</footer>
+
+<script>
+(()=>{
+/* ================= 公共 ================= */
+const D2R=Math.PI/180,R2D=180/Math.PI,EPS=23+26/60,POLAR=90-EPS;
+const MD=[31,28,31,30,31,30,31,31,30,31,30,31];
+const TERMS=[[80,'春分','#5fd38a'],[173,'夏至','#ff7a59'],[266,'秋分','#5fd38a'],[356,'冬至','#58a6ff']];
+const doyMD=d=>{let m=0;while(d>MD[m]){d-=MD[m];m++;}return [m+1,d];};
+const mdDoy=(m,d)=>{let s=0;for(let i=0;i<m-1;i++)s+=MD[i];return s+d;};
+function decl(d){if(d>=80&&d<173)return EPS*Math.sin(Math.PI/2*(d-80)/93);if(d>=173&&d<266)return EPS*Math.cos(Math.PI/2*(d-173)/93);
+  if(d>=266&&d<356)return -EPS*Math.sin(Math.PI/2*(d-266)/90);const k=d>=356?d-356:d+9;return -EPS*Math.cos(Math.PI/2*k/89);}
+function sunDir(phi,dl,H){const p=phi*D2R,d=dl*D2R,h=H*D2R;return [-Math.cos(d)*Math.sin(h),Math.cos(p)*Math.sin(d)-Math.sin(p)*Math.cos(d)*Math.cos(h),Math.sin(p)*Math.sin(d)+Math.cos(p)*Math.cos(d)*Math.cos(h)];}
+function H0(phi,dl){const pc=Math.max(-89.999,Math.min(89.999,phi));const x=-Math.tan(pc*D2R)*Math.tan(dl*D2R);if(x<=-1)return {type:'day',h0:180};if(x>=1)return {type:'night',h0:0};return {type:'rs',h0:Math.acos(x)*R2D};}
+const noonH=(phi,dl)=>90-Math.abs(phi-dl);
+function fmtDM(x){const a=Math.abs(x);let d=Math.floor(a+1e-9),m=Math.round((a-d)*60);if(m===60){d++;m=0;}return m?`${d}°${String(m).padStart(2,'0')}′`:`${d}°`;}
+const fmtLat=x=>Math.abs(x)<0.05?'0°':fmtDM(x)+(x>0?'N':'S');
+function fmtT(h){h=((h%24)+24)%24;let H=Math.floor(h),M=Math.round((h-H)*60);if(M===60){H=(H+1)%24;M=0;}return `${String(H).padStart(2,'0')}:${String(M).padStart(2,'0')}`;}
+function dirName(E,N){if(Math.hypot(E,N)<1e-6)return '—';let A=(Math.atan2(E,N)*R2D+360)%360;const n=['正北','东北','正东','东南','正南','西南','正西','西北'];
+  const near=x=>Math.abs(((A-x+540)%360)-180)<1;for(let k=0;k<8;k+=2)if(near(k*45))return n[k];return n[Math.round(A/45)%8];}
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],mul=(a,k)=>[a[0]*k,a[1]*k,a[2]*k],dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],norm=a=>{const l=Math.hypot(...a)||1;return [a[0]/l,a[1]/l,a[2]/l];};
+function slerp(a,b,t){const w=Math.acos(Math.max(-1,Math.min(1,dot(a,b))));if(w<1e-6)return a;const s=Math.sin(w);return add(mul(a,Math.sin((1-t)*w)/s),mul(b,Math.sin(t*w)/s));}
+const PLACES=[['北极点',90],['北极圈',POLAR],['北京',39.9],['常州',31.8],['北回归线',EPS],['赤道',0],['南回归线',-EPS],['南极圈',-POLAR]];
+const placeName=v=>{for(const [n,p] of PLACES)if(Math.abs(p-v)<0.06)return n;return '';};
+const $=id=>document.getElementById(id);
+const FONT='"PingFang SC","Microsoft YaHei",sans-serif';
+
+/* 画布工具 */
+function canvasCtx(cv){const r=cv.getBoundingClientRect(),dpr=Math.min(2,devicePixelRatio||1);const w=Math.max(10,r.width),h=Math.max(10,r.height);
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}
+  const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);c.W=w;c.H=h;return c;}
+function label(c,x,y,t,col,size,align,w){c.font=`${w||600} ${size||14}px ${FONT}`;c.textAlign=align||'center';c.textBaseline='middle';c.lineJoin='round';c.lineWidth=4;c.strokeStyle='rgba(8,14,34,.85)';c.strokeText(t,x,y);c.fillStyle=col||'#fff';c.fillText(t,x,y);}
+function makeCam(az,el,cx,cy,sc){const a=az*D2R,e=Math.max(-89.9,Math.min(89.9,el))*D2R;const cc=[Math.cos(e)*Math.sin(a),Math.cos(e)*Math.cos(a),Math.sin(e)];const r=norm([-cc[1],cc[0],0]),u=cross(cc,r);
+  return {c:cc,r,u,P:p=>({x:cx+sc*dot(p,r),y:cy-sc*dot(p,u),d:dot(p,cc)})};}
+function poly(c,cam,pts,close){c.beginPath();pts.forEach((p,i)=>{const q=cam.P(p);i?c.lineTo(q.x,q.y):c.moveTo(q.x,q.y);});if(close)c.closePath();}
+function circ3(center,u,v,r,n){const a=[];for(let i=0;i<=n;i++){const t=i/n*2*Math.PI;a.push(add(center,add(mul(u,r*Math.cos(t)),mul(v,r*Math.sin(t)))));}return a;}
+function arrowHead(c,x0,y0,x1,y1,col,s){const a=Math.atan2(y1-y0,x1-x0);s=s||10;c.save();c.translate(x1,y1);c.rotate(a);c.beginPath();c.moveTo(2,0);c.lineTo(-s,-s*0.55);c.lineTo(-s,s*0.55);c.closePath();c.fillStyle=col;c.fill();c.restore();}
+function drawSun(c,x,y,vis,r){const g=c.createRadialGradient(x,y,2,x,y,r*3);g.addColorStop(0,vis?'rgba(255,240,180,1)':'rgba(180,170,140,.6)');g.addColorStop(.4,vis?'rgba(255,190,60,.7)':'rgba(140,130,110,.3)');g.addColorStop(1,'rgba(255,170,40,0)');
+  c.fillStyle=g;c.beginPath();c.arc(x,y,r*3,0,7);c.fill();c.beginPath();c.arc(x,y,r,0,7);c.fillStyle=vis?'#ffc93c':'#9a927a';c.fill();}
+function chips(boxId,list,onPick,isOn){const box=$(boxId);box.innerHTML='';for(const [n,v,col] of list){const b=document.createElement('button');b.className='chip';b.textContent=n;b.dataset.v=v;if(col)b.style.borderColor=col;b.onclick=()=>onPick(v);box.appendChild(b);}
+  return ()=>box.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',isOn(+b.dataset.v)));}
+// 问题卡：{t, opts?, ans?, why}
+function questions(boxId,list){const box=$(boxId);box.innerHTML='';list.forEach((q,i)=>{const d=document.createElement('div');d.className='q';
+  d.innerHTML=`<div class="t">❓ ${q.t}</div>${q.opts?q.opts.map((o,j)=>`<button class="opt" data-j="${j}">${String.fromCharCode(65+j)}. ${o}</button>`).join(''):''}
+   <div class="acts">${q.go?'<button class="btn on go">🔭 去验证</button>':''}<button class="btn rv">💡 看原理</button></div><div class="why">${q.why}</div>`;
+  let pick=-1;d.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{pick=+b.dataset.j;d.querySelectorAll('.opt').forEach(x=>x.classList.remove('pick','right','wrong'));b.classList.add('pick');});
+  if(q.go)d.querySelector('.go').onclick=q.go;
+  d.querySelector('.rv').onclick=()=>{d.classList.add('rev');d.querySelectorAll('.opt').forEach((x,j)=>{if(j===q.ans)x.classList.add('right');else if(j===pick)x.classList.add('wrong');});};
+  box.appendChild(d);});}
+// 拖动旋转
+function orbit(cv,st,redraw){let drag=null;cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);drag=[e.clientX,e.clientY];});
+  cv.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag[0],dy=e.clientY-drag[1];drag=[e.clientX,e.clientY];st.az=(st.az-dx*0.4+360)%360;st.el=Math.max(st.elMin??3,Math.min(89.9,st.el+dy*0.35));if(st.onDrag)st.onDrag();redraw();});
+  const up=()=>drag=null;cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);}
+
+/* ================= 模块一：杆影日变化 ================= */
+const A={lat:31.8,doy:356,t:9,az:155,el:28,view:'3d',playing:false};
+const today=(()=>{const t=new Date();return mdDoy(t.getMonth()+1,Math.min(t.getDate(),MD[t.getMonth()]));})();
+const m1PlaceUpd=chips('m1places',PLACES,v=>{A.lat=v;m1();},v=>Math.abs(v-A.lat)<0.06);
+const m1TermUpd=chips('m1terms',TERMS.map(([d,n,c])=>[n,d,c]).concat([['今天',today]]),v=>{A.doy=v;m1();},v=>v===A.doy);
+$('m1latR').oninput=e=>{let v=+e.target.value;for(const [,p] of PLACES)if(Math.abs(v-p)<0.7)v=p;A.lat=v;m1();};
+$('m1doyR').oninput=e=>{A.doy=+e.target.value;m1();};
+$('m1tR').oninput=e=>{A.t=+e.target.value;A.playing=false;m1();};
+$('m1play').onclick=()=>{A.playing=!A.playing;if(A.playing){const hh=H0(A.lat,decl(A.doy));if(A.t>=12+hh.h0/15-0.05)A.t=hh.type==='rs'?12-hh.h0/15:0;}m1();};
+document.querySelectorAll('[data-v1]').forEach(b=>b.onclick=()=>{A.view=b.dataset.v1;if(A.view==='top'){A._az=A.az;A._el=A.el;A.az=180;A.el=89.9;}else{A.az=A._az||155;A.el=A._el||28;}m1();});
+orbit($('c1'),A,()=>{if(A.el<85&&A.view==='top'){A.view='3d';}m1();});
+const POLE=0.32;
+function shadowTip(s){const L=POLE*Math.hypot(s[0],s[1])/s[2];const v=norm([s[0],s[1],0]);return {L,tip:[-v[0]*Math.min(L,0.97),-v[1]*Math.min(L,0.97),0],cut:L>0.97};}
+function m1(){
+  const phi=A.lat,dl=decl(A.doy),H=(A.t-12)*15,s=sunDir(phi,dl,H),hh=H0(phi,dl);
+  const [m,d]=doyMD(A.doy),pn=placeName(phi),tn=TERMS.find(x=>x[0]===A.doy);
+  $('m1lat').textContent=(pn?pn+' ':'')+fmtLat(phi);$('m1date').textContent=`${m}月${d}日${tn?' '+tn[1]:''}`;$('m1time').textContent=fmtT(A.t);
+  $('m1latR').value=phi;$('m1doyR').value=A.doy;$('m1tR').value=A.t;$('m1play').textContent=A.playing?'❚❚':'▶';m1PlaceUpd();m1TermUpd();
+  document.querySelectorAll('[data-v1]').forEach(b=>b.classList.toggle('on',b.dataset.v1===A.view));
+  const alt=Math.asin(Math.max(-1,Math.min(1,s[2])))*R2D;
+  const Lm=alt>0.3?1/Math.tan(alt*D2R):Infinity;
+  const nh=noonH(phi,dl);
+  $('m1read').innerHTML=`<dt>直射点</dt><dd>${fmtLat(dl)}</dd><dt>太阳高度</dt><dd>${alt.toFixed(1)}°${alt<0?'（地平线下）':''}</dd>
+    <dt>太阳方位</dt><dd>${alt>0?dirName(s[0],s[1]):'—'}</dd><dt>影长（竿高1米）</dt><dd>${alt>0?(Lm>99?'很长':Lm.toFixed(2)+' 米'):'无影子'}</dd>
+    <dt>影子朝向</dt><dd>${alt>0?(Lm<0.005?'无影（直射）':dirName(-s[0],-s[1])):'—'}</dd>
+    <dt>正午太阳高度</dt><dd>${nh>=0?nh.toFixed(1)+'°':'—（极夜）'}</dd>
+    <dt>日出 / 日落</dt><dd>${hh.type==='day'?'极昼':hh.type==='night'?'极夜':fmtT(12-hh.h0/15)+' / '+fmtT(12+hh.h0/15)}</dd>`;
+  // ---- 场景 ----
+  const c=canvasCtx($('c1')),W=c.W,Hc=c.H,cam=makeCam(A.az,A.el,W/2,Hc*0.56,Math.min(W,Hc)*0.40);const top=A.el>80;
+  // 天空半球轮廓
+  c.beginPath();c.arc(W/2,Hc*0.56,Math.min(W,Hc)*0.40,0,7);c.strokeStyle='rgba(150,200,255,.25)';c.stroke();
+  // 地面
+  poly(c,cam,circ3([0,0,0],[1,0,0],[0,1,0],1,90),true);c.fillStyle='rgba(88,170,92,.55)';c.fill();c.strokeStyle='#8be08f';c.lineWidth=2;c.stroke();
+  for(let a=0;a<360;a+=15){const v=[Math.sin(a*D2R),Math.cos(a*D2R),0];const p=cam.P(mul(v,a%45?0.96:0.92)),q=cam.P(v);c.beginPath();c.moveTo(p.x,p.y);c.lineTo(q.x,q.y);c.strokeStyle='rgba(230,255,230,.6)';c.lineWidth=1;c.stroke();}
+  for(const [n,a] of [['北',0],['东',90],['南',180],['西',270]]){const v=[Math.sin(a*D2R),Math.cos(a*D2R),0];const q=cam.P(mul(v,1.1));label(c,q.x,q.y,n,'#eaffea',19);}
+  // 太阳视运动轨迹
+  const pts=[];for(let h=-180;h<=180;h+=2)pts.push(sunDir(phi,dl,h));
+  for(let k=0;k<pts.length-1;k++){const a=pts[k],b=pts[k+1];const up=a[2]>=0&&b[2]>=0;if(top&&!up)continue;const p=cam.P(a),q=cam.P(b);
+    c.beginPath();c.moveTo(p.x,p.y);c.lineTo(q.x,q.y);c.strokeStyle=up?'rgba(255,165,38,.8)':'rgba(255,165,38,.25)';c.lineWidth=up?2.4:1.4;c.setLineDash(up?[]:[5,5]);c.stroke();c.setLineDash([]);}
+  // 影端轨迹 + 整点
+  if(hh.type!=='night'){c.beginPath();let on=false;
+    for(let tt=0;tt<=24;tt+=0.05){const ss=sunDir(phi,dl,(tt-12)*15);if(ss[2]<Math.sin(3*D2R)){on=false;continue;}const T=shadowTip(ss);if(T.cut){on=false;continue;}const q=cam.P(T.tip);on?c.lineTo(q.x,q.y):c.moveTo(q.x,q.y);on=true;}
+    c.strokeStyle='rgba(20,30,20,.7)';c.lineWidth=1.6;c.setLineDash([4,3]);c.stroke();c.setLineDash([]);
+    for(let tt=0;tt<=24;tt++){const ss=sunDir(phi,dl,(tt-12)*15);if(ss[2]<Math.sin(3*D2R))continue;const T=shadowTip(ss);if(T.cut)continue;const q=cam.P(T.tip);c.beginPath();c.arc(q.x,q.y,3.2,0,7);c.fillStyle='#1b2a1b';c.fill();
+      if(tt%2===0||top)label(c,q.x,q.y+12,tt+'时','#f3fff3',11.5,'center',500);}}
+  // 当前影子
+  const foot=cam.P([0,0,0]),topP=cam.P([0,0,POLE]);
+  if(s[2]>0.005){const T=shadowTip(s),q=cam.P(T.tip);c.beginPath();c.moveTo(foot.x,foot.y);c.lineTo(q.x,q.y);c.strokeStyle='rgba(10,15,10,.9)';c.lineWidth=6;c.stroke();
+    if(T.cut)label(c,q.x,q.y-12,'影子更长 →','#fff',12);
+    // 光线：太阳→竿顶→影端
+    const sp=cam.P(s);c.beginPath();c.moveTo(sp.x,sp.y);c.lineTo(topP.x,topP.y);if(!T.cut)c.lineTo(q.x,q.y);c.strokeStyle='rgba(255,220,120,.85)';c.lineWidth=1.6;c.setLineDash([6,4]);c.stroke();c.setLineDash([]);
+    if(!T.cut&&!top){// 太阳高度角弧（在影端）
+      const tip=T.tip,toFoot=norm(mul(tip,-1)),toTop=norm(add([0,0,POLE],mul(tip,-1)));const r=0.12;const arc=[];for(let i=0;i<=20;i++)arc.push(add(tip,mul(slerp(toFoot,toTop,i/20),r)));
+      poly(c,cam,arc);c.strokeStyle='#ffd84d';c.lineWidth=2.4;c.stroke();const mpt=cam.P(add(tip,mul(slerp(toFoot,toTop,.5),r*1.8)));label(c,mpt.x,mpt.y,`h=${alt.toFixed(1)}°`,'#ffe9a0',13);}
+  }
+  // 竿
+  c.beginPath();c.moveTo(foot.x,foot.y);c.lineTo(topP.x,topP.y);c.strokeStyle='#f3f3f3';c.lineWidth=top?0:5;c.lineCap='round';c.stroke();c.lineCap='butt';
+  c.beginPath();c.arc(foot.x,foot.y,top?6:3.5,0,7);c.fillStyle=top?'#fff':'#ff5d5d';c.fill();
+  // 太阳
+  const sp=cam.P(s);if(!(top&&s[2]<0))drawSun(c,sp.x,sp.y,s[2]>=0,9);
+  label(c,14,20,`${pn?pn+' ':''}${fmtLat(phi)} · ${m}月${d}日 · 地方时 ${fmtT(A.t)}`,'#fff',17,'left');
+  label(c,14,44,top?'俯视：黑色虚线 = 一天中影子顶端走过的轨迹（日影图）':'黄色虚线：阳光经过竿顶，落到影子顶端',top?'#cfe0ff':'#ffe2a0',13,'left',500);
+  // ---- 曲线图 ----
+  const g=canvasCtx($('c1b')),gw=g.W,gh=g.H;const half=gw/2,pad=34;
+  function axes(x0,w,title,ymax,yl){g.strokeStyle='rgba(160,180,230,.4)';g.lineWidth=1;g.strokeRect(x0+pad,14,w-pad-12,gh-44);label(g,x0+pad+4,10,title,'#cfe0ff',12.5,'left');
+    for(let k=0;k<=24;k+=6){const x=x0+pad+(w-pad-12)*k/24;label(g,x,gh-20,k+'时','#9fb0dd',11,'center',400);}
+    for(const v of yl){const y=14+(gh-44)*(1-v/ymax);label(g,x0+pad-4,y,String(v),'#9fb0dd',11,'right',400);g.beginPath();g.moveTo(x0+pad,y);g.lineTo(x0+w-12,y);g.strokeStyle='rgba(160,180,230,.12)';g.stroke();}}
+  const X=(x0,w,t)=>x0+pad+(w-pad-12)*t/24;
+  axes(0,half,'太阳高度（°）',90,[0,30,60,90]);axes(half,half,'影长（竿高 1 米，米）',5,[0,1,2,3,4,5]);
+  g.beginPath();let on=false;for(let tt=0;tt<=24;tt+=0.1){const a=Math.asin(sunDir(phi,dl,(tt-12)*15)[2])*R2D;if(a<0){on=false;continue;}const x=X(0,half,tt),y=14+(gh-44)*(1-a/90);on?g.lineTo(x,y):g.moveTo(x,y);on=true;}g.strokeStyle='#ffb02e';g.lineWidth=2.4;g.stroke();
+  g.beginPath();on=false;for(let tt=0;tt<=24;tt+=0.05){const a=Math.asin(sunDir(phi,dl,(tt-12)*15)[2]);if(a<=0.01){on=false;continue;}const L=Math.min(5,1/Math.tan(a));const x=X(half,half,tt),y=14+(gh-44)*(1-L/5);on?g.lineTo(x,y):g.moveTo(x,y);on=true;}g.strokeStyle='#8fd0ff';g.lineWidth=2.4;g.stroke();
+  for(const [x0] of [[0],[half]]){const x=X(x0,half,A.t);g.beginPath();g.moveTo(x,14);g.lineTo(x,gh-30);g.strokeStyle='rgba(255,255,255,.6)';g.setLineDash([3,3]);g.stroke();g.setLineDash([]);}
+}
+questions('m1qs',[
+ {t:'播放一天：竿影的长短怎样变化？什么时刻影子最短？',why:'日出、日落时太阳高度最小，影子最长；随太阳升高影子变短，<b>地方时 12 时太阳高度最大、影子最短</b>，之后又变长。影长与太阳高度“此长彼消”：影长 = 竿高 ÷ tan h。'},
+ {t:'常州冬至日：日出时影子朝向哪里？正午呢？日落呢？',opts:['西北 → 正北 → 东北','西南 → 正北 → 东南','西北 → 正南 → 东北'],ans:0,go:()=>{A.lat=31.8;A.doy=356;A.t=7.2;A.view='3d';A.az=155;A.el=28;A.playing=true;m1();},
+  why:'影子总是<b>背向太阳</b>。冬至日太阳东南升、西南落，所以影子早上朝<b>西北</b>，正午太阳在正南、影子朝<b>正北</b>，傍晚朝<b>东北</b>。切到“俯视”看日影图：影子顶端在一天中划过一条弧线。'},
+ {t:'在哪里、哪一天的正午，竿子会“没有影子”？',opts:['常州的夏至日','北回归线上的夏至日','赤道上的冬至日'],ans:1,go:()=>{A.lat=EPS;A.doy=173;A.t=12;A.view='3d';A.playing=false;m1();},
+  why:'只有<b>太阳直射</b>时（太阳高度 90°）竿影长度为 0。太阳直射点只在南北回归线之间移动：夏至日直射北回归线，所以北回归线上夏至日正午“立竿无影”。常州在北回归线以北，全年都有影子。'}
+]);
+
+/* ================= 模块二：正午太阳高度规律 ================= */
+const B={part:'lat',doy:173,obs:31.8,rec:{},season:{doy:1,lats:[31.8,EPS,0,-40],trace:{},playing:false}};
+const SER_COL={80:'#5fd38a',173:'#ff7a59',266:'#c0e86a',356:'#58a6ff'};
+function serCol(d){return SER_COL[d]||'#d7b4ff';}
+document.querySelectorAll('[data-p2]').forEach(b=>b.onclick=()=>{B.part=b.dataset.p2;document.querySelectorAll('[data-p2]').forEach(x=>x.classList.toggle('on',x===b));m2panel();m2();});
+// 地球剖面图：太阳光从右侧平行射来
+function earthDiagram(c,dl,obsList,opts){
+  const W=c.W,Hc=c.H,R=Math.min(W*0.34,Hc*0.36),cx=W*0.46,cy=Hc*0.5;opts=opts||{};
+  // 光线
+  for(let k=-5;k<=5;k++){const y=cy+k*R*0.22;c.beginPath();c.moveTo(W-6,y);c.lineTo(cx+Math.sqrt(Math.max(0,R*R-(y-cy)**2)),y);c.strokeStyle='rgba(255,210,90,.35)';c.lineWidth=1.2;c.stroke();arrowHead(c,W-6,y,W-30,y,'rgba(255,210,90,.6)',7);}
+  label(c,W-10,cy-R*1.25,'太阳光（平行光）','#ffd27a',13,'right');
+  // 地球（昼半球亮）
+  c.save();c.beginPath();c.arc(cx,cy,R,0,7);c.clip();c.fillStyle='#1b2a55';c.fillRect(cx-R,cy-R,2*R,2*R);c.fillStyle='#2f6fb3';c.fillRect(cx,cy-R,R,2*R);c.restore();
+  c.beginPath();c.arc(cx,cy,R,0,7);c.strokeStyle='#9fd0ff';c.lineWidth=1.5;c.stroke();
+  c.beginPath();c.moveTo(cx,cy-R);c.lineTo(cx,cy+R);c.strokeStyle='rgba(255,255,255,.35)';c.setLineDash([4,4]);c.stroke();c.setLineDash([]);label(c,cx,cy+R+14,'晨昏线','#9fb0dd',12,'center',400);
+  const pt=(phi,r)=>{const th=(phi-dl)*D2R;return [cx+(r||R)*Math.cos(th),cy-(r||R)*Math.sin(th)];};
+  // 地轴
+  const np=pt(90,R*1.18),sp=pt(-90,R*1.18);c.beginPath();c.moveTo(sp[0],sp[1]);c.lineTo(np[0],np[1]);c.strokeStyle='#d7b4ff';c.lineWidth=1.6;c.stroke();label(c,np[0],np[1]-10,'N','#d7b4ff',13);label(c,sp[0],sp[1]+10,'S','#d7b4ff',13);
+  // 纬线（以弦表示）
+  for(const [v,n,col] of [[0,'赤道','#ff6b6b'],[EPS,'北回归线','#ffb36b'],[-EPS,'南回归线','#ffb36b'],[POLAR,'北极圈','#9fe0ff'],[-POLAR,'南极圈','#9fe0ff']]){
+    const a=pt(v),b=[cx-(a[0]-cx)*1,a[1]];const th=(v-dl)*D2R;const left=[cx-R*Math.cos(v*D2R)*Math.cos(dl*D2R)+0,0];
+    // 纬线圈在剖面上是一条与地轴垂直的弦
+    const ax=[Math.cos((90-dl)*D2R),-Math.sin((90-dl)*D2R)];const p1=pt(v),p2=pt(180-v);c.beginPath();c.moveTo(p1[0],p1[1]);c.lineTo(p2[0],p2[1]);c.strokeStyle=col;c.globalAlpha=.6;c.lineWidth=1.2;c.setLineDash(v?[4,3]:[]);c.stroke();c.setLineDash([]);c.globalAlpha=1;
+    label(c,p2[0]-6,p2[1],n,col,11.5,'right',500);}
+  // 直射点
+  const ss=pt(dl);c.beginPath();c.arc(ss[0],ss[1],5,0,7);c.fillStyle='#ffd23f';c.fill();label(c,ss[0]+10,ss[1]-12,`直射点 ${fmtLat(dl)}`,'#ffd23f',13,'left');
+  c.beginPath();c.moveTo(cx,cy);c.lineTo(ss[0],ss[1]);c.strokeStyle='rgba(255,210,63,.6)';c.lineWidth=1.2;c.stroke();
+  // 观测者
+  for(const o of obsList){const phi=o.lat,th=(phi-dl);const p=pt(phi);const day=Math.abs(th)<90;
+    c.beginPath();c.moveTo(cx,cy);c.lineTo(p[0],p[1]);c.strokeStyle=o.col||'#fff';c.globalAlpha=.55;c.lineWidth=1.2;c.stroke();c.globalAlpha=1;
+    // 地平线（切线）
+    const tx=Math.sin(th*D2R),ty=Math.cos(th*D2R);const Lh=R*0.42;c.beginPath();c.moveTo(p[0]-tx*Lh,p[1]-ty*Lh);c.lineTo(p[0]+tx*Lh,p[1]+ty*Lh);c.strokeStyle=o.col||'#8be08f';c.lineWidth=2.2;c.stroke();
+    // 小人
+    const nx=Math.cos(th*D2R),ny=-Math.sin(th*D2R);c.beginPath();c.moveTo(p[0],p[1]);c.lineTo(p[0]+nx*16,p[1]+ny*16);c.strokeStyle='#fff';c.lineWidth=3;c.stroke();c.beginPath();c.arc(p[0]+nx*20,p[1]+ny*20,4.5,0,7);c.fillStyle='#fff';c.fill();
+    if(day&&opts.angles!==false){const H=90-Math.abs(th);// 光线到达观测点
+      c.beginPath();c.moveTo(W-6,p[1]);c.lineTo(p[0],p[1]);c.strokeStyle='#ffd84d';c.lineWidth=2;c.stroke();
+      // 太阳高度角：光线方向(向右) 与 朝太阳一侧的地平线 之间
+      const sgn=th>=0?-1:1;const hz=[sgn*tx,sgn*ty];// 指向“向阳”一侧的地平线方向
+      const a0=Math.atan2(hz[1],hz[0]),a1=0;let da=a1-a0;while(da>Math.PI)da-=2*Math.PI;while(da<-Math.PI)da+=2*Math.PI;
+      c.beginPath();c.arc(p[0],p[1],26,a0,a0+da,da<0);c.strokeStyle='#ffd84d';c.lineWidth=2.4;c.stroke();
+      const am=a0+da/2;label(c,p[0]+Math.cos(am)*44,p[1]+Math.sin(am)*44,`H=${H.toFixed(1)}°`,'#ffe9a0',13);
+      if(opts.center){// 圆心角 = 两地纬度差
+        const a2=-th*D2R*0+0;const s0=Math.atan2(ss[1]-cy,ss[0]-cx),s1=Math.atan2(p[1]-cy,p[0]-cx);let dd=s1-s0;while(dd>Math.PI)dd-=2*Math.PI;while(dd<-Math.PI)dd+=2*Math.PI;
+        c.beginPath();c.arc(cx,cy,R*0.25,s0,s0+dd,dd<0);c.strokeStyle='#d7b4ff';c.lineWidth=2.2;c.stroke();const m=s0+dd/2;label(c,cx+Math.cos(m)*R*0.38,cy+Math.sin(m)*R*0.38,`纬度差 ${Math.abs(th).toFixed(1)}°`,'#e8d4ff',12.5);}
+    } else if(!day){label(c,p[0]+nx*34,p[1]+ny*34,'夜（极夜）','#9aa3b8',12);}
+    label(c,p[0]+nx*34,p[1]+ny*34+(day?14:0),o.name||fmtLat(phi),o.col||'#fff',12.5);
+  }
+  return {cx,cy,R,pt};
+}
+function m2panel(){const P=$('m2panel');
+  if(B.part==='lat'){P.innerHTML=`
+    <div class="card"><h3>📅 选择日期 <span class="val" id="m2date"></span></h3><div class="chips" id="m2terms"></div><input type="range" id="m2doyR" min="1" max="365" style="margin-top:8px"></div>
+    <div class="card"><h3>🧍 观测者纬度 <span class="val" id="m2obs"></span></h3><input type="range" id="m2obsR" min="-90" max="90" step="1">
+      <div style="font-size:13px;color:var(--muted);margin-top:4px">也可以直接在左图地球上拖动小人</div>
+      <div class="row"><button class="btn acc" id="m2rec">📍 测量并记录</button><button class="btn" id="m2auto">每隔 10° 自动测</button><button class="btn" id="m2clr">清空</button></div></div>
+    <div class="tip">任务：同一天，从北到南测出 6 个以上纬度的正午太阳高度，记录到右边的图上。观察这些点，你能发现什么？</div>
+    <div id="m2qs"></div>`;
+    const upd=chips('m2terms',TERMS.map(([d,n,c])=>[n,d,c]),v=>{B.doy=v;m2();},v=>v===B.doy);B._upd=upd;
+    $('m2doyR').oninput=e=>{B.doy=+e.target.value;m2();};$('m2obsR').oninput=e=>{B.obs=+e.target.value;m2();};
+    $('m2rec').onclick=()=>{rec(B.obs);m2();};$('m2auto').onclick=()=>{for(let v=-90;v<=90;v+=10)rec(v);m2();};$('m2clr').onclick=()=>{B.rec={};B.full=false;m2();};
+    questions('m2qs',[
+      {t:'同一天，正午太阳高度最大的是哪个纬度？',opts:['赤道','太阳直射点所在的纬度','北极点'],ans:1,why:'正午太阳高度在<b>太阳直射点</b>处最大（90°）。直射点在哪，最大值就在哪——夏至在北回归线，冬至在南回归线，春秋分在赤道。'},
+      {t:'从直射点向南、向北，每远离 10 个纬度，正午太阳高度变化多少？',opts:['减少 10°','减少 5°','不确定，越来越快'],ans:0,why:'看左图紫色的圆心角：观测点与直射点的<b>纬度差</b>，恰好等于它的地平面相对“直射地平面”倾斜的角度。所以 <b>H = 90° − 两地纬度差</b>（同侧相减、异侧相加）。离直射点每远 1°，H 少 1°，图上是两条斜率相同的直线，形成“∧”形。',
+        go:()=>{B.full=true;m2();}},
+      {t:'换成夏至、冬至再测：整条“∧”形曲线怎样移动？',why:'曲线的顶点随<b>直射点</b>在南北回归线之间移动：夏至顶点在 23°26′N，北半球各地正午太阳高度达到一年最大值；冬至顶点移到 23°26′S，北半球各地达到最小值。所以正午太阳高度“<b>由直射点向南北两侧递减</b>”。'}]);
+  } else {P.innerHTML=`
+    <div class="card"><h3>📍 选择要比较的地点（可多选）</h3><div class="chips" id="m2lats"></div></div>
+    <div class="card"><h3>📅 日期 <span class="val" id="m2sdate"></span></h3><input type="range" id="m2sR" min="1" max="365">
+      <div class="row"><button class="play" id="m2play">▶</button><span style="font-size:14px;color:var(--muted)">从 1 月 1 日播放一年，边走边画</span></div></div>
+    <div class="tip">任务：先预测常州一年中正午太阳高度何时最大、何时最小，再播放验证。注意曲线是一边播放一边“画”出来的。</div>
+    <div id="m2qs"></div>`;
+    const LL=[['北极圈',POLAR],['常州',31.8],['北回归线',EPS],['10°N',10],['赤道',0],['南回归线',-EPS],['40°S',-40]];
+    const box=$('m2lats');box.innerHTML='';LL.forEach(([n,v])=>{const b=document.createElement('button');b.className='chip';b.textContent=n;b.onclick=()=>{const i=B.season.lats.findIndex(x=>Math.abs(x-v)<0.01);if(i>=0)B.season.lats.splice(i,1);else B.season.lats.push(v);m2();};b.dataset.v=v;box.appendChild(b);});
+    $('m2sR').oninput=e=>{B.season.doy=+e.target.value;B.season.playing=false;m2();};
+    $('m2play').onclick=()=>{const S=B.season;S.playing=!S.playing;if(S.playing&&S.doy>=365)S.doy=1;m2();};
+    questions('m2qs',[
+      {t:'常州一年中正午太阳高度何时最大？何时最小？',opts:['春分最大，秋分最小','夏至最大，冬至最小','冬至最大，夏至最小'],ans:1,why:'常州在北回归线以北，直射点<b>越靠近常州</b>，正午太阳高度越大：夏至（直射北回归线）最大 81°38′，冬至最小 34°46′，相差 46°52′（两倍黄赤交角）。'},
+      {t:'赤道上，一年中正午太阳高度达到最大值几次？',opts:['1 次','2 次','4 次'],ans:1,why:'赤道在春分、秋分两次被太阳直射（90°），二至日最小（66°34′）。南北回归线之间的地方，每年都有<b>两次</b>太阳直射；回归线上一年一次。'},
+      {t:'40°S 的正午太阳高度何时最大？',opts:['6 月 22 日前后','12 月 22 日前后','3 月 21 日前后'],ans:1,why:'南回归线以南地区与北半球相反：<b>冬至日（12 月 22 日）最大，夏至日最小</b>。'},
+      {t:'比较常州和北回归线：一年中正午太阳高度的变化幅度一样吗？',why:'回归线及其以外（极昼极夜区除外）的地方，正午太阳高度年变化幅度都等于 <b>46°52′</b>，因为直射点在两回归线之间移动了 46°52′。回归线之间的地方变化幅度较小。'}]);
+  }
+}
+function rec(v){const k=B.doy;(B.rec[k]=B.rec[k]||[]);if(!B.rec[k].some(p=>Math.abs(p[0]-v)<0.5))B.rec[k].push([v,noonH(v,decl(k))]);}
+function m2(){
+  const ca=canvasCtx($('c2a')),cb=canvasCtx($('c2b'));
+  if(B.part==='lat'){const dl=decl(B.doy),[m,d]=doyMD(B.doy),tn=TERMS.find(x=>x[0]===B.doy);
+    $('m2date').textContent=`${m}月${d}日${tn?' '+tn[1]:''}`;$('m2doyR').value=B.doy;$('m2obs').textContent=fmtLat(B.obs);$('m2obsR').value=B.obs;B._upd&&B._upd();
+    B.geo=earthDiagram(ca,dl,[{lat:B.obs,col:'#8be08f',name:'观测者 '+fmtLat(B.obs)}],{center:true});
+    label(ca,12,18,'正午时刻的地球（经线剖面）','#cfe0ff',14,'left');
+    // 图表 H-纬度
+    const W=cb.W,Hc=cb.H,x0=46,y0=24,w=W-64,h=Hc-70;const X=v=>x0+(v+90)/180*w,Y=v=>y0+h*(1-v/90);
+    cb.strokeStyle='rgba(160,180,230,.45)';cb.strokeRect(x0,y0,w,h);label(cb,x0,12,'正午太阳高度（°）','#cfe0ff',13,'left');
+    for(const v of [-90,-60,-30,0,30,60,90]){label(cb,X(v),y0+h+14,v===0?'0°':Math.abs(v)+'°'+(v>0?'N':'S'),'#9fb0dd',11.5,'center',400);}
+    for(const v of [0,30,60,90]){label(cb,x0-6,Y(v),v+'°','#9fb0dd',11.5,'right',400);cb.beginPath();cb.moveTo(x0,Y(v));cb.lineTo(x0+w,Y(v));cb.strokeStyle='rgba(160,180,230,.12)';cb.stroke();}
+    for(const [v,n] of [[EPS,'北回归线'],[-EPS,'南回归线'],[0,'赤道']]){cb.beginPath();cb.moveTo(X(v),y0);cb.lineTo(X(v),y0+h);cb.strokeStyle='rgba(255,180,100,.25)';cb.setLineDash([3,4]);cb.stroke();cb.setLineDash([]);label(cb,X(v),y0+h+30,n,'#ffb36b',11,'center',400);}
+    label(cb,x0+w/2,Hc-8,'纬度','#9fb0dd',12);
+    for(const k in B.rec){const col=serCol(+k);const pts=B.rec[k].slice().sort((a,b)=>a[0]-b[0]);
+      if(B.full){cb.beginPath();let on=false;for(let v=-90;v<=90;v+=0.5){const hv=noonH(v,decl(+k));if(hv<0){on=false;continue;}on?cb.lineTo(X(v),Y(hv)):cb.moveTo(X(v),Y(hv));on=true;}cb.strokeStyle=col;cb.lineWidth=2;cb.stroke();}
+      for(const [v,hv] of pts){if(hv<0){cb.beginPath();cb.arc(X(v),Y(0),4,0,7);cb.strokeStyle=col;cb.stroke();continue;}cb.beginPath();cb.arc(X(v),Y(hv),5,0,7);cb.fillStyle=col;cb.fill();}
+      const [mm,dd]=doyMD(+k);const tn2=TERMS.find(x=>x[0]===+k);label(cb,X(decl(+k)),Y(90)-0+(-6),tn2?tn2[1]:`${mm}/${dd}`,col,12);}
+    // 当前观测点（未记录）
+    const hv=noonH(B.obs,dl);if(hv>=0){cb.beginPath();cb.arc(X(B.obs),Y(hv),7,0,7);cb.strokeStyle='#fff';cb.lineWidth=1.5;cb.setLineDash([2,2]);cb.stroke();cb.setLineDash([]);}
+    const n=Object.values(B.rec).reduce((a,b)=>a+b.length,0);label(cb,x0+w-4,y0+12,n?`已记录 ${n} 个点`:'还没有记录','#cfe0ff',12.5,'right');
+  } else {const S=B.season,dl=decl(S.doy),[m,d]=doyMD(S.doy);
+    $('m2sdate').textContent=`${m}月${d}日`;$('m2sR').value=S.doy;$('m2play').textContent=S.playing?'❚❚':'▶';
+    $('m2lats').querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',S.lats.some(x=>Math.abs(x-+b.dataset.v)<0.01)));
+    const cols=['#ffb02e','#ff7a59','#5fd38a','#4da3ff','#d7b4ff','#8fd0ff','#ff9bd2'];const colOf=v=>cols[[POLAR,31.8,EPS,10,0,-EPS,-40].findIndex(x=>Math.abs(x-v)<0.01)]||'#fff';
+    const nm=v=>({[POLAR]:'北极圈',31.8:'常州',[EPS]:'北回归线',10:'10°N',0:'赤道',[-EPS]:'南回归线','-40':'40°S'})[v]||fmtLat(v);
+    earthDiagram(ca,dl,S.lats.map(v=>({lat:v,col:colOf(v),name:nm(v)})),{angles:S.lats.length<=2});
+    label(ca,12,18,`${m}月${d}日 正午的地球`,'#cfe0ff',14,'left');
+    const W=cb.W,Hc=cb.H,x0=46,y0=24,w=W-64,h=Hc-60;const X=dd=>x0+(dd-1)/364*w,Y=v=>y0+h*(1-v/90);
+    cb.strokeStyle='rgba(160,180,230,.45)';cb.strokeRect(x0,y0,w,h);label(cb,x0,12,'正午太阳高度（°）','#cfe0ff',13,'left');
+    for(let mo=1;mo<=12;mo++){const dd=mdDoy(mo,1);label(cb,X(dd)+w/24,y0+h+14,mo+'月','#9fb0dd',11,'center',400);}
+    for(const v of [0,30,60,90]){label(cb,x0-6,Y(v),v+'°','#9fb0dd',11.5,'right',400);cb.beginPath();cb.moveTo(x0,Y(v));cb.lineTo(x0+w,Y(v));cb.strokeStyle='rgba(160,180,230,.12)';cb.stroke();}
+    for(const [dd,n,col] of TERMS){cb.beginPath();cb.moveTo(X(dd),y0);cb.lineTo(X(dd),y0+h);cb.strokeStyle=col;cb.globalAlpha=.35;cb.setLineDash([3,4]);cb.stroke();cb.setLineDash([]);cb.globalAlpha=1;label(cb,X(dd),y0+h+30,n,col,11.5);}
+    for(const v of S.lats){const col=colOf(v);cb.beginPath();let on=false;for(let dd=1;dd<=S.doy;dd++){const hv=noonH(v,decl(dd));if(hv<0){on=false;continue;}on?cb.lineTo(X(dd),Y(hv)):cb.moveTo(X(dd),Y(hv));on=true;}cb.strokeStyle=col;cb.lineWidth=2.4;cb.stroke();
+      const hv=noonH(v,dl);if(hv>=0){cb.beginPath();cb.arc(X(S.doy),Y(hv),5,0,7);cb.fillStyle=col;cb.fill();label(cb,X(S.doy)+8,Y(hv)-10,`${nm(v)} ${hv.toFixed(1)}°`,col,12,'left');}}
+    cb.beginPath();cb.moveTo(X(S.doy),y0);cb.lineTo(X(S.doy),y0+h);cb.strokeStyle='rgba(255,255,255,.5)';cb.stroke();
+  }
+}
+// 在地球图上拖动观测者
+(function(){const cv=$('c2a');let drag=false;const setFrom=e=>{if(B.part!=='lat'||!B.geo)return;const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;const g=B.geo;
+  let th=Math.atan2(g.cy-y,x-g.cx)*R2D;let lat=th+decl(B.doy);if(lat>90)lat=180-lat;if(lat<-90)lat=-180-lat;B.obs=Math.round(Math.max(-90,Math.min(90,lat)));m2();};
+  cv.addEventListener('pointerdown',e=>{drag=true;cv.setPointerCapture(e.pointerId);setFrom(e);});cv.addEventListener('pointermove',e=>{if(drag)setFrom(e);});cv.addEventListener('pointerup',()=>drag=false);})();
+
+/* ================= 模块三：应用 ================= */
+const C={part:'bld',lat:31.8,floors:18,L:60,doy:356,alpha:45,sdoy:356,shadow:0.62,sdir:'N',ldoy:80};
+document.querySelectorAll('[data-p3]').forEach(b=>b.onclick=()=>{C.part=b.dataset.p3;document.querySelectorAll('[data-p3]').forEach(x=>x.classList.toggle('on',x===b));m3panel();m3();});
+function m3panel(){const P=$('m3panel');
+  if(C.part==='bld'){P.innerHTML=`
+    <div class="card"><h3>🌐 城市纬度 <span class="val" id="bLat"></span></h3><input type="range" id="bLatR" min="18" max="50" step="0.1"><div class="chips" id="bPl"></div></div>
+    <div class="card"><h3>🏢 南楼层数 <span class="val" id="bF"></span></h3><input type="range" id="bFR" min="3" max="33" step="1"><div style="font-size:13px;color:var(--muted)">层高按 3 米计</div></div>
+    <div class="card"><h3>↔ 楼间距 <span class="val" id="bL"></span></h3><input type="range" id="bLR" min="5" max="200" step="1"></div>
+    <div class="card"><h3>📅 日期</h3><div class="chips" id="bD"></div></div>
+    <div class="tip">任务：要让北楼<b>一楼</b>全年正午都有阳光，楼间距至少多少米？先拖动楼间距试一试，再看原理。</div>
+    <div class="card"><dl class="read" id="bRead"></dl></div><div id="m3qs"></div>`;
+    const plu=chips('bPl',[['海口',20.0],['广州',23.1],['常州',31.8],['北京',39.9],['哈尔滨',45.8]],v=>{C.lat=v;m3();},v=>Math.abs(v-C.lat)<0.06);C._u=[plu];
+    C._u.push(chips('bD',TERMS.map(([d,n,c])=>[n,d,c]),v=>{C.doy=v;m3();},v=>v===C.doy));
+    $('bLatR').oninput=e=>{C.lat=+e.target.value;m3();};$('bFR').oninput=e=>{C.floors=+e.target.value;m3();};$('bLR').oninput=e=>{C.L=+e.target.value;m3();};
+    questions('m3qs',[{t:'楼间距应当按哪一天的正午太阳高度来设计？',opts:['夏至日','冬至日','春分日'],ans:1,why:'我国大部分地区在北回归线以北，<b>冬至日正午太阳高度最小、影子最长</b>。只要冬至日正午北楼一楼有阳光，其他日子都有。最小楼间距 <b>L = h ÷ tan H</b>（H 取冬至日正午太阳高度 = 90° − (纬度 + 23°26′)）。纬度越高，所需楼间距越大。'}]);}
+  if(C.part==='solar'){P.innerHTML=`
+    <div class="card"><h3>🌐 纬度 <span class="val" id="sLat"></span></h3><input type="range" id="sLatR" min="0" max="60" step="0.1"></div>
+    <div class="card"><h3>📅 日期 <span class="val" id="sDate"></span></h3><input type="range" id="sDR" min="1" max="365"><div class="chips" id="sD"></div></div>
+    <div class="card"><h3>📐 集热板倾角 α <span class="val" id="sA"></span></h3><input type="range" id="sAR" min="0" max="90" step="0.5"></div>
+    <div class="tip">任务：拖动倾角 α，让集热板接收的阳光最强（效率 100%），再换个日期试试。α 与正午太阳高度 H 有什么关系？</div>
+    <div class="card"><dl class="read" id="sRead"></dl></div><div id="m3qs"></div>`;
+    C._u=[chips('sD',TERMS.map(([d,n,c])=>[n,d,c]),v=>{C.sdoy=v;m3();},v=>v===C.sdoy)];
+    $('sLatR').oninput=e=>{C.lat=+e.target.value;m3();};$('sDR').oninput=e=>{C.sdoy=+e.target.value;m3();};$('sAR').oninput=e=>{C.alpha=+e.target.value;m3();};
+    questions('m3qs',[{t:'正午时，倾角 α 与太阳高度 H 满足什么关系时效果最好？',opts:['α = H','α + H = 90°','α = 2H'],ans:1,why:'阳光与集热板<b>垂直</b>时接收最多。集热板与地面夹角 α，阳光与地面夹角 H，三角形内角关系得 <b>α + H = 90°</b>。'},
+      {t:'在常州，一年中倾角应该怎样调整？',why:'夏至 H 最大（81°38′），α 最小约 8°22′；冬至 H 最小（34°46′），α 最大约 55°14′。<b>夏半年调小、冬半年调大</b>，从夏至到冬至倾角逐渐增大。'}]);}
+  if(C.part==='lat'){P.innerHTML=`
+    <div class="card"><h3>📅 测量日期</h3><div class="chips" id="lD"></div></div>
+    <div class="card"><h3>📏 正午 1 米竿影长 <span class="val" id="lS"></span></h3><input type="range" id="lSR" min="0" max="3" step="0.01">
+      <div class="chips" id="lDir"></div></div>
+    <div class="tip">情境：同学们在校园里立一根 1 米长的竿，正午量得影长和朝向。能算出学校的纬度吗？（试试：冬至日正午影长约 1.44 米、朝正北）</div>
+    <div class="card"><h3>🧮 推算</h3><div id="lCalc" style="font-size:14.5px;line-height:1.8"></div><button class="btn acc" id="lShow" style="margin-top:6px">显示推算过程</button></div>`;
+    C._u=[chips('lD',TERMS.map(([d,n,c])=>[n,d,c]),v=>{C.ldoy=v;m3();},v=>v===C.ldoy),chips('lDir',[['影子朝正北','N'.charCodeAt(0)],['影子朝正南','S'.charCodeAt(0)]],v=>{C.sdir=String.fromCharCode(v);m3();},v=>String.fromCharCode(v)===C.sdir)];
+    $('lSR').oninput=e=>{C.shadow=+e.target.value;C.showCalc=false;m3();};$('lShow').onclick=()=>{C.showCalc=true;m3();};}
+}
+function m3(){const c=canvasCtx($('c3')),W=c.W,Hc=c.H;C._u&&C._u.forEach(f=>f());
+  if(C.part==='bld'){const dl=decl(C.doy),H=noonH(C.lat,dl),h=C.floors*3,Lmin=h/Math.tan(H*D2R);
+    $('bLat').textContent=fmtLat(C.lat);$('bLatR').value=C.lat;$('bF').textContent=`${C.floors} 层（${h} 米）`;$('bFR').value=C.floors;$('bL').textContent=C.L+' 米';$('bLR').value=C.L;
+    const sh=h/Math.tan(H*D2R);const covered=Math.max(0,(sh-C.L)*Math.tan(H*D2R));const ok=C.L>=Lmin-0.01;
+    $('bRead').innerHTML=`<dt>正午太阳高度 H</dt><dd>${H.toFixed(1)}°</dd><dt>南楼正午影长</dt><dd>${sh.toFixed(1)} 米</dd><dt>北楼被挡住</dt><dd style="color:${ok?'#5fd38a':'#ff6b6b'}">${ok?'没有，一楼有阳光 ✓':'约 '+covered.toFixed(1)+' 米高（约 '+Math.ceil(covered/3)+' 层）'}</dd>`;
+    const gy=Hc*0.82,maxM=Math.max(h*1.25,60),sc=Math.min((Hc*0.7)/maxM,(W*0.8)/(C.L+70+Math.min(sh,C.L+60)*0+30));const x0=W*0.1;
+    c.fillStyle='#1f3b22';c.fillRect(0,gy,W,Hc-gy);c.strokeStyle='#8be08f';c.beginPath();c.moveTo(0,gy);c.lineTo(W,gy);c.stroke();
+    const bw=34*sc*0.6+30,sbX=x0,nbX=x0+bw+C.L*sc,nh=Math.max(h,45);
+    // 阳光
+    const ang=H*D2R;const topX=sbX+bw,topY=gy-h*sc;const len=2000;
+    c.beginPath();c.moveTo(topX-Math.cos(ang)*len,topY-Math.sin(ang)*len);c.lineTo(topX+sh*sc,gy);c.strokeStyle='#ffd84d';c.lineWidth=2;c.stroke();
+    for(let k=1;k<=4;k++){c.beginPath();c.moveTo(topX-Math.cos(ang)*len,topY-Math.sin(ang)*len-k*40);c.lineTo(topX-Math.cos(ang)*len+Math.cos(ang)*(len+400),topY-Math.sin(ang)*len-k*40+Math.sin(ang)*(len+400));c.strokeStyle='rgba(255,216,77,.25)';c.lineWidth=1;c.stroke();}
+    // 影子区域
+    c.beginPath();c.moveTo(topX,topY);c.lineTo(topX+sh*sc,gy);c.lineTo(topX,gy);c.closePath();c.fillStyle='rgba(0,0,0,.35)';c.fill();
+    // 楼
+    const bld=(x,hh,col,name)=>{c.fillStyle=col;c.fillRect(x,gy-hh*sc,bw,hh*sc);c.strokeStyle='rgba(255,255,255,.5)';c.strokeRect(x,gy-hh*sc,bw,hh*sc);
+      for(let f=0;f<hh/3;f++){c.beginPath();c.moveTo(x,gy-f*3*sc);c.lineTo(x+bw,gy-f*3*sc);c.strokeStyle='rgba(255,255,255,.12)';c.stroke();}label(c,x+bw/2,gy-hh*sc-14,name,'#fff',14);};
+    bld(sbX,h,'#5b6fa8','南楼');bld(nbX,nh,'#7a88b8','北楼');
+    if(covered>0){c.fillStyle='rgba(0,0,0,.45)';c.fillRect(nbX,gy-Math.min(covered,nh)*sc,bw,Math.min(covered,nh)*sc);label(c,nbX+bw+8,gy-Math.min(covered,nh)*sc/2,'被遮挡','#ff9b9b',13,'left');}
+    else{c.fillStyle='rgba(255,216,77,.35)';c.fillRect(nbX,gy-3*sc,bw,3*sc);label(c,nbX+bw+8,gy-1.5*sc,'一楼有阳光','#ffe9a0',13,'left');}
+    // 尺寸
+    c.strokeStyle='#cfe0ff';c.beginPath();c.moveTo(sbX+bw,gy+18);c.lineTo(nbX,gy+18);c.stroke();label(c,(sbX+bw+nbX)/2,gy+32,`楼间距 L = ${C.L} 米`,'#cfe0ff',13);
+    c.beginPath();c.arc(topX+sh*sc,gy,40,Math.PI,Math.PI+ang);c.strokeStyle='#ffd84d';c.lineWidth=2;c.stroke();label(c,topX+sh*sc-58,gy-16,`H=${H.toFixed(1)}°`,'#ffe9a0',13,'right');
+    label(c,sbX-8,gy-h*sc/2,`h=${h}米`,'#fff',13,'right');
+    label(c,14,20,`${fmtLat(C.lat)} · ${TERMS.find(x=>x[0]===C.doy)[1]}日正午（侧视，左南右北）`,'#fff',16,'left');
+  }
+  if(C.part==='solar'){const dl=decl(C.sdoy),H=noonH(C.lat,dl),[m,d]=doyMD(C.sdoy);const inc=Math.abs(90-(C.alpha+H));const eff=Math.max(0,Math.cos(inc*D2R));
+    $('sLat').textContent=fmtLat(C.lat);$('sLatR').value=C.lat;$('sDate').textContent=`${m}月${d}日`;$('sDR').value=C.sdoy;$('sA').textContent=C.alpha.toFixed(1)+'°';$('sAR').value=C.alpha;
+    $('sRead').innerHTML=`<dt>正午太阳高度 H</dt><dd>${H.toFixed(1)}°</dd><dt>阳光与集热板法线夹角</dt><dd>${inc.toFixed(1)}°</dd><dt>接收效率</dt><dd style="color:${eff>0.995?'#5fd38a':'#ffb02e'}">${(eff*100).toFixed(1)}%${eff>0.995?' 最佳 ✓':''}</dd>`;
+    const gy=Hc*0.75,cx=W*0.5,Lp=Math.min(W,Hc)*0.42,a=C.alpha*D2R,h=H*D2R;
+    c.fillStyle='#2b3a62';c.fillRect(0,gy,W,Hc-gy);label(c,W-14,gy+20,'楼顶平面','#9fb0dd',13,'right');
+    // 集热板：底端在 cx，向南（左）升高
+    const bx=cx+Lp*0.45,by=gy,tx=bx-Lp*Math.cos(a),ty=gy-Lp*Math.sin(a);
+    c.beginPath();c.moveTo(bx,by);c.lineTo(tx,ty);c.strokeStyle='#a8c8ff';c.lineWidth=12;c.stroke();c.lineWidth=1;
+    c.beginPath();c.moveTo(tx,ty);c.lineTo(tx,gy);c.strokeStyle='#777';c.lineWidth=3;c.stroke();
+    // 法线
+    const mx=(bx+tx)/2,my=(by+ty)/2,nx=-Math.sin(a),ny=-Math.cos(a);c.beginPath();c.moveTo(mx,my);c.lineTo(mx+nx*Lp*0.5,my+ny*Lp*0.5);c.strokeStyle='rgba(255,255,255,.5)';c.setLineDash([5,4]);c.stroke();c.setLineDash([]);label(c,mx+nx*Lp*0.55,my+ny*Lp*0.55,'法线','#cfe0ff',12);
+    // 阳光（自南向北、向下）
+    for(let k=-2;k<=2;k++){const ox=mx+k*Lp*0.18*Math.cos(a),oy=my-k*Lp*0.18*Math.sin(a);const sx=ox-Math.cos(h)*Lp*1.3,sy=oy-Math.sin(h)*Lp*1.3;c.beginPath();c.moveTo(sx,sy);c.lineTo(ox,oy);c.strokeStyle='#ffd84d';c.lineWidth=2;c.stroke();arrowHead(c,sx,sy,ox,oy,'#ffd84d',8);}
+    drawSun(c,mx-Math.cos(h)*Lp*1.45,my-Math.sin(h)*Lp*1.45,true,12);
+    c.beginPath();c.arc(bx,by,46,Math.PI,Math.PI+a);c.strokeStyle='#a8c8ff';c.lineWidth=2;c.stroke();label(c,bx-62,by-18,`α=${C.alpha.toFixed(1)}°`,'#cfe0ff',13,'right');
+    // H 角：在地面上某点
+    const hx=cx-Lp*1.0;c.beginPath();c.moveTo(hx,gy);c.lineTo(hx-Math.cos(h)*Lp*0.5,gy-Math.sin(h)*Lp*0.5);c.strokeStyle='rgba(255,216,77,.7)';c.stroke();c.beginPath();c.moveTo(hx,gy);c.lineTo(hx-Lp*0.4,gy);c.stroke();
+    c.beginPath();c.arc(hx,gy,30,Math.PI,Math.PI+h);c.strokeStyle='#ffd84d';c.lineWidth=2;c.stroke();label(c,hx-44,gy-14,`H=${H.toFixed(1)}°`,'#ffe9a0',13,'right');
+    // 效率条
+    c.fillStyle='#24345f';c.fillRect(16,46,180,14);c.fillStyle=eff>0.995?'#5fd38a':'#ffb02e';c.fillRect(16,46,180*eff,14);label(c,16,30,`接收效率 ${(eff*100).toFixed(1)}%`,'#fff',14,'left');
+    label(c,W-14,20,'侧视（左南右北）','#9fb0dd',13,'right');
+  }
+  if(C.part==='lat'){const dl=decl(C.ldoy),s=C.shadow,H=Math.atan(1/Math.max(s,1e-6))*R2D;$('lS').textContent=s.toFixed(2)+' 米';$('lSR').value=s;
+    // 影朝北 → 太阳在南 → 观测点在直射点以北： φ = δ + (90−H)
+    const phi=C.sdir==='N'?dl+(90-H):dl-(90-H);
+    const ok=Math.abs(phi)<=90;const tn=TERMS.find(x=>x[0]===C.ldoy)[1];
+    $('lCalc').innerHTML=C.showCalc?`① H = arctan(竿高 ÷ 影长) = arctan(1 ÷ ${s.toFixed(2)}) ≈ <b>${H.toFixed(1)}°</b><br>② ${tn}日直射点 ${fmtLat(dl)}；影子朝${C.sdir==='N'?'北 → 太阳在南 → 本地在直射点<b>以北</b>':'南 → 太阳在北 → 本地在直射点<b>以南</b>'}<br>③ 纬度差 = 90° − H = ${(90-H).toFixed(1)}°<br>④ 本地纬度 ≈ <span class="big">${ok?fmtLat(phi):'不合理'}</span>${ok&&Math.abs(phi-31.8)<1.2?'（接近常州！）':''}`:'先自己算一算，再点按钮核对。';
+    const gy=Hc*0.72,sc=Math.min(Hc*0.45,W*0.22),px=W*0.5;c.fillStyle='#1f3b22';c.fillRect(0,gy,W,Hc-gy);
+    const dir=C.sdir==='N'?1:-1;// 右=北
+    c.fillStyle='rgba(0,0,0,.6)';c.fillRect(Math.min(px,px+dir*s*sc),gy-3,Math.abs(s*sc),6);
+    c.beginPath();c.moveTo(px,gy);c.lineTo(px,gy-sc);c.strokeStyle='#f3f3f3';c.lineWidth=5;c.stroke();label(c,px-10,gy-sc/2,'1 米','#fff',13,'right');
+    const tipx=px+dir*s*sc;c.beginPath();c.moveTo(px-dir*Math.cos(H*D2R)*sc*3,gy-sc-Math.sin(H*D2R)*sc*3);c.lineTo(tipx,gy);c.strokeStyle='#ffd84d';c.lineWidth=2;c.stroke();
+    c.beginPath();const a0=dir>0?Math.PI:0;c.arc(tipx,gy,36,dir>0?Math.PI:-H*D2R*0,dir>0?Math.PI+H*D2R:0,false);c.strokeStyle='#ffd84d';c.stroke();
+    label(c,px+dir*s*sc/2,gy+18,`影长 ${s.toFixed(2)} 米`,'#fff',13);label(c,40,gy+18,'南','#eaffea',16);label(c,W-40,gy+18,'北','#eaffea',16);
+    label(c,14,20,`${tn}日正午 · 立竿测影`,'#fff',16,'left');}
+}
+
+/* ================= 模块四：赤道式日晷 ================= */
+const Dg={lat:31.8,doy:173,t:9,az:28,el:38,playing:false,elMin:2};
+const m4PlaceUpd=chips('m4places',[['哈尔滨',45.8],['北京',39.9],['常州',31.8],['广州',23.1]],v=>{Dg.lat=v;m4();},v=>Math.abs(v-Dg.lat)<0.06);
+const m4TermUpd=chips('m4terms',TERMS.map(([d,n,c])=>[n,d,c]),v=>{Dg.doy=v;m4();},v=>v===Dg.doy);
+$('m4latR').oninput=e=>{Dg.lat=+e.target.value;m4();};$('m4doyR').oninput=e=>{Dg.doy=+e.target.value;m4();};$('m4tR').oninput=e=>{Dg.t=+e.target.value;Dg.playing=false;m4();};
+$('m4play').onclick=()=>{Dg.playing=!Dg.playing;m4();};$('m4reset').onclick=()=>{Dg.az=28;Dg.el=38;m4();};
+orbit($('c4'),Dg,m4);
+const SHICHEN=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+function m4(){
+  const phi=Dg.lat,dl=decl(Dg.doy),Hh=(Dg.t-12)*15,s=sunDir(phi,dl,Hh),[m,d]=doyMD(Dg.doy),tn=TERMS.find(x=>x[0]===Dg.doy);
+  $('m4lat').textContent=fmtLat(phi);$('m4latR').value=phi;$('m4date').textContent=`${m}月${d}日${tn?' '+tn[1]:''}`;$('m4doyR').value=Dg.doy;$('m4time').textContent=fmtT(Dg.t);$('m4tR').value=Dg.t;
+  $('m4play').textContent=Dg.playing?'❚❚':'▶';m4PlaceUpd();m4TermUpd();
+  const P=[0,Math.cos(phi*D2R),Math.sin(phi*D2R)];// 晷针方向（指北天极）
+  const ea=[1,0,0],eb=cross(P,ea);// 晷面内基向量：ea=东，eb=P×E
+  const C=[0,0,0.32],Rd=0.5;
+  const hourDir=t=>mul(sunDir(phi,0,(t-12)*15),-1);// 晷影方向（在晷面内）
+  const c=canvasCtx($('c4')),W=c.W,Hc=c.H,cam=makeCam(Dg.az,Dg.el,W/2,Hc*0.58,Math.min(W,Hc)*0.55);
+  const shi=Math.floor(((Dg.t+1)%24)/2);const alt=Math.asin(s[2])*R2D;const sp=dot(s,P);
+  const face=sp>0.003?'上':sp<-0.003?'下':'边';
+  $('m4read').innerHTML=`<dt>地方时</dt><dd>${fmtT(Dg.t)}（${SHICHEN[shi]}时）</dd><dt>太阳高度</dt><dd>${alt.toFixed(1)}°</dd><dt>直射点</dt><dd>${fmtLat(dl)}</dd>
+    <dt>晷影在</dt><dd>${alt<=0?'无（夜间）':face==='上'?'晷面<b>正面</b>（朝北天极一面）':face==='下'?'晷面<b>背面</b>（朝南一面）':'几乎没有（阳光与晷面平行）'}</dd><dt>晷针仰角</dt><dd>${fmtDM(phi)}（= 当地纬度）</dd>`;
+  // 地面
+  poly(c,cam,circ3([0,0,0],[1,0,0],[0,1,0],0.95,80),true);c.fillStyle='rgba(88,170,92,.45)';c.fill();c.strokeStyle='#8be08f';c.lineWidth=1.5;c.stroke();
+  for(const [n,a] of [['北',0],['东',90],['南',180],['西',270]]){const v=[Math.sin(a*D2R),Math.cos(a*D2R),0];const q=cam.P(mul(v,1.04));label(c,q.x,q.y,n,'#eaffea',18);}
+  // 底座
+  const base=[[-0.08,-0.08,0],[0.08,-0.08,0],[0.08,0.08,0],[-0.08,0.08,0]];
+  for(let k=0;k<4;k++){const a=base[k],b=base[(k+1)%4];poly(c,cam,[a,b,add(b,[0,0,C[2]-0.04]),add(a,[0,0,C[2]-0.04])],true);c.fillStyle='rgba(150,150,160,.55)';c.fill();}
+  // 晷面
+  const disc=circ3(C,ea,eb,Rd,90);const visTop=dot(P,cam.c)>0;
+  const below=add(C,mul(P,-0.42)),above=add(C,mul(P,0.55));
+  const gn=(a,b,w)=>{const p=cam.P(a),q=cam.P(b);c.beginPath();c.moveTo(p.x,p.y);c.lineTo(q.x,q.y);c.strokeStyle='#f5e6b8';c.lineWidth=w;c.lineCap='round';c.stroke();c.lineCap='butt';};
+  // 被遮挡的那段针先画
+  if(visTop)gn(below,C,3);else gn(C,above,3);
+  poly(c,cam,disc,true);c.fillStyle=visTop?'rgba(220,210,180,.92)':'rgba(170,160,140,.92)';c.fill();c.strokeStyle='#5a4a2a';c.lineWidth=2;c.stroke();
+  // 刻度与时辰
+  for(let t=0;t<24;t++){const v=hourDir(t);const a=cam.P(add(C,mul(v,Rd*0.8))),b=cam.P(add(C,mul(v,Rd*0.97)));c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.strokeStyle='#5a4a2a';c.lineWidth=t%2?1:2;c.stroke();
+    if(t%2===0){const q=cam.P(add(C,mul(v,Rd*0.68)));c.font=`700 14px ${FONT}`;c.fillStyle='#3b2a0a';c.textAlign='center';c.textBaseline='middle';c.fillText(SHICHEN[t/2],q.x,q.y);}
+    else{const q=cam.P(add(C,mul(v,Rd*0.68)));c.font=`500 10px ${FONT}`;c.fillStyle='#6b5a3a';c.textAlign='center';c.textBaseline='middle';c.fillText(String(t),q.x,q.y);}}
+  // 晷影
+  if(alt>0&&face!=='边'){const v=hourDir(Dg.t);const end=add(C,mul(v,Rd*0.92));const p=cam.P(C),q=cam.P(end);const onVisible=(face==='上')===visTop;
+    c.beginPath();c.moveTo(p.x,p.y);c.lineTo(q.x,q.y);c.strokeStyle=onVisible?'rgba(20,15,5,.9)':'rgba(20,15,5,.35)';c.lineWidth=onVisible?6:3;c.setLineDash(onVisible?[]:[6,5]);c.stroke();c.setLineDash([]);
+    if(!onVisible)label(c,q.x,q.y-14,'（影在背面）','#fff',12);}
+  if(visTop)gn(C,above,4);else gn(below,C,4);
+  const tp=cam.P(above);label(c,tp.x+10,tp.y-6,'晷针 → 指向北极星','#f5e6b8',13,'left');
+  // 太阳与光线
+  if(s[2]>-0.1){const sp3=mul(s,0.95),q=cam.P(sp3);const t0=cam.P(above);c.beginPath();c.moveTo(q.x,q.y);c.lineTo(t0.x,t0.y);c.strokeStyle='rgba(255,220,120,.6)';c.setLineDash([5,4]);c.lineWidth=1.4;c.stroke();c.setLineDash([]);drawSun(c,q.x,q.y,s[2]>0,9);}
+  label(c,14,20,`赤道式日晷 · ${fmtLat(phi)} · ${m}月${d}日 · ${fmtT(Dg.t)}`,'#fff',16,'left');
+  label(c,14,44,'晷面与赤道面平行，晷针与地轴平行 · 拖动可从南面看晷面背面','#ffe2a0',13,'left',500);
+}
+questions('m4qs',[
+ {t:'为什么晷针要指向北极星？晷面为什么倾斜？',why:'晷针指向北极星，就和<b>地轴平行</b>；晷面垂直于晷针，就和<b>赤道面平行</b>，晷面与地面的夹角 = 90° − 纬度。一天中太阳绕地轴（天轴）匀速转动，所以晷针的影子在晷面上也<b>匀速转动</b>。'},
+ {t:'播放一天：晷影每小时转过多少度？',opts:['15°','30°','不均匀'],ans:0,go:()=>{Dg.t=6;Dg.playing=true;m4();},why:'地球自转 360°/24 小时 = <b>15°/小时</b>，所以晷面上的刻度是均匀的，每个时辰（2 小时）30°。正午太阳在正南，晷影落在<b>正北</b>（午时）。'},
+ {t:'春分到秋分、秋分到次年春分，晷影分别出现在晷面的哪一面？',opts:['都在正面','夏半年在正面（朝北一面），冬半年在背面（朝南一面）','夏半年在背面，冬半年在正面'],ans:1,go:()=>{Dg.doy=356;Dg.t=10;m4();},
+  why:'太阳直射北半球时，阳光从赤道面<b>北侧</b>照来，照亮朝北天极的正面；直射南半球时只能照到朝南的背面。所以赤道式日晷两面都要刻度。春分、秋分日阳光与晷面平行，两面几乎都看不到晷影。'}
+]);
+
+/* ================= 切换与循环 ================= */
+const MODS={m1,m2:()=>m2(),m3:()=>m3(),m4};let cur='m1';
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{cur=b.dataset.m;document.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.mod').forEach(s=>s.classList.toggle('on',s.id===cur));MODS[cur]();});
+addEventListener('resize',()=>MODS[cur]());
+m2panel();m3panel();
+let last=performance.now(),acc=0;
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(cur==='m1'&&A.playing){A.t+=dt*1.6;const hh=H0(A.lat,decl(A.doy));const end=hh.type==='rs'?12+hh.h0/15+0.2:24;if(A.t>=end){A.t=Math.min(end,24);A.playing=false;}m1();}
+  if(cur==='m4'&&Dg.playing){Dg.t=(Dg.t+dt*1.5)%24;m4();}
+  if(cur==='m2'&&B.part==='season'&&B.season.playing){acc+=dt*40;if(acc>=1){B.season.doy=Math.min(365,B.season.doy+Math.floor(acc));acc%=1;if(B.season.doy>=365)B.season.playing=false;m2();}}
+  requestAnimationFrame(loop);}
+m1();requestAnimationFrame(loop);
+window.__T={A,B,C,Dg,m1,m2,m3,m4};
+})();
+</script>
+</body>
+</html>
