@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <!-- 本页面由横山桥高级中学 孙慧制作，仅供教学使用，未经许可不得商用 -->
+
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -116,7 +117,7 @@ h1 span{color:var(--yel)}
 <div class="wrap">
 <section id="home">
   <h1>🌏 地理 <span>快问快答</span></h1>
-  <p class="sub">共 <b id="totalN" style="color:var(--yel)">0</b> 道题 · 13 个关卡 · 分组抢答 —— 选一个关卡开始！</p>
+  <p class="sub">共 <b id="totalN" style="color:var(--yel)">0</b> 道题 · 12 个关卡 · 分组抢答 —— 选一个关卡开始！</p>
   <div class="setup">
     <label>队伍数
       <select id="teamCount"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option></select>
@@ -133,20 +134,7 @@ h1 span{color:var(--yel)}
   <div class="cats" id="cats"></div>
   <div class="tip" style="margin-top:10px">“地理计算”和“高考进阶”的计时自动加倍，留出动笔时间。</div>
 
-  <div class="panel custom">
-    <h3>✏️ 老师自定义题</h3>
-    <div class="tip" id="cStatus" style="margin-bottom:8px"></div>
-    <div id="cForm">
-      <div class="row"><input type="text" id="cQ" placeholder="题目，如：常州的“三杰”指哪三位？"></div>
-      <div class="row">
-        <input type="text" id="cA" placeholder="答案">
-        <input type="text" id="cE" placeholder="（可选）讲解">
-        <button class="btn b-y" style="width:auto;padding:9px 18px" id="cAdd">＋ 加入题库</button>
-      </div>
-    </div>
-    <div class="list" id="cList"></div>
-  </div>
-</section>
+  </section>
 
 <section id="play" class="hide">
   <div class="qtop">
@@ -787,8 +775,8 @@ cross:{name:'跨学科挑战',ic:'🔬',desc:'诗词·物理·化学·生物·�
 eng:{name:'大国工程',ic:'🏗️',desc:'南水北调、青藏铁路、中国天眼……',color:'linear-gradient(135deg,#1d4ed8,#6366f1)',pts:20,tag:'#6366f1',lv:2},
 calc:{name:'地理计算',ic:'🧮',desc:'时差、太阳高度、比例尺，动笔算',color:'linear-gradient(135deg,#334155,#64748b)',pts:30,tag:'#64748b',lv:3},
 gk:{name:'高考进阶',ic:'🔥',desc:'锋面气旋、洋流、地质构造、区位',color:'linear-gradient(135deg,#991b1b,#ef4444)',pts:30,tag:'#ef4444',lv:3},
-mix:{name:'随机大乱斗',ic:'🎲',desc:'所有关卡随机抽题，分值按原关卡计算',color:'linear-gradient(135deg,#0f172a,#475569)',pts:'10~30',tag:'#475569',lv:0},
-custom:{name:'老师出题',ic:'✏️',desc:'你自己添加的题目',color:'linear-gradient(135deg,#9f1239,#f43f5e)',pts:20,tag:'#f43f5e',lv:0}
+mix:{name:'随机大乱斗',ic:'🎲',desc:'所有关卡随机抽题，分值按原关卡计算',color:'linear-gradient(135deg,#0f172a,#475569)',pts:'10~30',tag:'#475569',lv:0}
+
 };
 
 /* 把原始数组转成统一的题目对象 */
@@ -806,14 +794,10 @@ BANK.mix=Object.keys(BANK).filter(k=>k!=='mix').flatMap(k=>BANK[k]);
 /* ================= 状态 ================= */
 const TCOL=['#3b82f6','#f59e0b','#10b981','#a855f7','#ef4466','#14b8a6'];
 let S={teams:[],used:{}};Object.keys(CATS).forEach(k=>S.used[k]=[]);
-let custom=[],CCUSTOM=[],DB=null,canWrite=false;
 const $=id=>document.getElementById(id);
-try{const c=localStorage.getItem('geoquiz_custom');if(c)custom=JSON.parse(c).map(x=>({q:x.q,ans:x.ans,e:x.e}))}catch(e){}
 try{const t=localStorage.getItem('geoquiz_teams');if(t)S.teams=JSON.parse(t)}catch(e){}
 function saveTeams(){try{localStorage.setItem('geoquiz_teams',JSON.stringify(S.teams))}catch(e){}}
-function saveCustom(){try{localStorage.setItem('geoquiz_custom',JSON.stringify(custom))}catch(e){}}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-function allCustom(){return [...CCUSTOM.map(c=>Object.assign({cat:'custom',cloud:true},c)),...custom.map(c=>Object.assign({cat:'custom'},c))]}
 
 /* ================= 队伍与计分 ================= */
 function initTeams(n){const old=S.teams;S.teams=[];for(let i=0;i<n;i++)S.teams.push(old[i]||{name:'第'+'一二三四五六'[i]+'组',score:0});saveTeams();renderTeamInputs();renderBoards()}
@@ -828,11 +812,11 @@ function renderBoards(){
 }
 
 /* ================= 题池 ================= */
-function pool(cat){return cat==='custom'?allCustom():BANK[cat]}
+function pool(cat){return BANK[cat]}
 function qid(q){return q.id||(q.cat+'|'+(q.q||q.ans))}
 function usedIn(cat){return cat==='mix'?Object.values(S.used).flat():S.used[cat]}
 function renderCats(){
-  const total=Object.keys(BANK).filter(k=>k!=='mix').reduce((a,k)=>a+BANK[k].length,0)+allCustom().length;
+  const total=Object.keys(BANK).filter(k=>k!=='mix').reduce((a,k)=>a+BANK[k].length,0);
   $('totalN').textContent=total;
   $('cats').innerHTML=Object.entries(CATS).map(([k,c])=>{
     const p=pool(k),u=usedIn(k),left=p.filter(q=>!u.includes(qid(q))).length;
@@ -843,7 +827,7 @@ function renderCats(){
 
 /* ================= 出题 ================= */
 let cur=null,curCat=null,revealed=false,clueShown=1,shuffled=null,chosen=-1,lastClue=1;
-function startCat(k){if(!pool(k).length){msg('提示',k==='custom'?'还没有自定义题，先在首页下方添加吧':'该关卡没有题目');return}curCat=k;nextQ()}
+function startCat(k){if(!pool(k).length){msg('提示','该关卡没有题目');return}curCat=k;nextQ()}
 function nextQ(){
   const p=pool(curCat),u=usedIn(curCat);
   const avail=p.filter(q=>!u.includes(qid(q)));
@@ -937,45 +921,10 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='ArrowDown')moreClue();
 });
 
-/* ================= 老师自定义题（登录后保存在网页里，任何设备可见） ================= */
-let wq=Promise.resolve();
-function writeCustom(){wq=wq.then(()=>DB.doc('geoquiz/custom').set({items:CCUSTOM})).catch(()=>{canWrite=false;renderCustom()});return wq}
-function renderCustom(){
-  const all=allCustom();
-  $('cStatus').innerHTML=DB?(canWrite?'☁️ 题目保存在这个网页里，换电脑、用手机打开同一链接都能看到。':'👀 只有网页主人可以添加题目。'):'💾 题目暂存在这台电脑的浏览器里；在 claude.ai 登录后打开本网页，可保存到云端、换设备也能看到。';
-  $('cForm').classList.toggle('hide',!!DB&&!canWrite);
-  $('cList').innerHTML=all.map((c,i)=>`<div class="it"><span>${c.cloud?'☁️ ':''}${esc(c.q||'（无题干）')} → <b>${esc(c.ans)}</b></span>${(!c.cloud||canWrite)?`<button data-i="${i}" title="删除">✕</button>`:''}</div>`).join('');
-  $('cList').querySelectorAll('button').forEach(b=>b.onclick=async()=>{
-    const i=+b.dataset.i,c=all[i];
-    if(c.cloud){CCUSTOM=CCUSTOM.filter(x=>x.id!==c.id);await writeCustom()}
-    else{custom.splice(i-CCUSTOM.length,1);saveCustom()}
-    renderCustom();renderCats()});
-}
-$('cAdd').onclick=async()=>{
-  const q=$('cQ').value.trim(),a=$('cA').value.trim();if(!a){msg('提示','请先填写答案');return}
-  const item={q,ans:a,e:$('cE').value.trim()};
-  if(DB&&canWrite){item.id='c'+Date.now()+Math.random().toString(36).slice(2,6);CCUSTOM.push(item);await writeCustom()}
-  else{custom.push(item);saveCustom()}
-  ['cQ','cA','cE'].forEach(id=>$(id).value='');renderCustom();renderCats();
-};
-async function initCloud(){
-  if(!window.claude||typeof window.claude.use!=='function')return;
-  try{
-    const d=await claude.use('db');if(!d)return;DB=d;
-    try{const u=await claude.use('user');if(u){const w=await u.can('data.write');canWrite=w!==false}else canWrite=true}catch(e){canWrite=true}
-    renderCustom();
-    DB.doc('geoquiz/custom').onSnapshot(s=>{CCUSTOM=JSON.parse(JSON.stringify((s.exists&&s.data().items)||[]));renderCustom();renderCats()},()=>{});
-    // 把本机的旧题目搬到云端
-    if(canWrite&&custom.length){setTimeout(async()=>{for(const c of custom)CCUSTOM.push(Object.assign({id:'c'+Date.now()+Math.random().toString(36).slice(2,6)},c));custom=[];saveCustom();await writeCustom();renderCustom();renderCats()},1500)}
-  }catch(e){}
-}
-
 /* ================= 启动 ================= */
 $('teamCount').value=S.teams.length||4;
-initTeams(+$('teamCount').value);renderCustom();renderCats();initCloud();
+initTeams(+$('teamCount').value);renderCats();
 
 </script>
-
-<div style="position:fixed;right:10px;bottom:10px;z-index:9999;background:rgba(255,255,255,.85);color:#333;font-size:12px;padding:4px 10px;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.15);pointer-events:none;font-family:system-ui,'Microsoft YaHei',sans-serif">横山桥高级中学 孙慧制作</div>
 </body>
 </html>
