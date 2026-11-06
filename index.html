@@ -191,8 +191,8 @@
             -webkit-backdrop-filter: blur(12px);
             display: flex;
             flex-direction: column;
-            padding: 6px 20px 0;
-            gap: 4px;
+            padding: 3px 20px 0;
+            gap: 0;
         }
         .nav-row {
             display: flex;
@@ -200,12 +200,11 @@
             gap: 14px;
             width: 100%;
         }
-        .nav-row-1 { min-height: 36px; }
         .nav-row-2 {
             overflow-x: auto;
             scrollbar-width: none;
             margin: 0 -20px;
-            padding: 0 20px 8px;
+            padding: 0 20px 6px;
         }
         .nav-row-2::-webkit-scrollbar { display: none; }
 
@@ -626,15 +625,11 @@
         </div>
     </div>
 
-    <!-- Nav Bar（第1行 学校名+搜索+主题；第2行 分类 tab） -->
+    <!-- Nav Bar（分类 tab 行，📲 安装按钮靠右） -->
     <div class="nav-bar">
-        <div class="nav-row nav-row-1">
-            <div class="nav-right">
-                <button class="nav-icon-btn" id="installBtn" title="安装应用到桌面/手机">📲</button>
-            </div>
-        </div>
         <div class="nav-row nav-row-2">
             <div class="nav-tabs" id="navTabs"></div>
+            <button class="nav-icon-btn" id="installBtn" title="安装应用到桌面/手机">📲</button>
         </div>
     </div>
 
