@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<!-- 本页面由横山桥高级中学 孙慧制作，仅供教学使用，未经许可不得商用 -->
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>大气环流交互模拟器</title>
+<style>
+:root{--bg:#050b18;--panel:rgba(12,26,52,.82);--line:rgba(90,150,230,.28);--acc:#3aa0ff;--acc2:#5fd4ff;--txt:#e6efff;--sub:#93a8c8;--warm:#f5a04a;--cold:#5b8cff}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC",system-ui,sans-serif;overflow:hidden}
+button{font-family:inherit;color:inherit;cursor:pointer}
+#stars{position:fixed;inset:0;z-index:0}
+#app{position:fixed;inset:0;display:flex;z-index:1}
+/* side */
+#side{width:300px;flex:none;display:flex;flex-direction:column;padding:18px 14px 14px;gap:10px;position:relative;z-index:5;transition:margin .3s}
+#side.hide{margin-left:-300px}
+.brand .en{font-size:10.5px;letter-spacing:.32em;color:var(--acc2);font-weight:700}
+.brand h1{font-size:34px;letter-spacing:.18em;font-weight:900;margin-top:2px;text-shadow:0 0 18px rgba(80,170,255,.55)}
+.flow{flex:1;min-height:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
+.flow-h{padding:12px 16px 10px;border-bottom:1px solid var(--line)}
+.flow-h small{font-size:12px;letter-spacing:.4em;color:var(--sub)}
+.flow-h div{font-size:15px;color:var(--acc2);font-weight:700;margin-top:4px}
+#stages{flex:1;overflow:auto;padding:10px}
+.stg{border:1px solid var(--line);border-radius:10px;margin-bottom:9px;background:rgba(20,40,80,.35)}
+.stg>button{width:100%;text-align:left;background:none;border:0;padding:12px 14px;font-size:15px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.stg>button i{font-style:normal;color:var(--sub);transition:transform .2s}
+.stg.open{border-color:rgba(95,180,255,.6)}
+.stg.open>button i{transform:rotate(90deg)}
+.steps{display:none;padding:0 10px 10px}
+.stg.open .steps{display:block}
+.step{display:flex;gap:10px;align-items:center;width:100%;background:none;border:1px solid transparent;border-radius:8px;padding:9px 10px;font-size:14px;color:#c8d6ee;text-align:left}
+.step b{flex:none;width:22px;height:22px;border-radius:50%;border:1.5px solid #7f95b8;display:grid;place-items:center;font-size:12px;font-weight:600}
+.step.on{background:rgba(40,110,220,.35);border-color:rgba(95,180,255,.7);color:#fff}
+.step.on b{background:var(--acc2);border-color:var(--acc2);color:#04203a}
+.flow-f{padding:10px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1.4fr;gap:8px}
+.btn{border-radius:9px;border:1px solid var(--line);background:rgba(25,50,95,.6);padding:11px 8px;font-size:15px}
+.btn:hover{border-color:var(--acc2)}
+.btn.pri{background:linear-gradient(180deg,#2f8bff,#1f63d8);border-color:#4aa3ff;font-weight:700}
+.btn.demo{grid-column:1/3;background:rgba(20,80,70,.45);border-color:rgba(70,200,170,.5)}
+.btn.demo.on{background:rgba(30,150,120,.6)}
+#sideToggle{position:absolute;z-index:6;left:300px;top:50%;transform:translateY(-50%);width:22px;height:64px;border-radius:0 8px 8px 0;border:1px solid var(--line);border-left:0;background:var(--panel);transition:left .3s}
+#sideToggle.hide{left:0}
+/* main */
+#main{flex:1;position:relative;min-width:0}
+#view{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}
+#view:active{cursor:grabbing}
+.top{position:absolute;top:14px;z-index:4;display:flex;gap:8px}
+#tabs{left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px}
+#tabs button{border:0;background:none;padding:8px 20px;border-radius:9px;font-size:15px;color:var(--sub)}
+#tabs button.on{background:linear-gradient(180deg,#2f8bff,#1f63d8);color:#fff;font-weight:700}
+#tools{right:16px}
+#tools button{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:9px 14px;font-size:14px}
+#tools button:hover{border-color:var(--acc2)}
+#layers{position:absolute;right:16px;top:62px;z-index:6;background:rgba(10,22,46,.96);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:none;font-size:14px}
+#layers.show{display:block}
+#layers label{display:flex;gap:8px;align-items:center;padding:5px 0;cursor:pointer}
+/* control bar */
+#ctrl{position:absolute;left:50%;bottom:16px;transition:left .3s;transform:translateX(-50%);z-index:4;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:8px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;max-width:calc(100% - 24px)}
+.grp{display:flex;align-items:center;gap:6px}
+.grp>span{font-size:12.5px;color:var(--sub);writing-mode:horizontal-tb}
+.chip{white-space:nowrap;border:1px solid var(--line);background:rgba(30,55,100,.6);border-radius:9px;padding:7px 12px;font-size:14px}
+.chip.on{background:#f3b544;color:#2b1a00;border-color:#f3b544;font-weight:700}
+.rnd{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(30,55,100,.6);font-size:15px}
+input[type=range]{width:110px;accent-color:var(--acc)}
+.val{font-size:13px;min-width:40px;color:#cfe0ff}
+#readout{font-size:13px;color:#ffd77a;min-width:120px}
+/* info */
+#info{position:absolute;right:16px;bottom:16px;z-index:4;width:350px;max-height:calc(100% - 80px);background:rgba(10,22,46,.92);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column}
+#infoH{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;cursor:pointer}
+#infoH b{font-size:16px}
+#infoH span{font-size:13px;color:var(--sub);flex:none}
+#infoB{display:none;overflow:auto;padding:0 16px 14px;font-size:14.5px;line-height:1.75;color:#d5e2f7}
+#info.open #infoB{display:block}
+#infoB p{margin:6px 0}
+#infoB em{font-style:normal;color:#ffd27a}
+.key{margin:10px 0;padding:9px 12px;border-left:3px solid var(--acc2);background:rgba(40,110,200,.18);border-radius:0 8px 8px 0}
+.qs h4{font-size:14px;color:var(--acc2);margin:12px 0 4px}
+.q{border:1px solid var(--line);border-radius:9px;margin:7px 0;overflow:hidden}
+.q button{width:100%;text-align:left;background:rgba(30,55,100,.45);border:0;padding:8px 11px;font-size:14px;line-height:1.55}
+.q div{display:none;padding:8px 11px;font-size:14px;color:#ffe2a6;background:rgba(80,60,20,.18)}
+.q.open div{display:block}
+.legend{position:absolute;z-index:3;left:24px;top:16px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-size:12.5px;display:flex;gap:10px;align-items:center;color:#cfe0ff}
+.legend .bar{width:190px;height:10px;border-radius:5px;background:linear-gradient(90deg,#2b4fd6,#6f9be8,#e8e2d0,#f0a35a,#e2632b)}
+.legend .ticks{display:flex;justify-content:space-between;width:190px;font-size:11px;color:var(--sub)}
+#about{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.55);display:none;place-items:center}
+#about.show{display:grid}
+#about>div{width:min(560px,92vw);max-height:86vh;overflow:auto;background:#0c1a36;border:1px solid var(--line);border-radius:14px;padding:22px 24px;line-height:1.8;font-size:14.5px}
+#about h2{font-size:20px;margin-bottom:8px}
+#about ul{padding-left:20px}
+@media (max-width:900px){
+ #side{position:absolute;inset:0 auto 0 0;background:rgba(5,11,24,.97);width:290px}
+ #side.hide{margin-left:-290px}
+ #sideToggle{left:290px}
+ .brand h1{font-size:26px}
+ #tabs{top:10px}#tabs button{padding:7px 12px;font-size:14px}
+ #tools{top:58px;right:8px}#tools button{padding:6px 9px;font-size:12.5px}
+ #layers{top:100px}
+ #info{left:8px;right:8px;width:auto;bottom:auto;top:100px;max-height:45%}
+ #ctrl{bottom:8px;padding:6px 8px;gap:6px}
+ input[type=range]{width:80px}
+ .legend{bottom:auto;top:58px;left:8px;transform:none;padding:4px 8px}
+ .legend .bar,.legend .ticks{width:120px}
+}
+#main.rsv #ctrl,#main.rsv #tabs{left:calc(50% - 185px)}
+#main.rsv #ctrl{max-width:calc(100% - 400px)}
+#cap{position:absolute;left:16px;top:70px;z-index:3;width:300px;display:none;pointer-events:none}
+#cap div{background:rgba(8,20,44,.85);border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-bottom:6px;font-size:14.5px;line-height:1.6;color:#aebfdc}
+#cap div.on{border-color:#5fd4ff;color:#fff;box-shadow:0 0 14px rgba(95,212,255,.35)}
+@media (max-width:900px){#cap{top:158px;left:8px;right:8px;width:auto}#cap div{display:none}#cap div.on{display:block;font-size:13.5px}}
+.note{margin:10px 0;padding:10px 12px;border:1px dashed rgba(255,210,122,.5);border-radius:10px;background:rgba(80,60,20,.15);font-size:14px}
+.note h4{color:#ffd27a;margin-bottom:4px}.note p{margin:5px 0}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="app">
+  <aside id="side">
+    <div class="brand"><div class="en">ATMOSPHERIC CIRCULATION</div><h1>大气环流</h1></div>
+    <div class="flow">
+      <div class="flow-h"><small>教学流程</small><div id="curName">—</div></div>
+      <div id="stages"></div>
+      <div class="flow-f">
+        <button class="btn demo" id="demoBtn">▶ 从头演示</button>
+        <button class="btn" id="prevBtn">‹ 上一步</button>
+        <button class="btn pri" id="nextBtn">下一步 ›</button>
+      </div>
+    </div>
+  </aside>
+  <button id="sideToggle" title="收起/展开">‹</button>
+  <div id="main">
+    <canvas id="view"></canvas>
+    <div id="cap"></div>
+    <div class="top" id="tabs"><button data-v="3d" class="on">三维地球</button><button data-v="2d">二维地图</button></div>
+    <div class="top" id="tools">
+      <button id="layerBtn">◈ 图层</button><button id="resetBtn">↺ 重置</button><button id="fsBtn">⛶ 全屏</button><button id="aboutBtn">ⓘ 关于</button>
+    </div>
+    <div id="layers">
+      <label><input type="checkbox" data-l="belts" checked> 气压带 / 气压场</label>
+      <label><input type="checkbox" data-l="wind" checked> 风向箭头</label>
+      <label><input type="checkbox" data-l="cells" checked> 环流圈（剖面）</label>
+      <label><input type="checkbox" data-l="labels" checked> 文字标注</label>
+      <label><input type="checkbox" data-l="grid" checked> 经纬网</label>
+    </div>
+    <div class="legend" id="legend"><span>海平面气压 / 百帕</span><div><div class="bar"></div><div class="ticks"><span>988</span><span>1004</span><span>1012</span><span>1024</span><span>1036</span></div></div></div>
+    <div id="ctrl">
+      <div class="grp" id="gSeason"><span>节气</span>
+        <button class="chip" data-p="0">春分</button><button class="chip" data-p="0.25">夏至</button><button class="chip" data-p="0.5">秋分</button><button class="chip" data-p="0.75">冬至</button><button class="chip" id="realBtn" style="margin-left:6px">更接近实际</button>
+      </div>
+      <div class="grp" id="gMonth"><span>月份</span>
+        <button class="chip" data-m="1">1月</button><button class="chip" data-m="7">7月</button>
+        <input type="range" id="monthR" min="1" max="12.99" step="0.01" value="1"><span class="val" id="monthV">1月</span>
+      </div>
+      <button class="rnd" id="playBtn" title="播放/暂停">❚❚</button>
+      <button class="rnd" id="replayBtn" title="重播本步">↻</button>
+      <div class="grp"><span>⚡</span><input type="range" id="speedR" min="0.25" max="3" step="0.25" value="1"><span class="val" id="speedV">1.0x</span></div>
+      <div class="grp"><span>◐</span><input type="range" id="opR" min="0" max="1" step="0.01" value="0.7"><span class="val" id="opV">70%</span></div>
+      <span id="readout"></span>
+    </div>
+    <div id="info"><div id="infoH"><b id="infoT">—</b><span id="infoTg">展开 ▴</span></div><div id="infoB"></div></div>
+  </div>
+</div>
+<div id="about"><div>
+  <h2>大气环流交互模拟器</h2>
+  <p>对应人教版高中地理选择性必修1「大气的运动」：气压带和风带的形成、季节移动，海陆分布对气压带的影响，以及季风环流。</p>
+  <ul>
+    <li>左侧按「阶段—步骤」推进，也可点「从头演示」自动播放。</li>
+    <li>三维地球：左右拖动旋转，上下拖动改变观察角度；右侧弧线为经线方向的环流剖面。</li>
+    <li>二维地图：阶段四、五用 1 月 / 7 月对比海平面气压场，可拖动月份滑块连续变化。</li>
+    <li>「◐」滑块调节气压带色层透明度，「图层」可开关箭头、环流圈、标注等。</li>
+    <li>阶段三第1步可切换「教材示意 / 更接近实际」：后者体现赤道低压带平均偏北、海陆摆动差异和约1.5个月的滞后。</li>
+    <li>右下角「展开」查看讲解、核心结论和思考题（点题目显示答案）。</li>
+  </ul>
+  <p style="color:#93a8c8;margin-top:8px">说明：气压场为依据教材示意规律构建的简化模型，用于理解分布格局，数值不代表某年实测。海岸线为简化轮廓。</p>
+  <p style="text-align:right;margin-top:10px"><button class="btn pri" onclick="document.getElementById('about').classList.remove('show')">知道了</button></p>
+</div></div>
+
+<script>
+"use strict";
+const D2R=Math.PI/180;
+/* ================= 简化海陆轮廓 [经度,纬度] ================= */
+const LAND=[
+[[-168,66],[-162,70],[-156,71.3],[-140,69.6],[-128,70],[-115,68.6],[-100,68],[-94,71.5],[-85,69.8],[-82,66],[-88,64],[-94,60],[-92,57],[-82,55],[-80,52],[-78,57],[-77,62],[-70,61],[-64,60],[-61,56],[-56,52],[-60,48],[-65,49],[-66,45],[-70,43.5],[-70.5,41.5],[-74,40.5],[-76,38],[-76,35],[-81,31],[-80,27],[-80.5,25.2],[-82,26.5],[-83,29.5],[-89,30.2],[-94,29.5],[-97,27.5],[-97.5,22],[-96,19],[-91,18.5],[-90.5,21],[-87,21.5],[-88,16],[-84,15.8],[-83.5,11],[-81.5,9],[-79,9.5],[-77.5,8.5],[-80,7.3],[-83,8.3],[-86,11],[-88,13.3],[-92,14.5],[-96,15.7],[-101,17.3],[-105.5,20.5],[-105,23],[-109,26],[-112.5,29.5],[-114.8,31.5],[-113,29],[-110,24],[-109.5,23],[-112,25],[-114,28],[-115.5,30],[-117,32.5],[-120.6,34.5],[-122.5,37.5],[-124,40],[-124.5,43],[-124,46.5],[-124.7,48.4],[-123,49],[-127,50.5],[-130,54],[-133,57],[-137,58.8],[-141,60],[-147,61],[-152,59],[-154,57.5],[-158,56.5],[-162,55],[-158,58],[-162,59.8],[-165,62],[-164.5,63.5],[-161,64.5],[-166,65.5]],
+[[-73,78],[-66,80.5],[-60,82],[-45,82.6],[-30,83.5],[-20,82],[-18,79],[-20,75],[-22,71],[-25,69],[-32,68],[-38,65.5],[-42,61],[-44,60],[-48,61],[-50,64],[-52,67],[-54,70],[-56,73],[-61,76],[-68,77]],
+[[-90,72],[-85,73.5],[-78,72.5],[-72,71],[-68,70],[-66,67],[-62,66.5],[-64,63.5],[-68,62.5],[-72,64],[-77,65],[-74,67.5],[-80,69.5],[-88,70]],
+[[-118,77],[-105,79],[-95,81],[-80,83],[-65,82.5],[-70,80],[-78,78],[-80,76],[-95,76],[-105,75]],
+[[-118,73],[-110,73],[-102,72],[-101,69],[-108,68.5],[-117,69],[-119,71]],
+[[-77.5,8.5],[-75.5,10.5],[-72,12],[-71.5,10.5],[-68,10.6],[-64,10.7],[-61,10.5],[-60,8.5],[-57,6],[-52,5],[-51,4],[-50,1],[-48.5,-1],[-44,-2.5],[-40,-2.8],[-35,-5],[-35,-9],[-37,-12],[-39,-14],[-39,-18],[-40.5,-22],[-44,-23],[-48,-26],[-48.6,-28.5],[-51,-31],[-53,-34],[-57,-35],[-56.5,-36.5],[-58,-38.5],[-62,-39],[-62.3,-40.5],[-65,-41],[-64,-42.5],[-65.5,-45],[-67.5,-46.5],[-66,-48],[-68.5,-50.5],[-69,-52],[-68.5,-54.5],[-71,-54],[-74,-52],[-75.5,-48],[-74,-45],[-73.5,-41],[-73.5,-37],[-71.5,-32],[-71.3,-28],[-70.3,-23],[-70.2,-18.5],[-72,-17],[-76,-14],[-77,-12],[-79,-8],[-81,-6],[-80.5,-3.5],[-80,-1],[-80,1],[-78.8,1.5],[-77.5,4],[-77.3,7]],
+[[-17,21],[-16.5,24],[-14.5,26.5],[-13,28],[-10,30],[-9.5,32.5],[-6.5,34],[-5.9,35.8],[-2,35.2],[1,36.5],[5,36.8],[10,37.2],[11,35.5],[10,34],[11.5,33],[15,32.3],[19.5,30.4],[20,32],[23,32.6],[25,31.7],[29,30.9],[32.5,31.3],[34.3,31.2],[34.9,29.5],[34.5,28.5],[33,28],[32.5,30],[33,26],[35.5,23],[37,20],[38.5,17.5],[39.5,15.5],[42.5,13],[43.5,11.5],[45,10.5],[51,11.8],[51,10],[49,6],[46,2],[43,-1],[40,-3],[39.5,-6],[39.5,-9],[40.5,-11],[40.5,-15.5],[37,-17.5],[35,-20],[35.5,-24],[33,-25.5],[32.8,-28.5],[30,-31.5],[27,-33.7],[22.5,-34],[20,-34.8],[18.4,-34.2],[17.8,-31],[15.2,-27],[14.5,-23],[13,-20],[11.8,-17],[12.2,-14],[13.8,-11],[13,-8],[12.2,-6],[11.5,-3],[9.5,-1],[9.5,2],[9.8,3.5],[8.5,4.5],[6,4.3],[4,6.3],[1,6],[-2,4.8],[-4.5,5.2],[-7.5,4.4],[-9.5,5.5],[-11.5,7],[-13.2,8.5],[-15,10.8],[-16.7,12.5],[-17.2,14.7],[-16.4,16.5],[-16,19]],
+[[49.3,-12],[50.5,-15.5],[49.5,-18],[48,-22],[47,-25],[45,-25.5],[43.5,-22],[43.5,-19],[44.5,-16],[46.5,-15.5],[48,-13.5]],
+[[-9,43],[-8,43.7],[-1.5,43.4],[-1.2,46],[-2.5,47.3],[-4.7,48.4],[-1.5,48.7],[1.5,50],[3,51.2],[4.5,52.8],[7,53.5],[8.6,54],[8.3,55.5],[8.2,57],[10.5,57.7],[10.5,56],[12.5,55.5],[12,54.3],[14,54],[18,54.8],[21,55],[21.3,57],[24,57.5],[24,59.4],[28,59.5],[23,60],[21.5,61],[21.5,63],[25,65],[22,65.8],[18,63],[17.5,61],[19,59.8],[16.5,57.5],[16,56.2],[13,55.4],[11,58.8],[8,58],[5.5,58.8],[5,61.5],[8,63.5],[12.5,66],[15,68.5],[19,70],[25,71],[31,70],[33,69.3],[40,67.5],[41,66.5],[35,66.2],[37,64],[44,66],[44,68.5],[53,68.5],[58,69],[60,70],[68,69],[66.5,71.5],[69,73],[73,72.5],[75,72],[80,72.5],[80.5,73.5],[87,74],[87,75.5],[95,76],[100,77],[104,77.7],[107,76.8],[112,76],[113,73.6],[120,73],[128,72.7],[130,71],[140,72.6],[150,71.5],[160,70.9],[170,70],[176,69.7],[180,68.5],[180,65],[178,64.5],[177,62.5],[174,61.7],[170,60],[164,60],[163,58],[162,56],[156.5,51],[156,53],[155.5,56.5],[156.5,58],[160,61],[159,61.8],[154,59.5],[148,59.3],[142,59.2],[137,54],[140.5,53],[141,51],[140,48],[138,46],[135,43.5],[132,43],[130,42.5],[129.5,40.8],[128,39],[129.4,37],[129.4,35.2],[126.5,34.4],[126.3,36.5],[126.7,37.8],[125,37.8],[124.7,39.6],[122,40.4],[121.5,39],[122.2,40.5],[121,40.9],[119,39.2],[118,39],[117.5,38.4],[118.8,37.3],[119.5,37.1],[121,37.7],[122.5,37],[120.6,36.1],[119.2,34.8],[120.5,33],[121.7,32],[121.9,31],[121,30.2],[122,29.8],[121.5,28.5],[120.5,27.5],[119.7,26],[118.5,24.5],[117,23.6],[115,22.8],[113.5,22.2],[111,21.5],[110.2,20.3],[109.6,21.6],[108,21.5],[106.7,20.5],[106,19],[107.8,16],[109.2,13],[109,11.5],[107,10.4],[105,8.7],[104.8,10],[103,11],[102,12.2],[100.5,13.5],[99.5,10.5],[100.3,8.4],[101.3,6.9],[103.4,4.5],[103.5,2.5],[104.2,1.4],[103.4,1.3],[101,2.8],[100.2,5.5],[98.3,8],[98.5,13],[97.6,16.6],[94.3,16],[94.5,18.5],[92.3,20.7],[91.8,22.5],[90.5,22],[88.5,21.7],[86.9,20.5],[85,19.2],[82.3,16.6],[80.3,15.8],[80,13],[79.8,10.3],[78.2,8.9],[77.3,8.1],[76.4,9.5],[74.8,12.8],[73.5,15.8],[72.8,19],[72.6,21.3],[70,20.8],[68.8,22.3],[67.4,23.9],[66.5,25.4],[61.5,25.2],[57.3,25.7],[56.4,27.1],[54,26.7],[51.5,27.9],[50,30],[48,30],[48.6,28],[50.2,26.2],[51.5,25.3],[51.6,24],[54,24.1],[56,26.3],[56.5,24.5],[58.8,23.5],[59.8,22.3],[58.5,20.4],[57.5,18.9],[55,17],[52,15.6],[49,14],[45,12.8],[43.4,12.7],[42.7,15.5],[42.2,17.5],[40.5,19.6],[39,21.8],[38.5,24],[36.5,26],[35,28],[34.9,29.5],[34.3,31.2],[35,33],[35.9,35],[36,36.8],[32.5,36.1],[30.5,36.3],[28,36.7],[27.3,37.5],[26.3,39.2],[26.6,40.3],[29,41],[31.5,41.2],[35,42],[38,41],[41.5,41.5],[41.7,42.5],[39,44.5],[37.5,44.7],[38.5,46.5],[35,46],[33.5,44.5],[32.5,45.5],[30.5,46.5],[29.8,45.2],[28.6,44],[28,42],[26.2,40.8],[24,40.8],[22.6,40.4],[23.8,38],[22.5,36.5],[21.2,37.5],[20,39.5],[19.4,41.8],[16,43.5],[13.8,45.5],[12.3,45.3],[12.5,44],[14,42.5],[16,41.5],[18.5,40.2],[17,39],[16,38],[15.7,40],[13,41.3],[10.5,43],[8.7,44.4],[7,43.5],[4.5,43.5],[3,43],[3.2,41.9],[0.8,41],[0,39.5],[-0.5,38.2],[-2,36.7],[-5.5,36],[-6.5,36.9],[-8.8,37],[-8.8,40]],
+[[-180,68.5],[-174,67],[-170,66],[-172,64.5],[-180,65]],
+[[130,31],[131.5,31.5],[132,33.5],[135,33.5],[136.8,34.3],[139,34.7],[140.8,35.7],[141,38],[142,39.5],[141.5,41.2],[140,40.8],[139.8,39],[138.5,37.8],[137,37],[136,35.7],[133,35.5],[131,34.4],[129.8,33]],
+[[140,41.5],[141.5,42.6],[143.3,42],[145.5,43.3],[144,44.2],[141.7,45.4],[141.5,43.5],[140,42.5]],
+[[142,46],[143.5,49.5],[143,53],[142.5,54.3],[142,51]],
+[[120.1,23],[121,22],[121.9,24.5],[121.5,25.3],[120.5,24.3]],
+[[108.6,19.2],[110,20],[111,19.6],[110.3,18.4],[109,18.3]],
+[[-5.7,50],[-3,50.6],[1.3,51.2],[1.7,52.7],[0.3,53.5],[-1.2,54.8],[-2,56],[-1.8,57.6],[-3.5,58.6],[-5,58.6],[-6.2,57.5],[-5.6,56],[-4.8,54.8],[-3,54],[-3,53.4],[-4.6,53.2],[-4.2,52.3],[-5.2,51.7],[-3,51.4]],
+[[-6,52],[-6.2,53.8],[-5.8,54.6],[-7.5,55.3],[-8.5,54.5],[-10,53.5],[-10,51.6],[-8,51.6]],
+[[-22,64],[-24,65.5],[-22,66.4],[-16,66.5],[-13.5,65.2],[-15,64.2],[-18.5,63.4]],
+[[79.8,8],[80,9.7],[81.3,8.5],[81.8,7],[80.6,5.9],[79.8,7]],
+[[95.3,5.5],[97.5,5.2],[100.4,2.2],[103.8,-1],[106,-3],[105.8,-5.8],[104.5,-5.9],[102,-4],[100.5,-1],[98.6,1.7]],
+[[105.2,-6.8],[108,-6.3],[111,-6.5],[114.5,-7.7],[114.4,-8.7],[110,-8.2],[106,-7.4]],
+[[109,1.5],[109.6,-1],[110.2,-3],[114,-3.5],[116.5,-3.8],[117.6,0],[118.9,1],[117.8,4.2],[119,5.4],[117,7],[115.5,5.2],[113,3.2],[111,1.6]],
+[[119.5,-5.5],[120.5,-2],[121,1],[124.5,1.2],[123,0.5],[120.6,0.7],[121.5,-1],[123.4,-0.9],[121.3,-1.9],[122.4,-4.7],[121,-4.7],[120.3,-5.6]],
+[[131,-1],[134,-0.9],[136,-2.2],[138,-1.6],[141,-2.6],[145,-4.3],[146,-5.5],[147.5,-6],[147,-8],[150,-10.3],[148,-10],[146,-8.2],[143.5,-8.3],[143,-9.2],[141,-9],[139,-8],[138,-8.4],[137.6,-5.2],[135,-4.4],[133,-4],[132,-2.8]],
+[[120,16.3],[120.6,18.5],[122.3,18.5],[122,16.5],[122.5,14.2],[124,13],[121.7,13.8],[120.6,14.3]],
+[[122,7],[123.6,7.8],[125.3,9.6],[126.5,7.5],[125.5,5.8],[124,6.4]],
+[[113.5,-22],[114,-26],[114.9,-29.5],[115,-33.5],[116.5,-35],[118,-35],[121,-33.8],[124,-33],[127,-32.3],[131,-31.5],[134,-32.6],[135.8,-34.8],[137.5,-33],[138,-35.5],[140,-37.5],[143,-38.8],[146.3,-39],[148,-37.8],[150,-37.4],[150.8,-34.5],[152.5,-32],[153.6,-28],[153,-25],[150.9,-22.5],[149,-20.5],[146.3,-19],[145.3,-15],[143.5,-14],[142.5,-10.7],[141.5,-13.5],[141.6,-17],[140,-17.7],[137.5,-16],[136,-15],[136.8,-12.2],[133,-11.3],[130.5,-12.3],[129.5,-15],[127,-14],[125,-15.5],[123,-17],[122.2,-18.5],[119,-20],[116.5,-20.7]],
+[[144.6,-40.7],[148.3,-40.9],[148,-43],[146.5,-43.6],[145,-42.4]],
+[[172.7,-34.5],[174.5,-36],[175.8,-37],[178.5,-37.7],[177,-39.5],[176,-41.3],[174.6,-41.3],[175,-40],[173.8,-39.2],[174.6,-37.5]],
+[[172.7,-40.5],[174.3,-41.7],[173,-43.5],[171,-45.5],[169,-46.6],[166.5,-46],[167.5,-44.5],[170,-43],[172,-41.5]],
+[[-180,-78],[-160,-78],[-150,-76],[-130,-74],[-110,-74],[-100,-73],[-80,-73],[-70,-70],[-63,-64],[-58,-63.5],[-62,-66],[-64,-70],[-62,-75],[-50,-78],[-35,-78],[-25,-76],[-15,-72],[0,-70],[20,-70],[40,-69],[55,-66.5],[70,-68],[75,-69.5],[90,-66.5],[110,-66],[130,-66],[150,-68],[165,-71],[170,-73],[165,-78],[180,-78],[180,-90],[-180,-90]],
+[[52,71.5],[56,73.5],[60,76],[68,76.8],[62,74.5],[56,71]],
+[[11,78.5],[15,80],[22,80.5],[27,80],[22,78],[17,76.5]],
+[[-85,21.8],[-82,23.1],[-77,22],[-74.2,20.2],[-77.5,19.9],[-81,21.6]],
+[[-74.4,18.5],[-72,19.9],[-68.5,18.6],[-71,17.8]]
+];
+const WATER=[[[47,45],[49,46.5],[51.5,47],[53,45.5],[51,44],[51.5,42],[53,40.5],[53.5,38],[51,36.7],[49,37.5],[49.5,40.2],[48,42],[47.5,43.5]]];
+
+/* ================= 地表纹理 ================= */
+const TW=2048,TH=1024,OW=1024,OH=512;
+const landCv=document.createElement('canvas');landCv.width=TW;landCv.height=TH;
+let landData;
+function hash(x,y){let h=(x*374761393+y*668265263)|0;h=(h^(h>>>13))*1274126177|0;return((h^(h>>>16))>>>0)/4294967295}
+function vnoise(x,y){const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi,u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);
+ const a=hash(xi,yi),b=hash(xi+1,yi),c=hash(xi,yi+1),d=hash(xi+1,yi+1);return a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v}
+function fbm(x,y){return .5*vnoise(x/64,y/64)+.3*vnoise(x/22,y/22)+.2*vnoise(x/7,y/7)}
+const DESERTS=[[15,32,-17,35],[14,32,35,60],[24,37,52,72],[36,47,58,72],[37,46,76,90],[38,46,95,113],[-31,-20,117,140],[-29,-18,13,24],[-28,-16,-71,-68],[26,37,-117,-104]];
+function smooth(e0,e1,x){const t=Math.min(1,Math.max(0,(x-e0)/(e1-e0)));return t*t*(3-2*t)}
+const LC=[[0,[30,88,38]],[10,[36,92,40]],[18,[92,116,52]],[30,[90,112,58]],[42,[62,100,48]],[55,[46,82,46]],[64,[40,70,46]],[71,[112,116,96]]];
+function latCol(al){for(let i=0;i<LC.length-1;i++){if(al<=LC[i+1][0]){const t=smooth(LC[i][0],LC[i+1][0],al);return LC[i][1].map((v,j)=>v+(LC[i+1][1][j]-v)*t)}}return LC[LC.length-1][1].slice()}
+function buildLand(){
+ const m=document.createElement('canvas');m.width=TW;m.height=TH;const c=m.getContext('2d');
+ c.fillStyle='#000';c.fillRect(0,0,TW,TH);
+ const draw=(polys,col)=>{c.fillStyle=col;for(const p of polys){c.beginPath();p.forEach(([lo,la],i)=>{const x=(lo+180)/360*TW,y=(90-la)/180*TH;i?c.lineTo(x,y):c.moveTo(x,y)});c.closePath();c.fill()}};
+ draw(LAND,'#fff');draw(WATER,'#000');
+ const md=c.getImageData(0,0,TW,TH).data;
+ const b=document.createElement('canvas');b.width=TW/4;b.height=TH/4;const bc=b.getContext('2d');
+ try{bc.filter='blur(5px)'}catch(e){}
+ bc.drawImage(m,0,0,TW/4,TH/4);const bd=bc.getImageData(0,0,TW/4,TH/4).data;
+ const lc=landCv.getContext('2d');const img=lc.createImageData(TW,TH);const o=img.data;
+ for(let y=0;y<TH;y++){const lat=90-(y+.5)/TH*180,al=Math.abs(lat);
+  for(let x=0;x<TW;x++){const i=(y*TW+x)*4,lon=-180+(x+.5)/TW*360,n=fbm(x,y);
+   let r,g,bl;
+   if(md[i]>127){
+    // 纬度植被基色
+    let base=latCol(al);
+    let d=0;for(const q of DESERTS){const m1=smooth(q[0]-4,q[0]+3,lat)*(1-smooth(q[1]-3,q[1]+4,lat))*smooth(q[2]-5,q[2]+4,lon)*(1-smooth(q[3]-4,q[3]+5,lon));if(m1>d)d=m1}
+    d=Math.min(1,d*(0.75+0.5*n));
+    const tb=smooth(25,30,lat)*(1-smooth(36,40,lat))*smooth(75,80,lon)*(1-smooth(98,103,lon));base=base.map((v,j)=>v+([120,108,84][j]-v)*tb);
+    r=base[0]+(200-base[0])*d;g=base[1]+(162-base[1])*d;bl=base[2]+(106-base[2])*d;
+    const ice=Math.max(smooth(68,76,al),(lon>-75&&lon<-10&&lat>59)?1:0,lat<-62?1:0);
+    r+=(236-r)*ice;g+=(242-g)*ice;bl+=(248-bl)*ice;
+    const k=0.78+0.4*n;r*=k;g*=k;bl*=k;
+   }else{
+    const bi=((y>>2)*(TW/4)+(x>>2))*4,coast=bd[bi]/255;
+    const k=0.85+0.25*n;
+    r=(12+30*coast)*k;g=(42+60*coast)*k;bl=(98+70*coast)*k;
+    if(al>70){const ic=smooth(70,82,al)*(0.6+0.4*n);r+=(200-r)*ic*.6;g+=(215-g)*ic*.6;bl+=(230-bl)*ic*.6}
+   }
+   o[i]=r;o[i+1]=g;o[i+2]=bl;o[i+3]=255;
+  }}
+ lc.putImageData(img,0,0);landData=o;
+}
+
+/* ================= 气压场模型 ================= */
+const g=(x,m,s)=>Math.exp(-((x-m)*(x-m))/(2*s*s));
+function dlon(a,b){let d=a-b;while(d>180)d-=360;while(d<-180)d+=360;return d}
+const JAN=[[47,100,22,12,26],[51,-105,9,10,15],[52,-175,-18,9,22],[62,-28,-16,9,20],[30,-140,7,8,25],[32,-35,7,8,20],[-21,133,-9,8,12],[-17,25,-6,8,10],[-18,-60,-7,9,10],[-30,-100,8,8,25],[-28,-12,8,7,18],[-32,80,8,7,22]];
+const JUL=[[30,72,-14,14,32],[34,-112,-5,8,10],[36,-150,14,9,25],[36,-38,14,9,22],[55,-170,-4,9,20],[60,-35,-4,9,20],[-28,133,8,8,15],[-26,25,5,7,10],[-25,-60,4,7,10],[-30,-100,9,8,25],[-28,-15,9,7,18],[-30,75,9,7,22]];
+let FJ,FU;
+function buildFields(){FJ=new Float32Array(OW*OH);FU=new Float32Array(OW*OH);
+ for(let y=0;y<OH;y++){const lat=90-(y+.5)/OH*180;for(let x=0;x<OW;x++){const lon=-180+(x+.5)/OW*360;let a=0,b=0;
+  for(const c of JAN)a+=c[2]*g(lat,c[0],c[3])*g(dlon(lon,c[1]),0,c[4]);
+  for(const c of JUL)b+=c[2]*g(lat,c[0],c[3])*g(dlon(lon,c[1]),0,c[4]);
+  FJ[y*OW+x]=a;FU[y*OW+x]=b}}}
+function zonalReal(lat,s){return 1012-6*g(lat,s,8)+3*g(lat,30+s,9)+7*g(lat,-30+s,9)-7*g(lat,60+s,8)-20*g(lat,-62+s,7)+8*g(lat,88,10)+12*g(lat,-88,10)}
+function zonalIdeal(lat){return 1012-20*g(lat,0,14)+22*g(lat,90,20)+22*g(lat,-90,20)}
+function zonalThree(lat,s){return 1012-18*g(lat,s,6.5)+18*g(lat,30+s,6.5)+18*g(lat,-30+s,6.5)-18*g(lat,60+s,6.5)-18*g(lat,-60+s,6.5)+18*g(lat,90,8)+18*g(lat,-90,8)}
+const STOPS=[[988,[43,79,214]],[1004,[111,155,232]],[1012,[232,226,208]],[1024,[240,163,90]],[1036,[226,99,43]]];
+function cmap(p){if(p<=988)return STOPS[0][1];if(p>=1036)return STOPS[4][1];for(let i=0;i<4;i++){const[a,ca]=STOPS[i],[b,cb]=STOPS[i+1];if(p<=b){const t=(p-a)/(b-a);return[ca[0]+(cb[0]-ca[0])*t,ca[1]+(cb[1]-ca[1])*t,ca[2]+(cb[2]-ca[2])*t]}}}
+const ovCv=document.createElement('canvas');ovCv.width=OW;ovCv.height=OH;const ovCtx=ovCv.getContext('2d');
+let ovImg=ovCtx.createImageData(OW,OH),ovData=ovImg.data,ovKey='';
+function buildOverlay(){
+ const S=st();const key=S.mode+'|'+S.real+'|'+S.shift.toFixed(2)+'|'+S.w.toFixed(3)+'|'+(S.hl||'')+'|'+state.idx+'|'+[0,30,60,90].map(c=>bandFormed({c}).toFixed(2)).join(',');if(key===ovKey)return;ovKey=key;
+ const real=(S.mode==='pressure'||S.mode==='monsoon');
+ const IT=S.real?Array.from({length:OW},(_,x)=>itcz(-180+(x+.5)/OW*360,S)):null;
+ for(let y=0;y<OH;y++){const lat=90-(y+.5)/OH*180;
+  if(!real&&S.real){const rows=bandList(S).filter(b=>!isEq(b));let rb=null;for(const b of rows)if(Math.abs(lat-b.c)<=b.hw)rb=b;
+   for(let x=0;x<OW;x++){const j=(y*OW+x)*4,it=IT[x];let r=0,gg=0,bb=0,a=0;
+    if(Math.abs(lat-it.c)<=it.hw){[r,gg,bb]=[70,130,245];a=.42+.25*(1-Math.abs(lat-it.c)/it.hw)}else if(rb){[r,gg,bb]=rb.h?[245,150,70]:[70,130,245];a=.42+.25*(1-Math.abs(lat-rb.c)/rb.hw)}
+    ovData[j]=r;ovData[j+1]=gg;ovData[j+2]=bb;ovData[j+3]=a*255}continue}
+  if(!real){const bd=bandAt(lat,S);let r=0,gg=0,bb=0,a=0;
+   if(bd){[r,gg,bb]=bd.h?[245,150,70]:[70,130,245];a=.42+.25*(1-Math.abs(lat-bd.c)/bd.hw);if(S.hl)a*=isHlBand(bd,S)?1.1:.3;a*=bandFormed(bd)}
+   for(let x=0;x<OW;x++){const j=(y*OW+x)*4;ovData[j]=r;ovData[j+1]=gg;ovData[j+2]=bb;ovData[j+3]=Math.min(1,a)*255}continue}
+  const zr=zonalReal(lat,S.shift);
+  for(let x=0;x<OW;x++){const i=y*OW+x,j=i*4;
+   const p=zr+(1-S.w)*FJ[i]+S.w*FU[i];
+   const c=cmap(p);let a=Math.min(.9,.22+Math.abs(p-1012)/22);
+   let r=c[0],gg=c[1],b=c[2];
+   const f=((p-988)/4)%1;if(f<.045||f>.955){r=r*.45+140;gg=gg*.45+140;b=b*.45+140;a=Math.max(a,.62)}
+   ovData[j]=r;ovData[j+1]=gg;ovData[j+2]=b;ovData[j+3]=a*255}}
+ ovCtx.putImageData(ovImg,0,0);
+}
+
+/* ================= 教学步骤 ================= */
+const QA=(q,a)=>({q,a});
+const STAGES=[
+{name:'阶段一 · 理想单圈环流',qs:[QA('单圈环流形成的根本原因是什么？','高低纬度之间的受热不均（热力因素）。'),QA('在地表均匀、不考虑地球自转的假设下，北半球近地面吹什么风？','北风（由极地高压吹向赤道低压）。')],steps:[
+ {t:'假设：地表均匀 · 地球不自转',mode:'ideal',proc:true,tl:[],caps:['假设：地表均匀、地球不自转。赤道受热多、气温高；极地受热少、气温低。点「下一步」看空气怎样运动'],cells:false,wind:false,
+  txt:'<p>先把问题简化：假设<em>地表性质均匀</em>，并且<em>不考虑地球自转</em>（没有地转偏向力）。</p><p>这时影响大气运动的只有一个因素——太阳辐射在<em>高低纬度之间分布不均</em>：赤道获得的热量多，两极少。</p>',key:'赤道受热多、气温高；极地受热少、气温低——这是大气运动的根本原因。'},
+ {t:'赤道受热上升 · 极地冷却下沉',mode:'ideal',proc:true,tl:[['i_rise0'],['i_aloft'],['i_sink90']],caps:['① 赤道受热，空气膨胀上升 → 近地面形成低压（赤道低压）','② 上升的空气使赤道上空形成高压，高空气流从赤道上空流向极地上空','③ 极地气温低，空气冷却收缩下沉 → 近地面形成高压（极地高压）'],cells:false,wind:false,
+  txt:'<p>赤道空气受热膨胀<em>上升</em>，近地面形成<em>低压</em>，高空形成高压；极地空气冷却收缩<em>下沉</em>，近地面形成<em>高压</em>，高空形成低压。</p><p>高空气流由赤道流向极地，近地面气流由极地流回赤道，形成南北半球各一个<em>闭合环流</em>（热力环流）。</p>',key:'单圈环流本质上是全球尺度的热力环流。'},
+ {t:'近地面：由极地吹向赤道',mode:'ideal',proc:true,tl:[['i_surf']],caps:['④ 近地面气流从极地高压流向赤道低压：北半球吹北风，南半球吹南风 → 南北半球各形成一个闭合的单圈环流'],cells:false,wind:true,
+  txt:'<p>近地面，空气从极地高压流向赤道低压：北半球吹<em>北风</em>，南半球吹<em>南风</em>。</p><p>思考：真实的地球在自转，这些风会保持南北方向吗？进入阶段二看看。</p>',key:'理想状态：北半球近地面北风，南半球近地面南风。'}
+]},
+{name:'阶段二 · 三圈环流（地转偏向力）',qs:[QA('七个气压带中，哪些主要由热力原因形成？哪些由动力原因形成？','热力：赤道低气压带、极地高气压带；动力：副热带高气压带、副极地低气压带。'),QA('为什么北半球的信风是东北风？','气流由副热带高压流向赤道低压，北半球受向右的地转偏向力影响，偏转成东北风。'),QA('南、北半球的中纬西风各是什么风向？','北半球为西南风，南半球为西北风。'),QA('三圈环流中，哪两个环流圈是“热力环流”？','低纬环流和高纬环流；中纬环流是被两者带动形成的。')],steps:[
+ {t:'地球自转 → 地转偏向力',mode:'three',proc:true,tl:[],caps:[],coriolis:true,cells:false,wind:false,
+  txt:'<p>真实的地球在<em>自转</em>。水平运动的物体（包括气流）会受到<em>地转偏向力</em>的影响而偏离原来的方向：</p><p><em>北半球向右偏，南半球向左偏，赤道上不偏转</em>。</p><p>图中虚线是气流“原来想走”的方向，实线是实际偏转后的路径。</p><p>正因为有这个力，单圈环流无法维持。下面从赤道开始，<em>一步一步</em>看三圈环流是怎样形成的。</p>',key:'地转偏向力：北右南左，赤道为零；它只改变风向，不改变风速。'},
+ {t:'赤道 0°：受热上升',mode:'three',proc:true,hl:[0],tl:[['rise0']],caps:['① 赤道终年受热，近地面空气膨胀上升 → 近地面形成赤道低气压带'],
+  txt:'<p>第一步：赤道地区终年受热，近地面空气<em>受热膨胀上升</em>。</p><p>空气上升后，近地面空气变少，形成<em>赤道低气压带</em>（热力原因形成）。</p><p>看图：赤道近地面出现一股<em>上升气流</em>。上升的空气到了高空，接下来会往哪里去？点「下一步」。</p>',key:'赤道低气压带——热力原因：受热 → 上升 → 近地面低压。'},
+ {t:'南北纬 30°：高空偏转 · 堆积下沉',mode:'three',proc:true,hl:[30,-30],tl:[['aloft0_30'],['sink30'],['surf30_0','surf30_60']],
+  caps:['① 上升气流到达高空，流向南北两侧高纬，受地转偏向力影响不断偏转','② 到30°附近，气流偏转成与纬线平行，后面的空气不断涌来 → 堆积下沉 → 副热带高气压带','③ 下沉气流到近地面分两支：一支流回赤道 → 信风；一支流向高纬 → 西风'],
+  txt:'<p>第二步：赤道上空的空气向两极方向流动，受地转偏向力影响<em>逐渐偏转</em>（北半球向右）。</p><p>到<em>30°附近</em>，气流已偏转成与纬线平行，无法继续前进，空气<em>堆积下沉</em>，近地面形成<em>副热带高气压带</em>（动力原因形成）。</p><p>下沉的气流到近地面<em>分两支</em>：流回赤道的一支偏转成<em>信风</em>（北半球东北信风，南半球东南信风）——这样就形成了<em>低纬环流</em>；流向高纬的一支偏转成<em>西风</em>。</p>',key:'副热带高气压带——动力原因：高空气流偏转、堆积、下沉。'},
+ {t:'南北纬 60°：冷暖相遇 · 爬升',mode:'three',proc:true,hl:[60,-60],tl:[['cold90_60'],['rise60'],['aloft60_30','aloft60_90']],
+  caps:['① 来自极地的冷空气流向低纬（极地东风），与来自30°的较暖的西风在60°附近相遇','② 暖而轻的空气沿冷而重的空气爬升（极锋）→ 副极地低气压带','③ 上升气流到高空分两支：一支流向30°下沉（形成中纬环流），一支流向极地'],
+  txt:'<p>第三步：从30°流向高纬的<em>较暖的西风</em>，在<em>60°附近</em>遇到从极地流来的<em>寒冷的气流</em>。</p><p>冷暖气流相遇形成锋面（<em>极锋</em>），暖而轻的空气<em>沿冷空气爬升</em>，近地面形成<em>副极地低气压带</em>（动力原因形成）。</p><p>爬升到高空的气流<em>分两支</em>：一支流向低纬，在30°附近下沉——<em>中纬环流</em>形成；另一支流向极地。</p>',key:'副极地低气压带——动力原因：冷暖气流相遇，暖空气爬升。'},
+ {t:'南北纬 90°：冷却下沉',mode:'three',proc:true,hl:[90,-90],tl:[['sink90']],
+  caps:['① 流到极地上空的气流冷却下沉 → 极地高气压带；近地面再流向低纬（极地东风）→ 高纬环流形成'],
+  txt:'<p>第四步：流到极地上空的空气，因极地气温很低而<em>冷却下沉</em>，近地面形成<em>极地高气压带</em>（热力原因形成）。</p><p>下沉气流在近地面流向低纬，偏转成<em>极地东风</em>（北半球东北风、南半球东南风），到60°附近上升——<em>高纬环流</em>形成。</p>',key:'极地高气压带——热力原因：冷却 → 下沉 → 近地面高压。'},
+ {t:'小结：三圈环流 · 七压六风',mode:'three',cells:true,wind:true,
+  txt:'<p>南北半球各有<em>三个环流圈</em>：低纬环流、中纬环流、高纬环流。</p><p>气压带：<em>高低相间</em>分布——极地高、副极地低、副热带高、赤道低（南北对称）。</p><p>风带：都由<em>高压吹向低压</em>，再按“北右南左”偏转——信风带、西风带、极地东风带。</p><p>记忆口诀：<em>“高低相间，北右南左”</em>。</p>',key:'画图三步：先画七个气压带，再画南北向箭头，最后按北右南左偏转。'}
+]},
+{name:'阶段三 · 气压带风带的季节移动',qs:[QA('北半球夏季，气压带和风带怎样移动？','随太阳直射点北移而北移（大致移动 5°~10°）；冬季则南移。'),QA('地中海气候为什么夏季炎热干燥、冬季温和多雨？','夏季受副热带高气压带控制，盛行下沉气流；冬季受西风带控制，西风从海洋带来水汽。'),QA('东非角马为什么北半球夏季北迁、冬季南返？','北半球夏季赤道低气压带北移，塞伦盖蒂南部受信风控制进入干季，草枯水少，动物北迁到仍有降水的马赛马拉；冬季气压带南移，南部进入雨季，动物南返。'),QA('在气压带风带移动的范围内，哪些地区会出现“交替控制”？','30°~40°大陆西岸（地中海气候：副高与西风交替）、热带草原气候区（赤道低压与信风交替）。')],steps:[
+ {t:'太阳直射点移动 → 气压带风带季节移动',mode:'season',cells:true,wind:true,cycle:true,realOk:true,
+  txt:'<p>太阳直射点在南北回归线之间往返移动，气压带和风带也随之<em>季节性移动</em>。</p><p>就北半球而言：<em>夏季北移，冬季南移</em>。点下方「春分 / 夏至 / 秋分 / 冬至」或按 ▶ 连续播放，观察各气压带的位置。</p>',key:'气压带风带“随太阳直射点移动而移动”，北半球夏北冬南。',
+  note:'<div class="note"><h4>📏 说明：移动幅度和宽度</h4><p><b>移动幅度</b>：一般说约 <em>5°～10°</em>，北半球夏季北移、冬季南移；实际比太阳直射点<em>滞后约1～2个月</em>（副高7—8月最偏北）。</p><p><b>宽度</b>：教材图上的0°、30°、60°只是气压带的<em>中心</em>，气压带是几个纬度宽的过渡带，没有严格边界；风带夹在两个气压带之间，大致各占二三十个纬度。</p><p><b>赤道低气压带的特殊之处</b>：①平均位置<em>偏北</em>，约5°N（北半球陆地多，热赤道偏北）；②移动幅度<em>海陆差别大</em>：海洋上只摆动几个纬度，大陆上很大——夏季南亚可北移到20°N以上，冬季在南半球大陆可到10°～15°S；③<em>宽度不一</em>：海洋上较窄，大陆上较宽。</p><p><b>本页的两种模式</b>：「教材示意」中各气压带同步移动约±6°，副高等半宽5°，赤道低压半宽7.5°；「更接近实际」中赤道低压按上面的规律变化，并滞后直射点约1.5个月。以上都是近似值，用于理解规律。</p></div>'},
+ {t:'案例一：地中海气候（希腊雅典）',mode:'season',view:'2d',zoom:[-14,46,12,54],cells:false,wind:true,cycle:true,lonFix:15,
+  cases:[{n:'雅典（约38°N）',lat:38,lon:23.7,dy:-38}],
+  txt:'<p>地中海沿岸位于<em>30°~40°大陆西岸</em>，正处在副热带高气压带和西风带<em>交替控制</em>的位置。以希腊<em>雅典</em>为例：</p><p><em>北半球夏季（约5—9月）</em>：太阳直射点北移，气压带风带北移，雅典受<em>副热带高气压带</em>控制，盛行下沉气流→<em>炎热干燥</em>。</p><p><em>北半球冬季（约11月—次年3月）</em>：气压带风带南移，雅典受<em>西风带</em>控制，西风从大西洋带来水汽→<em>温和多雨</em>。</p><p>按 ▶ 播放全年，或点「夏至 / 冬至」，看标记的状态切换。</p>',key:'地中海气候：副高与西风带交替控制 → 夏季炎热干燥，冬季温和多雨。'},
+ {t:'案例二：热带草原气候 · 东非动物大迁徙',mode:'season',view:'2d',zoom:[23,49,-15,9],cells:false,wind:true,cycle:true,lonFix:35,herd:true,
+  cases:[{n:'马赛马拉（肯尼亚）',lat:-1.5,lon:35.1,dy:-46},{n:'塞伦盖蒂南部（坦桑尼亚）',lat:-3,lon:35,dy:46}],
+  txt:'<p>热带草原气候受<em>赤道低气压带</em>与<em>信风带</em>交替控制：受赤道低压控制时为<em>雨季</em>，受信风控制时为<em>干季</em>。</p><p>东非<em>塞伦盖蒂—马赛马拉</em>草原是典型代表（位于东非高原上）：</p><p><em>北半球夏季</em>：赤道低气压带北移，塞伦盖蒂南部受信风带控制进入<em>干季</em>，草场枯黄；北边的马赛马拉仍有降水，于是角马、斑马等食草动物<em>向北迁徙</em>（实际大约7—10月在马赛马拉）。</p><p><em>北半球冬季</em>：气压带南移，塞伦盖蒂南部进入<em>雨季</em>，水草丰美，动物<em>南返</em>并在此产仔（约12月—次年3月）。</p><p style="color:#93a8c8">注：实际气压带的移动比太阳直射点滞后约1—2个月，本模型做了简化。</p>',key:'食草动物“逐水草而居”：迁徙路线跟着赤道低气压带带来的雨季走。'}
+]},
+{name:'阶段四 · 海陆分布与气压中心',qs:[QA('1月亚欧大陆为什么形成强大的高压？','冬季陆地降温快，气温比同纬度海洋低，空气冷却下沉形成高压（亚洲高压）。'),QA('7月切断北半球副热带高气压带的是哪个气压中心？','亚洲低压（印度低压），副高只保留在海洋上：夏威夷高压、亚速尔高压。'),QA('南半球的气压带为什么比北半球更接近带状？','南半球海洋面积广，海陆热力性质差异影响小。')],steps:[
+ {t:'海陆热力性质差异切断气压带',mode:'pressure',view:'2d',month:'cycle',
+  txt:'<p>真实地表海陆相间。海陆<em>热力性质差异</em>：陆地升温快、降温也快；海洋升温慢、降温也慢。</p><p>于是同纬度上，冬季陆地比海洋冷→形成高压，夏季陆地比海洋热→形成低压。带状的气压带被<em>切断成块状的气压中心</em>，北半球尤其明显。拖动月份滑块观察。</p>',key:'海陆分布使气压带断裂为一个个高、低气压中心（北半球最明显）。'},
+ {t:'1月 · 北半球冬季',mode:'pressure',view:'2d',month:1,
+  txt:'<p>1月大陆冷，形成<em>亚洲高压（蒙古—西伯利亚高压）</em>、<em>北美高压（加拿大高压）</em>，切断了<em>副极地低气压带</em>，低压只保留在海洋上：<em>阿留申低压、冰岛低压</em>。</p><p>此时南半球是夏季，大陆上形成热低压（如澳大利亚低压）。</p>',key:'1月：陆高海低，副极地低气压带被切断。'},
+ {t:'7月 · 北半球夏季',mode:'pressure',view:'2d',month:7,
+  txt:'<p>7月大陆热，亚欧大陆形成<em>亚洲低压（印度低压）</em>，切断了<em>副热带高气压带</em>，副高只保留在海洋上：<em>夏威夷高压、亚速尔高压</em>。</p>',key:'7月：陆低海高，副热带高气压带被切断。'}
+]},
+{name:'阶段五 · 季风环流与气候',qs:[QA('东亚季风和南亚季风的成因有什么不同？','东亚季风主要由海陆热力性质差异形成；南亚冬季风也由海陆热力差异形成，夏季风（西南季风）主要由气压带风带季节移动形成——东南信风北移越过赤道，向右偏转成西南风。'),QA('常州冬、夏季各盛行什么风？对气候有什么影响？','冬季盛行偏北风，寒冷干燥；夏季盛行东南季风，从海洋带来水汽，高温多雨。'),QA('为什么澳大利亚北部1月吹西北季风？','北半球的东北季风越过赤道进入南半球，受向左的地转偏向力影响，偏转为西北风。')],steps:[
+ {t:'东亚季风',mode:'monsoon',view:'2d',month:1,region:'ea',
+  txt:'<p><em>冬季（1月）</em>：亚洲高压强大，风从陆地吹向海洋——我国盛行<em>西北季风</em>，寒冷干燥；南亚盛行<em>东北季风</em>。</p><p><em>夏季（7月）</em>：亚洲大陆形成低压，太平洋上的夏威夷高压加强，风从海洋吹向陆地——盛行<em>东南季风</em>，高温多雨。点「1月 / 7月」对比。</p>',key:'东亚季风：海陆热力性质差异是主因，冬季西北风、夏季东南风。'},
+ {t:'南亚季风',mode:'monsoon',view:'2d',month:7,region:'sa',
+  txt:'<p><em>冬季（1月）</em>：亚洲高压吹向印度洋，南亚盛行<em>东北季风</em>；它越过赤道后左偏，成为澳大利亚北部的<em>西北季风</em>。</p><p><em>夏季（7月）</em>：气压带风带北移，南半球的<em>东南信风越过赤道，受向右的地转偏向力偏转成西南季风</em>，再被印度低压吸引，带来丰沛降水。</p>',key:'南亚夏季风 = 气压带风带季节移动 + 海陆热力差异共同作用。'},
+ {t:'季风气候的分布与特征',mode:'monsoon',view:'2d',month:7,region:'all',climate:true,
+  txt:'<p><em>温带季风气候</em>（我国华北、东北，朝韩，日本北部）：夏季高温多雨，冬季寒冷干燥。</p><p><em>亚热带季风气候</em>（我国秦岭—淮河以南等）：夏季高温多雨，冬季温和少雨。常州就在这里。</p><p><em>热带季风气候</em>（印度半岛、中南半岛）：全年高温，分旱、雨两季。</p>',key:'季风气候的共同点：雨热同期，降水集中在夏季。'}
+]}
+];
+const FLAT=[];STAGES.forEach((s,si)=>s.steps.forEach((p,pi)=>FLAT.push({si,pi,...p})));
+{let acc=[],si=-1;FLAT.forEach(f=>{if(f.si!==si){si=f.si;acc=[]}if(f.proc){f.prior=acc.slice();acc=acc.concat(...(f.tl||[]))}})}
+
+/* ================= 状态 ================= */
+const state={idx:0,view:'3d',lonC:-80,lonTarget:null,tilt:15,playing:true,cycle:false,speed:1,op:.7,yearP:0,yearTarget:null,month:1,monthTarget:null,deflect:1,t:0,herd:0,herdTarget:0,
+ layers:{belts:true,wind:true,cells:true,labels:true,grid:true},mapRect:[-180,180,-90,90],demo:false,demoT:0};
+function cur(){return FLAT[state.idx]}
+function mw(m){return(1-Math.cos(2*Math.PI*(m-1)/12))/2}
+function st(){const s=cur();const mode=s.mode;let shift=0,w=0,ph=0;const real=!!(state.real&&s.realOk);
+ if(mode==='season'){ph=Math.sin(2*Math.PI*(state.yearP-(real?0.125:0)));shift=23.44*ph*.25}
+ if(mode==='pressure'||mode==='monsoon'){w=mw(state.month);shift=5*(2*w-1)}
+ return{mode,shift,w,ph,real,hl:s.hl?s.hl.join(','):null,hlArr:s.hl}}
+
+/* ================= 画布 ================= */
+const cv=document.getElementById('view'),ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1;
+const gCv=document.createElement('canvas'),gCtx=gCv.getContext('2d');
+let G=0,gImg,gD,P={};let prepTilt=null;
+function resize(){DPR=Math.min(2,window.devicePixelRatio||1);const r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);prepTilt=null;drawStars();if(window.syncInfo)syncInfo()}
+function rsv(){return(W>1000&&$('info').classList.contains('open'))?370:0}
+function geo(){const mob=W<700;const Wr=W-rsv();const R=Math.max(90,Math.min(Wr*(mob?.36:.3),H*(mob?.3:.36)));return{R,cx:mob?W*.47:Wr*.46,cy:mob?H*.55:H*.48}}
+function prepGlobe(){const{R}=geo();const size=Math.round(Math.min(760,2*R*DPR));
+ if(size!==G){G=size;gCv.width=gCv.height=G;gImg=gCtx.createImageData(G,G);gD=gImg.data}
+ const t=state.tilt*D2R,ct=Math.cos(t),s=Math.sin(t);const idx=[],lonB=[],rowT=[],rowO=[],nx=[],ny=[],nz=[];
+ for(let py=0;py<G;py++)for(let px=0;px<G;px++){const x=(px+.5-G/2)/(G/2),yv=-(py+.5-G/2)/(G/2),r2=x*x+yv*yv;if(r2>1)continue;
+  const z=Math.sqrt(1-r2),y=yv*ct+z*s,zz=-yv*s+z*ct,lat=Math.asin(Math.max(-1,Math.min(1,y)))/D2R,mu=Math.atan2(x,zz)/D2R;
+  idx.push(py*G+px);lonB.push(mu);rowT.push(Math.min(TH-1,Math.floor((90-lat)/180*TH)));rowO.push(Math.min(OH-1,Math.floor((90-lat)/180*OH)));nx.push(x);ny.push(yv);nz.push(z)}
+ P={idx:Int32Array.from(idx),lonB:Float32Array.from(lonB),rowT:Int32Array.from(rowT),rowO:Int32Array.from(rowO),nx:Float32Array.from(nx),ny:Float32Array.from(ny),nz:Float32Array.from(nz)};
+ gD.fill(0);prepTilt=state.tilt}
+function rotV(lat,lon){const mu=(lon-state.lonC)*D2R,ph=lat*D2R,t=state.tilt*D2R;const x=Math.cos(ph)*Math.sin(mu),y=Math.sin(ph),z=Math.cos(ph)*Math.cos(mu);return[x,y*Math.cos(t)-z*Math.sin(t),y*Math.sin(t)+z*Math.cos(t)]}
+function proj(lat,lon){const{R,cx,cy}=geo();const v=rotV(lat,lon);return{x:cx+R*v[0],y:cy-R*v[1],z:v[2]}}
+function sunVec(){const S=st();const d=23.44*Math.sin(2*Math.PI*state.yearP);return{v:rotV(d,state.lonC+48),dec:d}}
+function renderGlobe(){
+ if(prepTilt!==state.tilt||!P.idx)prepGlobe();
+ const S=st(),season=S.mode==='season';let L=[-.38,.46,.8];if(season)L=sunVec().v;
+ const ll=Math.hypot(...L);L=L.map(v=>v/ll);
+ const op=state.layers.belts?state.op:0,{idx,lonB,rowT,rowO,nx,ny,nz}=P,n=idx.length,rot=state.lonC,ld=landData,od=ovData,o=gD;
+ const kT=TW/360,kO=OW/TW;
+ for(let k=0;k<n;k++){let lon=lonB[k]+rot+180;lon-=Math.floor(lon/360)*360;let tx=(lon*kT)|0;if(tx>=TW)tx=TW-1;
+  const ti=(rowT[k]*TW+tx)*4,oi=(rowO[k]*OW+((tx*kO)|0))*4,a=od[oi+3]/255*op;
+  const d=nx[k]*L[0]+ny[k]*L[1]+nz[k]*L[2];
+  let f=season?(.26+.95*smooth(-.12,.25,d)):(.62+.5*Math.max(0,d));f*=.8+.2*nz[k];
+  const p=idx[k]*4;
+  o[p]=(ld[ti]*(1-a)+od[oi]*a)*f;o[p+1]=(ld[ti+1]*(1-a)+od[oi+1]*a)*f;o[p+2]=(ld[ti+2]*(1-a)+od[oi+2]*a)*f;o[p+3]=255}
+ gCtx.putImageData(gImg,0,0);
+ const{R,cx,cy}=geo();
+ // 大气光晕
+ const gr=ctx.createRadialGradient(cx,cy,R*.92,cx,cy,R*1.16);gr.addColorStop(0,'rgba(70,150,255,0)');gr.addColorStop(.4,'rgba(70,150,255,.45)');gr.addColorStop(1,'rgba(70,150,255,0)');
+ ctx.fillStyle=gr;ctx.beginPath();ctx.arc(cx,cy,R*1.16,0,7);ctx.fill();
+ ctx.save();ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.clip();ctx.drawImage(gCv,cx-R,cy-R,2*R,2*R);ctx.restore();
+ ctx.strokeStyle='rgba(120,190,255,.7)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.stroke();
+}
+/* ---------- 球面画线 ---------- */
+function globeLat(lat,style,w,dash){ctx.save();ctx.strokeStyle=style;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.beginPath();let on=false;
+ for(let m=-180;m<=180;m+=3){const p=proj(lat,state.lonC+m);if(p.z>0.01){on?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);on=true}else on=false}ctx.stroke();ctx.restore()}
+function globeCurve(f,style,w){ctx.save();ctx.strokeStyle=style;ctx.lineWidth=w;ctx.beginPath();let on=false;
+ for(let m=-180;m<=180;m+=3){const lo=state.lonC+m,p=proj(f(lo),lo);if(p.z>0.01){on?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);on=true}else on=false}ctx.stroke();ctx.restore()}
+function globeLon(lon,style,w){ctx.save();ctx.strokeStyle=style;ctx.lineWidth=w;ctx.beginPath();let on=false;
+ for(let la=-90;la<=90;la+=3){const p=proj(la,lon);if(p.z>0.01){on?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);on=true}else on=false}ctx.stroke();ctx.restore()}
+
+/* ================= 二维地图 ================= */
+function mapBox(){const r=state.mapRect,mob=W<700;const padL=mob?10:30,padR=(mob?40:120)+rsv(),padT=mob?100:80,padB=mob?150:110;
+ const aw=W-padL-padR,ah=H-padT-padB,asp=(r[1]-r[0])/(r[3]-r[2]);let w=aw,h=w/asp;if(h>ah){h=ah;w=h*asp}
+ return{x:padL+(aw-w)/2,y:padT+(ah-h)/2,w,h}}
+function m2s(lat,lon){const b=mapBox(),r=state.mapRect;return{x:b.x+(lon-r[0])/(r[1]-r[0])*b.w,y:b.y+(r[3]-lat)/(r[3]-r[2])*b.h}}
+const SPECIAL=[[23.44,'北回归线'],[-23.44,'南回归线'],[66.56,'北极圈'],[-66.56,'南极圈']];
+function renderMap(){const b=mapBox(),r=state.mapRect;
+ ctx.save();ctx.shadowColor='rgba(60,140,255,.5)';ctx.shadowBlur=24;ctx.fillStyle='#0a2050';ctx.fillRect(b.x,b.y,b.w,b.h);ctx.restore();
+ const sx=(r[0]+180)/360*TW,sw=(r[1]-r[0])/360*TW,sy=(90-r[3])/180*TH,sh=(r[3]-r[2])/180*TH;
+ ctx.imageSmoothingEnabled=true;ctx.drawImage(landCv,sx,sy,sw,sh,b.x,b.y,b.w,b.h);
+ if(state.layers.belts){ctx.globalAlpha=state.op;ctx.drawImage(ovCv,sx*OW/TW,sy*OH/TH,sw*OW/TW,sh*OH/TH,b.x,b.y,b.w,b.h);ctx.globalAlpha=1}
+ ctx.save();ctx.beginPath();ctx.rect(b.x,b.y,b.w,b.h);ctx.clip();
+ if(state.layers.grid){ctx.lineWidth=1;const hl=(la,sty,dash)=>{const p=m2s(la,0);ctx.strokeStyle=sty;ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(b.x,p.y);ctx.lineTo(b.x+b.w,p.y);ctx.stroke()};
+  hl(0,'rgba(255,255,255,.3)',[]);for(const[la]of SPECIAL)hl(la,'rgba(255,255,255,.32)',[3,5]);ctx.setLineDash([]);
+  ctx.strokeStyle='rgba(255,255,255,.08)';const stp=(r[1]-r[0])>200?30:10;for(let lo=Math.ceil(r[0]/stp)*stp;lo<=r[1];lo+=stp){const p=m2s(0,lo);ctx.beginPath();ctx.moveTo(p.x,b.y);ctx.lineTo(p.x,b.y+b.h);ctx.stroke()}
+  ctx.font='12px sans-serif';ctx.fillStyle='rgba(225,235,255,.7)';ctx.textAlign='left';ctx.textBaseline='bottom';
+  for(const[la,n]of SPECIAL){if(la<r[2]||la>r[3])continue;const p=m2s(la,0);ctx.fillText(n,b.x+6,p.y-2)}
+  const e=m2s(0,0);if(r[2]<0&&r[3]>0)ctx.fillText('赤道',b.x+6,e.y-2)}
+ ctx.restore();
+ ctx.fillStyle='#cfe0ff';ctx.font='600 14px sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';
+ const ts=(r[3]-r[2])>100?30:10;for(let la=Math.ceil(r[2]/ts)*ts;la<=r[3];la+=ts){if(Math.abs(la)>=90)continue;const p=m2s(la,0);ctx.fillText(la===0?'0°':Math.abs(la)+'°'+(la>0?'N':'S'),b.x+b.w+8,p.y)}
+}
+
+/* ================= 共用绘制 ================= */
+let placed=[];
+function label(x,y,text,o={}){ctx.save();const fs=o.fs||15;ctx.font=`${o.bold===false?500:700} ${fs}px "PingFang SC","Microsoft YaHei",sans-serif`;
+ const tw=ctx.measureText(text).width,pw=tw+16,ph=fs+10;let rx=x-pw/2,ry=y-ph/2;
+ if(rx<4)rx=4;if(rx+pw>W-4)rx=W-4-pw;x=rx+pw/2;
+ if(!o.force){for(const p of placed){if(rx<p[0]+p[2]&&rx+pw>p[0]&&ry<p[1]+p[3]&&ry+ph>p[1]){ctx.restore();return}}}
+ placed.push([rx,ry,pw,ph]);ctx.globalAlpha=o.alpha==null?1:o.alpha;
+ if(o.box!==false){ctx.fillStyle=o.bg||'rgba(16,34,66,.72)';ctx.strokeStyle=o.border||'rgba(160,200,255,.45)';ctx.lineWidth=o.border?1.5:1;rr(rx,ry,pw,ph,6);ctx.fill();ctx.stroke()}
+ ctx.fillStyle=o.color||'#f2f6ff';ctx.textAlign='center';ctx.textBaseline='middle';
+ if(o.box===false){ctx.lineWidth=3.5;ctx.strokeStyle='rgba(5,12,28,.85)';ctx.strokeText(text,x,y+.5)}
+ ctx.fillText(text,x,y+.5);ctx.restore()}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function arrow(x1,y1,x2,y2,col,w,al){const a=Math.atan2(y2-y1,x2-x1),hl=Math.max(7,w*3.2);ctx.save();ctx.globalAlpha=Math.max(0,al);ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w;ctx.lineCap='round';
+ ctx.shadowColor=col;ctx.shadowBlur=6;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-Math.cos(a)*hl*.6,y2-Math.sin(a)*hl*.6);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-hl*Math.cos(a-.45),y2-hl*Math.sin(a-.45));ctx.lineTo(x2-hl*Math.cos(a+.45),y2-hl*Math.sin(a+.45));ctx.closePath();ctx.fill();ctx.restore()}
+
+/* 气压带（带状，有明确边界）、风带 */
+function bandList(S){if(S.mode==='ideal')return[{c:90,hw:16,h:1,n:'极地高压'},{c:0,hw:10,h:0,n:'赤道低压'},{c:-90,hw:16,h:1,n:'极地高压'}];
+ const s=S.shift;return[{c:90,hw:10,h:1,n:'极地高气压带'},{c:60+s,hw:5,h:0,n:'副极地低气压带'},{c:30+s,hw:5,h:1,n:'副热带高气压带'},{c:s,hw:7.5,h:0,n:'赤道低气压带'},{c:-30+s,hw:5,h:1,n:'副热带高气压带'},{c:-60+s,hw:5,h:0,n:'副极地低气压带'},{c:-90,hw:10,h:1,n:'极地高气压带'}]}
+function landW(lon){const f=(a,b)=>smooth(a-8,a+4,lon)*(1-smooth(b-4,b+8,lon));return{afr:f(-15,45),asia:f(65,135),aus:f(112,152),sam:f(-78,-38)}}
+function itcz(lon,S){lon=((lon+540)%360)-180;const L=landW(lon),ph=S.ph;const N=4+13*L.afr+17*L.asia+4*L.sam,So=4+12*L.afr+12*Math.max(L.asia,L.aus)+16*L.sam;
+ return{c:5+ph*(ph>0?N:So),hw:4+4*Math.max(L.afr,L.asia,L.sam,L.aus)}}
+const isEq=b=>b.n==='赤道低气压带';
+function bandAt(lat,S){for(const b of bandList(S))if(Math.abs(lat-b.c)<=b.hw)return b;return null}
+function isHlBand(b,S){const s=cur();return!!(s.hl&&s.hl.some(h=>Math.abs((Math.abs(h)>=89?h:h+S.shift)-b.c)<.5))}
+function winds(S){const d=state.deflect,s=S.shift;
+ if(S.mode==='ideal')return[{id:'IN',lat:58,n:'北风',a:-90,c:'#ffb35c'},{id:'IN',lat:30,n:'北风',a:-90,c:'#ffb35c'},{id:'IS',lat:-30,n:'南风',a:90,c:'#ffb35c'},{id:'IS',lat:-58,n:'南风',a:90,c:'#ffb35c'}];
+ const L=[{id:'NP',lat:72.5+s/2,n:'极地东风',a0:-90,a1:-145,c:'#c38bff'},{id:'NW',lat:45+s,n:'盛行西风',a0:90,a1:35,c:'#46e0c0'},{id:'NT',lat:16.75+s,n:'东北信风',a0:-90,a1:-145,c:'#ffa94d'},{id:'ST',lat:-16.75+s,n:'东南信风',a0:90,a1:145,c:'#ffa94d'},{id:'SW',lat:-45+s,n:'盛行西风',a0:-90,a1:-35,c:'#46e0c0'},{id:'SP',lat:-72.5+s/2,n:'极地东风',a0:90,a1:145,c:'#c38bff'}];
+ return L.map(w=>({...w,a:w.a0+(w.a1-w.a0)*d}))}
+function windAt(lat,S){if(bandAt(lat,S))return null;const ws=winds(S),s=S.shift;
+ if(S.mode==='ideal')return ws[lat>0?0:2];
+ const id=lat>s?(lat<30+s?'NT':lat<60+s?'NW':'NP'):(lat>-30+s?'ST':lat>-60+s?'SW':'SP');return ws.find(w=>w.id===id)}
+function windOn(w){const s=cur();return!s.fw||s.fw.includes(w.id)}
+function cellsDef(S){if(S.mode==='ideal')return[{id:'IN',sink:90,rise:0},{id:'IS',sink:-90,rise:0}];const s=S.shift;
+ return[{id:'HN',sink:30+s,rise:s},{id:'FN',sink:30+s,rise:60+s},{id:'PN',sink:90,rise:60+s},{id:'HS',sink:-30+s,rise:s},{id:'FS',sink:-30+s,rise:-60+s},{id:'PS',sink:-90,rise:-60+s}]}
+
+/* 环流圈：fn(lat,h)->[x,y] */
+function drawCells(fn,S,scale){const t=state.t,f=cur().fc;const cs=cellsDef(S).filter(c=>!f||f.includes(c.id));
+ for(const{sink,rise}of cs){const pts=[],N=36;
+  for(let i=0;i<=N;i++)pts.push(fn(sink+(rise-sink)*i/N,.12));
+  for(let i=1;i<=8;i++)pts.push(fn(rise,.12+.76*i/8));
+  for(let i=1;i<=N;i++)pts.push(fn(rise+(sink-rise)*i/N,.88));
+  for(let i=1;i<8;i++)pts.push(fn(sink,.88-.76*i/8));
+  const a=fn(rise,.5),b=fn(sink,.5);const gr=ctx.createLinearGradient(a[0],a[1],b[0],b[1]);gr.addColorStop(0,'#ff5a4a');gr.addColorStop(1,'#4f8dff');
+  ctx.save();ctx.strokeStyle=gr;ctx.lineWidth=4*scale;ctx.lineJoin='round';ctx.shadowColor='rgba(120,170,255,.6)';ctx.shadowBlur=8;
+  ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.stroke();
+  const M=pts.length;ctx.fillStyle='#fff';ctx.shadowBlur=0;
+  for(const u of[.18,.43,.68,.93]){const i=Math.floor(u*M),p=pts[i],q=pts[(i+2)%M];const an=Math.atan2(q[1]-p[1],q[0]-p[0]),h=9*scale;
+   ctx.beginPath();ctx.moveTo(p[0]+Math.cos(an)*h,p[1]+Math.sin(an)*h);ctx.lineTo(p[0]+Math.cos(an+2.4)*h*.8,p[1]+Math.sin(an+2.4)*h*.8);ctx.lineTo(p[0]+Math.cos(an-2.4)*h*.8,p[1]+Math.sin(an-2.4)*h*.8);ctx.closePath();ctx.fill()}
+  for(let k=0;k<5;k++){const u=((t*.12*state.speed)+k/5)%1,p=pts[Math.floor(u*M)];ctx.fillStyle='rgba(255,255,255,.9)';ctx.beginPath();ctx.arc(p[0],p[1],2.6*scale,0,7);ctx.fill()}
+  ctx.restore()}}
+function vmMarkers(fn,list,S,withText){const t=state.t;for(const[la,up,txt]of list){const lat=Math.abs(la)>=89?la:la+S.shift;const p0=fn(lat,.15),p1=fn(lat,.95),pul=.6+.4*Math.sin(t*4);
+ const col=up?'#ff6a55':'#5c9bff';
+ up?arrow(p0[0],p0[1],p1[0],p1[1],col,5,pul):arrow(p1[0],p1[1],p0[0],p0[1],col,5,pul);
+ if(withText){const pl=fn(lat,1.75);label(pl[0],pl[1],(up?'↑ ':'↓ ')+txt,{fs:14,color:up?'#ffb3a8':'#b8d0ff',force:true})}}}
+/* 地表上的上升 / 下沉气流（竖直箭头动画） */
+function faceCols(list,S,P,lons,H){for(const[la,up]of list){const lat=Math.abs(la)>=89?Math.sign(la)*89.5:la+S.shift;const ls=Math.abs(la)>=89?[lons[Math.floor(lons.length/2)]]:lons;
+ for(const lo of ls){const p=P(lat,lo);if(!p||(p.z!=null&&p.z<.12))continue;const zf=p.z==null?1:Math.min(1,p.z*1.3);
+  ctx.save();ctx.globalAlpha=.55*zf;ctx.fillStyle=up?'rgba(255,110,85,.6)':'rgba(110,160,255,.6)';ctx.beginPath();ctx.ellipse(p.x,p.y,9,3.5,0,0,7);ctx.fill();ctx.restore();
+  for(let k=0;k<3;k++){const u=((state.t*.55*state.speed)+k/3)%1,al=Math.sin(Math.PI*u)*zf;
+   if(up){const y0=p.y-4-u*H;arrow(p.x,y0,p.x,y0-15,'#ff6a55',3,al)}else{const y0=p.y-4-(1-u)*H-15;arrow(p.x,y0,p.x,y0+15,'#6fa5ff',3,al)}}}}}
+
+/* ================= 主绘制 ================= */
+function draw(){
+ ctx.clearRect(0,0,W,H);placed=[];buildOverlay();
+ const S=st(),s=cur();
+ state.view==='3d'?draw3D(S,s):draw2D(S,s);
+}
+function draw3D(S,s){
+ renderGlobe();const{R,cx,cy}=geo();const L=state.layers,belt=S.mode!=='pressure'&&S.mode!=='monsoon';
+ if(L.grid){for(let lo=0;lo<360;lo+=30)globeLon(lo,'rgba(255,255,255,.09)',1);globeLat(0,'rgba(255,255,255,.3)',1);for(const[la]of SPECIAL)globeLat(la,'rgba(255,255,255,.32)',1,[3,5])}
+ if(belt&&L.belts)for(const b of bandList(S)){const al=(s.hl&&!isHlBand(b,S)?.3:.95)*bandFormed(b);if(al<=0)continue;if(S.real&&isEq(b)){for(const sg of[-1,1])globeCurve(lo=>{const t=itcz(lo,S);return t.c+sg*t.hw},`rgba(120,175,255,${al})`,2.2);continue}for(const e of[b.c-b.hw,b.c+b.hw])if(Math.abs(e)<89)globeLat(e,b.h?`rgba(255,170,90,${al})`:`rgba(120,175,255,${al})`,2.2)}
+ if(S.mode==='season'){const sv=sunVec();globeLat(sv.dec,'rgba(255,220,90,.95)',2.5);
+  const sp=proj(sv.dec,state.lonC+48),sun={x:cx+R*sv.v[0]*2.05,y:cy-R*sv.v[1]*2.05};
+  ctx.save();const sg=ctx.createRadialGradient(sun.x,sun.y,0,sun.x,sun.y,R*.55);sg.addColorStop(0,'rgba(255,220,120,.55)');sg.addColorStop(1,'rgba(255,200,80,0)');ctx.fillStyle=sg;ctx.beginPath();ctx.arc(sun.x,sun.y,R*.55,0,7);ctx.fill();
+  ctx.strokeStyle='rgba(255,226,140,.9)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(sun.x,sun.y);ctx.lineTo(sp.x,sp.y);ctx.stroke();
+  ctx.fillStyle='#ffd25a';ctx.shadowColor='#ffc23a';ctx.shadowBlur=30;ctx.beginPath();ctx.arc(sun.x,sun.y,R*.17,0,7);ctx.fill();ctx.shadowBlur=0;
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(sp.x,sp.y,5,0,7);ctx.fill();ctx.restore();
+  label(sp.x-10,sp.y-22,'太阳直射点 '+Math.abs(sv.dec).toFixed(1)+'°'+(sv.dec>0.05?'N':sv.dec<-0.05?'S':''),{fs:13,color:'#ffe08a',force:true})}
+ if(belt&&L.wind&&s.wind!==false){const ws=winds(S).filter(windOn);const offs=[-62,-38,-14,14,38,62];
+  for(const w of ws){const wa=windAlpha(w.id);if(wa<=0)continue;for(const m of offs){const lat=w.lat,lon=state.lonC+m;const base=proj(lat,lon);if(base.z<.2)continue;
+   for(let k=0;k<2;k++){const u=((state.t*.5*state.speed)+k/2+(m+200)/97)%1,len=11;const a=w.a*D2R;
+    const sl=(u-.3)*len*.8;const clat=Math.cos(lat*D2R);
+    const p1=proj(lat+Math.sin(a)*sl,lon+Math.cos(a)*sl/clat),p2=proj(lat+Math.sin(a)*(sl+len),lon+Math.cos(a)*(sl+len)/clat);
+    if(p1.z>.05&&p2.z>.05)arrow(p1.x,p1.y,p2.x,p2.y,w.c,3.2,Math.sin(Math.PI*u)*(.4+.6*base.z)*wa)}}}}
+ if(belt){const t=state.tilt*D2R;const fn=(lat,h)=>{const sa=Math.max(-1,Math.min(1,Math.sin(lat*D2R)/Math.cos(t)));const al=Math.asin(sa),r=R*(1.03+h*.15);return[cx+r*Math.cos(al),cy-r*Math.sin(al)]};
+  if(L.cells&&s.cells)drawCells(fn,S,1);
+  if(s.proc){drawProcess(fn,1);procFaceCols(S,(la,lo)=>proj(la,lo),[-50,-25,0,25,50].map(m=>state.lonC+m),R*.16)}
+  if(s.coriolis)drawCoriolis((la,lo)=>{const p=proj(la,lo);return p.z>.12?p:null});
+  if(s.vm){vmMarkers(fn,s.vm,S,true);faceCols(s.vm,S,(la,lo)=>proj(la,lo),[-50,-25,0,25,50].map(m=>state.lonC+m),R*.16)}}
+ if(L.labels&&belt){
+  for(const b of bandList(S)){let p;if(b.c>=89)p={x:cx,y:cy-R-20,z:1};else if(b.c<=-89)p={x:cx,y:cy+R+20,z:1};else p=proj(S.real&&isEq(b)?itcz(state.lonC-4,S).c:b.c,state.lonC-4);
+   if(p.z<.15||bandFormed(b)<.5)continue;const hl=isHlBand(b,S);
+   label(p.x,p.y,b.n,{fs:hl?18:15,alpha:s.hl&&!hl?.45:1,border:hl?'#5fd4ff':undefined,bg:b.h?'rgba(90,45,15,.78)':'rgba(16,40,90,.78)'})}
+  if(L.wind&&s.wind!==false&&(state.deflect>.5||S.mode==='ideal'))for(const w of winds(S).filter(windOn)){if(windAlpha(w.id)<.5)continue;const p=proj(w.lat,state.lonC+6);if(p.z>.3)label(p.x,p.y,w.n,{fs:14,box:false,color:w.c})}
+ }
+ if(!belt){if(L.labels)centerLabels(S,(la,lo)=>{const p=proj(la,lo);return p.z>.25?p:null});
+  if(S.mode==='monsoon'&&L.wind)monsoonArrows(S,(la,lo)=>{const p=proj(la,lo);return p.z>0?p:null})}
+ if(s.cases){const P=(la,lo)=>{const p=proj(la,lo);return p.z>.1?p:null};if(s.herd)drawHerd(P);caseMarkers(S,P)}
+}
+function draw2D(S,s){
+ renderMap();const b=mapBox(),L=state.layers,r=state.mapRect,belt=S.mode!=='pressure'&&S.mode!=='monsoon';
+ const lspan=r[1]-r[0],span=r[3]-r[2],zoom=lspan<200;
+ ctx.save();ctx.beginPath();ctx.rect(b.x,b.y,b.w,b.h);ctx.clip();
+ if(belt){
+  if(L.belts)for(const x of bandList(S)){const al=(s.hl&&!isHlBand(x,S)?.3:.95)*bandFormed(x);if(al<=0)continue;if(S.real&&isEq(x)){for(const sg of[-1,1]){ctx.strokeStyle=`rgba(120,175,255,${al})`;ctx.lineWidth=2.2;ctx.beginPath();for(let lo=r[0];lo<=r[1];lo+=lspan/180){const t=itcz(lo,S),q=m2s(t.c+sg*t.hw,lo);lo===r[0]?ctx.moveTo(q.x,q.y):ctx.lineTo(q.x,q.y)}ctx.stroke()}continue}for(const e of[x.c-x.hw,x.c+x.hw])if(Math.abs(e)<89){const p=m2s(e,0);ctx.strokeStyle=x.h?`rgba(255,170,90,${al})`:`rgba(120,175,255,${al})`;ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(b.x,p.y);ctx.lineTo(b.x+b.w,p.y);ctx.stroke()}}
+  if(S.mode==='season'){const d=23.44*Math.sin(2*Math.PI*state.yearP),p=m2s(d,0);ctx.save();ctx.strokeStyle='rgba(255,220,90,.95)';ctx.shadowColor='#ffd25a';ctx.shadowBlur=8;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(b.x,p.y);ctx.lineTo(b.x+b.w,p.y);ctx.stroke();ctx.restore();
+   if(d>r[2]&&d<r[3])label(b.x+b.w-110,p.y-14,'☀ 太阳直射点 '+Math.abs(d).toFixed(1)+'°'+(d>.05?'N':d<-.05?'S':''),{fs:13,color:'#ffe08a',force:true})}
+  if(L.wind&&s.wind!==false){const len=zoom?lspan/13:9;
+   const rows=[];if(zoom){const st=span/8;for(let la=r[2]+st/2;la<r[3];la+=st){const w=windAt(la,S);if(w)rows.push([la,w])}}else for(const w of winds(S))rows.push([w.lat,w]);
+   const lst=zoom?lspan/7:30;
+   for(const[la,w]of rows){if(!windOn(w))continue;const wa=windAlpha(w.id);if(wa<=0)continue;for(let lo=r[0]+lst/2;lo<r[1];lo+=lst){
+    for(let k=0;k<2;k++){const u=((state.t*.5*state.speed)+k/2+lo/77+la/53)%1,a=w.a*D2R,sl=(u-.3)*len*.8;
+     const p1=m2s(la+Math.sin(a)*sl,lo+Math.cos(a)*sl),p2=m2s(la+Math.sin(a)*(sl+len),lo+Math.cos(a)*(sl+len));arrow(p1.x,p1.y,p2.x,p2.y,w.c,2.8,Math.sin(Math.PI*u)*wa)}}}}
+  {const lons=[0,1,2,3,4].map(i=>r[0]+lspan*(.12+.19*i)),P2=(la,lo)=>m2s(Math.max(-89,Math.min(89,la)),lo);if(s.vm)faceCols(s.vm,S,P2,lons,b.h*.07);if(s.proc)procFaceCols(S,P2,lons,b.h*.07);if(s.coriolis)drawCoriolis((la,lo)=>m2s(la,lo))}
+  if(L.labels){const lx=r[0]+lspan*(zoom?.16:.22);for(const x of bandList(S)){const xc=S.real&&isEq(x)?itcz(lx,S).c:x.c;const la=Math.max(r[2]+span*.04,Math.min(r[3]-span*.04,xc));if(Math.abs(la-xc)>x.hw)continue;if(bandFormed(x)<.5)continue;const p=m2s(la,lx);const hl=isHlBand(x,S);
+    label(p.x,p.y,x.n,{fs:14,alpha:s.hl&&!hl?.45:1,border:hl?'#5fd4ff':undefined,bg:x.h?'rgba(90,45,15,.8)':'rgba(16,40,90,.8)'})}
+   if(L.wind&&s.wind!==false){if(zoom){const seen={};for(let la=r[2]+span*.06;la<r[3];la+=span/8){const w=windAt(la,S);if(w&&!seen[w.id]&&windOn(w)&&windAlpha(w.id)>.5){seen[w.id]=1;const p=m2s(la,r[0]+lspan*.82);label(p.x,p.y,w.n,{fs:14,box:false,color:w.c})}}}
+    else for(const w of winds(S).filter(windOn)){if(windAlpha(w.id)<.5)continue;const p=m2s(w.lat,62);label(p.x,p.y,w.n,{fs:14,box:false,color:w.c})}}}
+ }else{
+  if(s.climate)climateZones();
+  if(L.labels)centerLabels(S,(la,lo)=>m2s(la,lo));
+  if(S.mode==='monsoon'&&L.wind)monsoonArrows(S,(la,lo)=>m2s(la,lo));
+  if(S.mode==='monsoon'){const p=m2s(31.8,119.97);ctx.fillStyle='#ff4d6d';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,6,0,7);ctx.fill();ctx.stroke();label(p.x+30,p.y+16,'常州',{fs:13,color:'#ffd0d8',force:true})}
+ }
+ if(s.cases){const P=(la,lo)=>m2s(la,lo);if(s.herd)drawHerd(P);caseMarkers(S,P)}
+ ctx.restore();
+ if(belt&&L.cells&&(s.cells||s.proc)&&W-(b.x+b.w)>100&&!zoom){const x0=b.x+b.w+48;
+  const fn=(lat,h)=>{const p=m2s(Math.max(-90,Math.min(90,lat)),0);return[x0+h*44,p.y]};if(s.proc)drawProcess(fn,.8);else drawCells(fn,S,.8);
+  if(s.vm)vmMarkers((lat,h)=>fn(lat,Math.min(h,1)),s.vm,S,false)}
+}
+function centerLabels(S,P){const w=S.w;const J=[[48,100,'H','亚洲高压（蒙古—西伯利亚高压）'],[54,-103,'H','北美高压'],[52,-172,'L','阿留申低压'],[63,-25,'L','冰岛低压'],[-22,133,'L','澳大利亚低压'],[-32,-105,'H','南太平洋高压'],[-30,-12,'H','南大西洋高压'],[-33,80,'H','南印度洋高压']];
+ const U=[[28,72,'L','亚洲低压（印度低压）'],[36,-150,'H','夏威夷高压'],[36,-38,'H','亚速尔高压'],[-28,133,'H','澳大利亚高压'],[-32,-105,'H','南太平洋高压'],[-30,-12,'H','南大西洋高压'],[-33,80,'H','南印度洋高压']];
+ const set=w<.5?J:U,al=Math.min(1,Math.abs(w-.5)*4);
+ for(const[la,lo,h,n]of set){const p=P(la,lo);if(!p)continue;label(p.x,p.y,(h==='H'?'H ':'L ')+n,{fs:14,box:false,color:h==='H'?'#ffd08a':'#9cc6ff',alpha:al})}}
+/* 季风箭头 [纬度,经度]：冬季风直接从亚洲高压吹出 */
+const MON={jan:[
+ {r:'ea',p:[[50,106],[39,119]],n:'西北季风',c:'#8fe6ff',lp:[47,118]},
+ {r:'ea',p:[[45,96],[35,108]],n:'',c:'#8fe6ff'},
+  {r:['ea','sa'],p:[[34,92],[16,75]],n:'东北季风',c:'#8fe6ff'},
+ {r:'sa',p:[[10,110],[2,106],[-6,116],[-12,129]],n:'西北季风',c:'#ff7ab6'}],
+ jul:[{r:['ea','sa'],p:[[22,143],[33,117]],n:'东南季风',c:'#4ef0a6'},
+ {r:'ea',p:[[8,106],[23,116]],n:'西南风',c:'#4ef0a6'},
+ {r:'sa',p:[[-20,85],[-10,70],[-1,58],[8,59],[15,68],[21,79]],n:'西南季风',c:'#4fc3ff'},
+ {r:'sa',p:[[-32,148],[-24,137],[-15,127]],n:'东南信风',c:'#c38bff'}]};
+function monsoonArrows(S,P){const s=cur(),set=S.w<.5?MON.jan:MON.jul,al=Math.min(1,Math.abs(S.w-.5)*4);
+ for(const a of set){if(s.region!=='all'&&![].concat(a.r).includes(s.region))continue;const pts=a.p.map(q=>P(q[0],q[1]));if(pts.some(p=>!p))continue;
+  ctx.save();ctx.globalAlpha=al*.55;ctx.strokeStyle='#061226';ctx.lineWidth=10;ctx.lineCap='round';ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();ctx.restore();
+  ctx.save();ctx.globalAlpha=al;ctx.strokeStyle=a.c;ctx.lineWidth=6;ctx.lineCap='round';ctx.shadowColor=a.c;ctx.shadowBlur=10;ctx.setLineDash([14,10]);ctx.lineDashOffset=-state.t*30*state.speed;
+  ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();ctx.restore();
+  const p=pts[pts.length-2],q=pts[pts.length-1];arrow(p.x+(q.x-p.x)*.6,p.y+(q.y-p.y)*.6,q.x,q.y,a.c,6,al);
+  if(a.n){const i=Math.floor((pts.length-1)/2),m={x:(pts[i].x+pts[i+1].x)/2,y:(pts[i].y+pts[i+1].y)/2};const lp=a.lp?P(a.lp[0],a.lp[1]):{x:m.x,y:m.y-16};if(lp)label(lp.x,lp.y,a.n,{fs:15,color:'#fff',bg:'rgba(10,25,50,.85)',border:a.c,alpha:al,force:true})}}}
+const CLIM=[{n:'温带季风气候',c:'rgba(80,200,255,.33)',p:[[35,107],[42,107],[48,120],[53,125],[48,135],[43,143],[38,141],[37,129],[35,121]]},
+ {n:'亚热带季风气候',c:'rgba(90,240,140,.33)',p:[[22,104],[34,104],[34.5,120.5],[31.5,122],[27,121],[23,117],[21.5,110]]},
+ {n:'热带季风气候',c:'rgba(255,140,80,.33)',p:[[8,77],[21,69.5],[27,78],[27,89],[22,91],[16,82]]},{n:'热带季风气候',c:'rgba(255,140,80,.33)',p:[[22,93],[26,98],[22,106],[11,107],[12,101],[16,97]]}];
+function climateZones(){for(const z of CLIM){const pts=z.p.map(q=>m2s(q[0],q[1]));ctx.fillStyle=z.c;ctx.strokeStyle=z.c.replace('.33','.9');ctx.lineWidth=2;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();ctx.fill();ctx.stroke();
+ let x=0,y=0;pts.forEach(p=>{x+=p.x;y+=p.y});label(x/pts.length,y/pts.length,z.n,{fs:14,bg:'rgba(10,25,50,.85)',border:z.c.replace('.33','.9'),force:true})}}
+/* 案例：某地此时受什么控制 */
+function classify(lat,S){const b=bandAt(lat,S);
+ if(b){if(Math.abs(b.c)>=80)return{t:'受极地高气压带控制',c:'#ddd'};
+  return b.h?{t:'受副热带高气压带控制 → 炎热干燥',c:'#ffb35c',k:'dry'}:(Math.abs(b.c)<20?{t:'受赤道低气压带控制 → 雨季',c:'#5fd4ff',k:'wet'}:{t:'受副极地低气压带控制',c:'#9cc6ff'})}
+ const w=windAt(lat,S);if(!w)return{t:'',c:'#fff'};
+ if(/信风/.test(w.n))return{t:'受信风带控制 → 干季',c:'#ffb35c',k:'dry'};
+ if(/西风/.test(w.n))return{t:'受西风带控制 → 温和多雨',c:'#46e0c0',k:'wet'};return{t:'受'+w.n+'影响',c:'#ccc'}}
+function caseMarkers(S,P){for(const c of cur().cases){const p=P(c.lat,c.lon);if(!p)continue;const k=classify(c.lat,S);
+ ctx.save();ctx.fillStyle=k.c;ctx.strokeStyle='#fff';ctx.lineWidth=2.5;ctx.shadowColor=k.c;ctx.shadowBlur=12;ctx.beginPath();ctx.arc(p.x,p.y,7,0,7);ctx.fill();ctx.stroke();ctx.restore();
+ const dy=c.dy||-36;ctx.save();ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x+(c.dx||0),p.y+dy*.6);ctx.stroke();ctx.restore();
+ label(p.x+(c.dx||0),p.y+dy,c.n+'：'+k.t,{fs:15,border:k.c,color:'#fff',bg:'rgba(8,20,44,.92)',force:true})}}
+/* 东非角马群 */
+const HERD=Array.from({length:30},(_,i)=>[(hash(i,11)-.5)*1.3,(hash(i,12)-.5)*.7,hash(i,13)*6.28]);
+const SER=[-3.3,34.5],MARA=[-1.3,35.4];
+function drawHerd(P){const h=state.herd,cLat=SER[0]+(MARA[0]-SER[0])*h,cLon=SER[1]+(MARA[1]-SER[1])*h;
+ const a=P(SER[0],SER[1]),b=P(MARA[0],MARA[1]);if(!a||!b)return;
+ ctx.save();ctx.strokeStyle='rgba(255,226,160,.55)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.quadraticCurveTo((a.x+b.x)/2+40,(a.y+b.y)/2,b.x,b.y);ctx.stroke();ctx.restore();
+ const moving=Math.abs(state.herdTarget-h)>.03;
+ for(const[dx,dy,ph]of HERD){const p=P(cLat+dy+Math.sin(state.t*2+ph)*.03,cLon+dx+Math.cos(state.t*1.6+ph)*.04);if(!p)continue;ctx.save();ctx.fillStyle='#3b2a1a';ctx.strokeStyle='#f3e1c0';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(p.x,p.y,4.5,2.8,0,0,7);ctx.fill();ctx.stroke();ctx.restore()}
+ const pc=P(cLat,cLon+2.6);if(pc)label(pc.x,pc.y,'🐃 角马群'+(moving?(state.herdTarget>h?' · 北迁中':' · 南返中'):''),{fs:14,force:true,bg:'rgba(70,45,10,.9)',border:'#f3c47a'})}
+
+
+/* ================= 三圈环流：一步一步形成 ================= */
+const SEG={i_rise0:[[0,.06],[0,.94]],i_aloft:[[0,.94],[90,.94]],i_sink90:[[90,.94],[90,.06]],i_surf:[[90,.06],[0,.06]],rise0:[[0,.06],[0,.94]],aloft0_30:[[0,.94],[30,.94]],sink30:[[30,.94],[30,.06]],surf30_0:[[30,.06],[0,.06]],surf30_60:[[30,.06],[60,.06]],
+ cold90_60:[[90,.06],[60,.06]],rise60:[[60,.06],[60,.94]],aloft60_30:[[60,.94],[30,.94]],aloft60_90:[[60,.94],[90,.94]],sink90:[[90,.94],[90,.06]]};
+const SEGCOL={i_rise0:'#ff5a4a',i_aloft:'#ffd9b0',i_sink90:'#5c9bff',i_surf:'#ffb35c',rise0:'#ff5a4a',rise60:'#ff8a5a',sink30:'#5c9bff',sink90:'#5c9bff',surf30_0:'#ffa94d',surf30_60:'#46e0c0',cold90_60:'#c38bff',aloft0_30:'#ffd9b0',aloft60_30:'#ffd9b0',aloft60_90:'#ffd9b0'};
+const SEGWIND={i_surf:['IN','IS'],surf30_0:['NT','ST'],surf30_60:['NW','SW'],cold90_60:['NP','SP']};
+const VERT={i_rise0:[0,1,'受热上升'],i_sink90:[90,0,'冷却下沉'],rise0:[0,1,'受热上升'],sink30:[30,0,'堆积下沉'],rise60:[60,1,'沿冷空气爬升'],sink90:[90,0,'冷却下沉']};
+const BANDSEG={0:'rise0',30:'sink30',60:'rise60',90:'sink90'};
+function segFrac(id){const s=cur();if(!s.proc)return 1;if(s.prior&&s.prior.includes(id))return 1;
+ const k=(s.tl||[]).findIndex(ph=>ph.includes(id));if(k<0)return 0;return Math.max(0,Math.min(1,state.prog-k))}
+function bandFormed(b){const s=cur();if(!s.proc)return 1;const id=s.mode==='ideal'?(Math.abs(b.c)<1?'i_rise0':'i_sink90'):BANDSEG[Math.round(Math.abs(b.c))];return id?Math.min(1,segFrac(id)*1.6):1}
+function windAlpha(id){const s=cur();if(!s.proc)return 1;let a=0;for(const k in SEGWIND)if(SEGWIND[k].includes(id))a=Math.max(a,segFrac(k));return a}
+function phaseNow(){const s=cur();if(!s.proc||!s.tl||!s.tl.length)return-1;return Math.min(s.tl.length-1,Math.floor(state.prog))}
+/* 在剖面（fn）上画已形成 / 正在形成的气流 */
+function drawProcess(fn,scale){const s=cur(),ph=phaseNow();
+ for(const id in SEG){const f=segFrac(id);if(f<=0)continue;const[[la0,h0],[la1,h1]]=SEG[id],col=SEGCOL[id];
+  const active=(s.tl||[]).some((p,i)=>i===ph&&p.includes(id))&&f<1.001&&!(s.prior||[]).includes(id);
+  for(const sg of[1,-1]){const pts=[],N=30,n=Math.max(1,Math.round(N*f));
+   for(let i=0;i<=n;i++){const u=i/N*(f*N/n);const la=sg*(la0+(la1-la0)*u),h=h0+(h1-h0)*u;pts.push(fn(Math.max(-90,Math.min(90,la)),h))}
+   ctx.save();ctx.strokeStyle=col;ctx.lineWidth=(active?6:4.5)*scale;ctx.lineCap='round';ctx.shadowColor=col;ctx.shadowBlur=active?16:8;ctx.globalAlpha=active?1:.85;
+   ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();ctx.restore();
+   const a=pts[pts.length-2]||pts[0],b=pts[pts.length-1];if(f>.08)arrow(a[0],a[1],b[0]+(b[0]-a[0])*.01,b[1]+(b[1]-a[1])*.01,col,(active?5:4)*scale,1);
+   if(f>=1){for(let k=0;k<2;k++){const u=((state.t*.35*state.speed)+k/2)%1,p=pts[Math.floor(u*(pts.length-1))];ctx.save();ctx.fillStyle='rgba(255,255,255,.9)';ctx.beginPath();ctx.arc(p[0],p[1],2.6*scale,0,7);ctx.fill();ctx.restore()}}}
+  if(active&&VERT[id]&&f>.15){const[la,up,txt]=VERT[id];for(const sg of[1,-1]){const pl=fn(sg*la,1.8);label(pl[0],pl[1],(up?'↑ ':'↓ ')+txt,{fs:14,color:up?'#ffb3a8':'#b8d0ff',force:true})}}}}
+/* 当前在形成的上升/下沉气流：地表竖直箭头 */
+function procFaceCols(S,P,lons,H){const s=cur();const list=[];for(const id in VERT){const f=segFrac(id);if(f<=0)continue;
+  const recent=(s.tl||[]).some(p=>p.includes(id));if(!recent)continue;const[la,up]=VERT[id];list.push([la,up],[-la,up])}
+ if(list.length)faceCols(list,S,P,lons,H)}
+/* 地转偏向力示意 */
+function drawCoriolis(P){const t=state.t*state.speed;const starts=[[52,-1],[22,-1],[22,1],[-22,1],[-52,1],[-22,-1],[0,0]];
+ const lons=[-30,8];
+ for(const lo0 of lons)for(const[la0,dir]of starts){const lo=(state.view==='3d'?state.lonC:0)+lo0+(la0===0?-15:0);
+  const u=(t*.25+(la0+90)/97+lo0/61)%1;const hd=la0===0?0:dir*90;const sgn=la0>0?1:la0<0?-1:0;
+  const pos=v=>{const fw=16*v,dv=sgn*7*v*v;const a=hd*D2R,r=a-Math.PI/2;let dlat=Math.sin(a)*fw+Math.sin(r)*dv,dlon=Math.cos(a)*fw+Math.cos(r)*dv;if(la0===0){dlat=0;dlon=fw}return P(la0+dlat,lo+dlon/Math.cos(la0*D2R))};
+  const p0=P(la0,lo),pe=la0===0?pos(1):P(la0+dir*16,lo);if(!p0||!pe)continue;
+  ctx.save();ctx.setLineDash([4,5]);ctx.strokeStyle='rgba(255,255,255,.45)';ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(p0.x,p0.y);ctx.lineTo(pe.x,pe.y);ctx.stroke();ctx.restore();
+  const pts=[];for(let i=0;i<=20;i++){const q=pos(i/20*u);if(q)pts.push(q)}if(pts.length<2)continue;
+  const col=sgn>0?'#ffb35c':sgn<0?'#46e0c0':'#ffffff';
+  ctx.save();ctx.strokeStyle=col;ctx.lineWidth=3;ctx.shadowColor=col;ctx.shadowBlur=6;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();ctx.restore();
+  const a=pts[pts.length-2],b=pts[pts.length-1];arrow(a.x,a.y,b.x,b.y,col,3,1)}
+ const L=[[40,'北半球：向右偏','#ffb35c'],[3,'赤道：不偏转','#ffffff'],[-40,'南半球：向左偏','#46e0c0']];
+ for(const[la,n,c]of L){const p=P(la,(state.view==='3d'?state.lonC:0)+52);if(p)label(p.x,p.y,n,{fs:15,color:c,force:true,bg:'rgba(8,20,44,.85)',border:c})}}
+
+/* ================= 背景星空 ================= */
+function drawStars(){const c=document.getElementById('stars'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
+ const gr=x.createRadialGradient(innerWidth*.55,0,0,innerWidth*.55,0,innerHeight*.9);gr.addColorStop(0,'#0c2a4a');gr.addColorStop(1,'#040912');x.fillStyle=gr;x.fillRect(0,0,c.width,c.height);
+ for(let i=0;i<260;i++){x.fillStyle=`rgba(255,255,255,${.2+hash(i,7)*.6})`;x.fillRect(hash(i,1)*c.width,hash(i,2)*c.height,hash(i,3)<.85?1:2,hash(i,3)<.85?1:2)}}
+
+/* ================= 界面 ================= */
+const $=id=>document.getElementById(id);
+function buildSide(){const box=$('stages');box.innerHTML='';let k=0;
+ STAGES.forEach((s,si)=>{const d=document.createElement('div');d.className='stg';d.dataset.si=si;
+  d.innerHTML=`<button>${s.name}<i>›</i></button><div class="steps"></div>`;const sp=d.querySelector('.steps');
+  s.steps.forEach((p,pi)=>{const b=document.createElement('button');b.className='step';b.dataset.i=k;b.innerHTML=`<b>${pi+1}</b><span>${p.t}</span>`;b.onclick=()=>{stopDemo();go(+b.dataset.i)};sp.appendChild(b);k++});
+  d.querySelector('button').onclick=()=>{const open=d.classList.contains('open');if(!open){const first=FLAT.findIndex(f=>f.si===si);stopDemo();go(first)}else d.classList.remove('open')};
+  box.appendChild(d)})}
+function go(i){i=Math.max(0,Math.min(FLAT.length-1,i));state.idx=i;const s=cur();
+ document.querySelectorAll('.stg').forEach(d=>d.classList.toggle('open',+d.dataset.si===s.si));
+ document.querySelectorAll('.step').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));
+ const on=document.querySelector('.step.on');if(on)on.scrollIntoView({block:'nearest'});
+ $('curName').textContent=STAGES[s.si].name;
+ if(s.view)setView(s.view);else if(s.mode==='ideal'||s.mode==='three'||s.mode==='season'){if(state._autoView)setView('3d')}
+ state._autoView=!!s.view;
+ state.deflect=s.mode==='ideal'?0:(s.deflAnim?0:1);
+ state.cycle=!!s.cycle&&state.playing;
+ state.lonTarget=s.lonFix!=null?s.lonFix:null;
+ if(s.mode==='monsoon')state.lonTarget=105;
+ if(s.mode==='season'&&!s.cycle)state.yearTarget=null;
+ if(typeof s.month==='number'){state.monthTarget=s.month;state.cycle=false}
+ if(s.month==='cycle')state.cycle=state.playing;
+ state.rectTarget=s.zoom||(s.mode==='monsoon'?[35,170,-38,62]:[-180,180,-90,90]);
+ $('gSeason').style.display=s.mode==='season'?'flex':'none';$('realBtn').style.display=s.realOk?'':'none';
+ $('gMonth').style.display=(s.mode==='pressure'||s.mode==='monsoon')?'flex':'none';
+ $('legend').style.display=(s.mode==='pressure'||s.mode==='monsoon')?'flex':'none';
+ // info
+ $('infoT').textContent=s.t;
+ const qs=STAGES[s.si].qs.map(q=>`<div class="q"><button>❓ ${q.q}</button><div>${q.a}</div></div>`).join('');
+ $('infoB').innerHTML=s.txt+`<div class="key">🔑 ${s.key}</div>${s.note||''}<div class="qs"><h4>思考题（点击看答案）</h4>${qs}</div>`;
+ $('infoB').querySelectorAll('.q button').forEach(b=>b.onclick=()=>b.parentNode.classList.toggle('open'));
+ ovKey='';state.prog=0;state._cap='';syncPlay()}
+function setView(v){state.view=v;document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
+$('prevBtn').onclick=()=>{stopDemo();go(state.idx-1)};$('nextBtn').onclick=()=>{stopDemo();go(state.idx+1)};
+$('sideToggle').onclick=()=>{$('side').classList.toggle('hide');$('sideToggle').classList.toggle('hide');$('sideToggle').textContent=$('side').classList.contains('hide')?'›':'‹';setTimeout(resize,320)};
+window.syncInfo=function(){const o=$('info').classList.contains('open');$('infoTg').textContent=o?'收起 ▾':'展开 ▴';$('main').classList.toggle('rsv',o&&W>1000);prepTilt=null}
+$('infoH').onclick=()=>{$('info').classList.toggle('open');syncInfo()};
+$('layerBtn').onclick=()=>$('layers').classList.toggle('show');
+document.querySelectorAll('#layers input').forEach(c=>c.onchange=()=>{state.layers[c.dataset.l]=c.checked});
+$('resetBtn').onclick=()=>{state.tilt=15;state.lonC=-80;state.op=.7;$('opR').value=.7;$('opV').textContent='70%';state.speed=1;$('speedR').value=1;$('speedV').textContent='1.0x';go(state.idx)};
+$('fsBtn').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}};
+$('aboutBtn').onclick=()=>$('about').classList.add('show');
+$('about').onclick=e=>{if(e.target.id==='about')$('about').classList.remove('show')};
+function syncPlay(){$('playBtn').textContent=state.playing?'❚❚':'▶'}
+$('playBtn').onclick=()=>{state.playing=!state.playing;const s=cur();if(state.playing&&(s.cycle||s.month==='cycle'||s.mode==='pressure'||s.mode==='monsoon')){state.cycle=true;state.monthTarget=null;state.yearTarget=null}if(!state.playing)state.cycle=false;syncPlay()};
+$('replayBtn').onclick=()=>{const s=cur();if(s.deflAnim)state.deflect=0;state.prog=0;state.t=0};
+$('speedR').oninput=e=>{state.speed=+e.target.value;$('speedV').textContent=state.speed.toFixed(2).replace(/0$/,'')+'x'};
+$('opR').oninput=e=>{state.op=+e.target.value;$('opV').textContent=Math.round(state.op*100)+'%'};
+document.querySelectorAll('#gSeason .chip[data-p]').forEach(b=>b.onclick=()=>{state.cycle=false;state.yearTarget=+b.dataset.p});
+$('realBtn').onclick=()=>{state.real=!state.real;$('realBtn').classList.toggle('on',state.real);state._cap='';ovKey=''};
+document.querySelectorAll('#gMonth .chip').forEach(b=>b.onclick=()=>{state.cycle=false;state.monthTarget=+b.dataset.m});
+$('monthR').oninput=e=>{state.cycle=false;state.monthTarget=null;state.month=+e.target.value};
+// 演示
+const ORDER=FLAT.map((_,i)=>i);
+function stopDemo(){state.demo=false;$('demoBtn').classList.remove('on');$('demoBtn').textContent='▶ 从头演示'}
+$('demoBtn').onclick=()=>{if(state.demo){stopDemo();return}state.demo=true;state.demoT=0;state.playing=true;syncPlay();$('demoBtn').classList.add('on');$('demoBtn').textContent='■ 停止演示';go(0)};
+// 拖动
+let drag=null;cv.addEventListener('pointerdown',e=>{if(state.view!=='3d')return;drag={x:e.clientX,y:e.clientY,lon:state.lonC,tilt:state.tilt};state.lonTarget=null;cv.setPointerCapture(e.pointerId)});
+cv.addEventListener('pointermove',e=>{if(!drag)return;const{R}=geo();state.lonC=drag.lon-(e.clientX-drag.x)/R*60;state.tilt=Math.round(Math.max(-35,Math.min(40,drag.tilt+(e.clientY-drag.y)/R*45)))});
+cv.addEventListener('pointerup',()=>drag=null);cv.addEventListener('pointercancel',()=>drag=null);
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='PageDown'){stopDemo();go(state.idx+1)}if(e.key==='ArrowLeft'||e.key==='PageUp'){stopDemo();go(state.idx-1)}if(e.key===' '){e.preventDefault();$('playBtn').click()}});
+
+/* ================= 动画循环 ================= */
+const MONTHS=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+function dateOf(p){const d=new Date(2025,2,21+Math.round(p*365));return(d.getMonth()+1)+'月'+d.getDate()+'日前后'}
+let last=performance.now();
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;const sp=state.speed,s=cur();
+ state.t+=dt;
+ if(s.proc){state.prog+=dt*sp/2.6;const caps=s.caps||[],ph=s.tl&&s.tl.length?phaseNow():caps.length-1;const html=caps.map((c,i)=>i<=ph?`<div class="${i===ph?'on':''}">${c}</div>`:'').join('');if(html!==state._cap){state._cap=html;$('cap').innerHTML=html;$('cap').style.display=html?'block':'none'}}else if(s.realOk){const html=state.real?'<div class="on">【更接近实际】赤道低压带平均位置约5°N；海洋上南北摆动小、带窄，大陆上摆动大、带宽（夏季南亚可北移到20°N以上）；整体滞后太阳直射点约1.5个月。对比黄色的直射点线看滞后。</div>':'<div class="on">【教材示意】气压带风带随直射点同步、对称地南北移动约±6°。点下方「更接近实际」对比真实情况。</div>';if(html!==state._cap){state._cap=html;$('cap').innerHTML=html;$('cap').style.display='block'}}else if(state._cap!=='-'){state._cap='-';$('cap').style.display='none'}
+ if(state.deflect<1&&s.mode!=='ideal')state.deflect=Math.min(1,state.deflect+dt*.35*sp);
+ if(state.lonTarget!=null){const d=dlon(state.lonTarget,state.lonC);state.lonC+=d*Math.min(1,dt*3);if(Math.abs(d)<.05)state.lonC=state.lonTarget}
+ else if(state.playing&&!drag)state.lonC+=dt*6*sp;
+ if(s.mode==='season'){if(state.cycle){state.yearP=(state.yearP+dt*.06*sp)%1}else if(state.yearTarget!=null){let d=state.yearTarget-state.yearP;if(d>.5)d-=1;if(d<-.5)d+=1;state.yearP=(state.yearP+d*Math.min(1,dt*3)+1)%1;if(Math.abs(d)<.001)state.yearP=state.yearTarget}
+  const d=23.44*Math.sin(2*Math.PI*state.yearP);$('readout').textContent=dateOf(state.yearP)+' · 直射'+Math.abs(d).toFixed(1)+'°'+(d>.05?'N':d<-.05?'S':'')+(state.real&&s.realOk?' · 气压带滞后约1.5个月':'');
+  document.querySelectorAll('#gSeason .chip[data-p]').forEach(b=>{let q=Math.abs(+b.dataset.p-state.yearP);q=Math.min(q,1-q);b.classList.toggle('on',q<.02)})}
+ else if(s.mode==='pressure'||s.mode==='monsoon'){if(state.cycle){state.month+=dt*.9*sp;if(state.month>=13)state.month-=12}else if(state.monthTarget!=null){const d=state.monthTarget-state.month;state.month+=d*Math.min(1,dt*3.5);if(Math.abs(d)<.01)state.month=state.monthTarget}
+  const mi=Math.floor(state.month+1e-6-1)%12;$('monthR').value=state.month;$('monthV').textContent=MONTHS[mi];
+  document.querySelectorAll('#gMonth .chip').forEach(b=>b.classList.toggle('on',Math.abs(+b.dataset.m-state.month)<.15));
+  const w=mw(state.month);$('readout').textContent=w<.5?'北半球冬半年':'北半球夏半年'}
+ else $('readout').textContent='';
+ if(s.herd){const S2=st();const mara=classify(-1.5,S2).k==='wet',ser=classify(-3,S2).k==='wet';state.herdTarget=(mara&&!ser)?1:0;state.herd+=(state.herdTarget-state.herd)*Math.min(1,dt*1.2*sp)}
+ const rt=state.rectTarget||[-180,180,-90,90];state.mapRect=state.mapRect.map((v,i)=>v+(rt[i]-v)*Math.min(1,dt*3));
+ if(state.demo){state.demoT+=dt*sp;const dur=s.proc?(s.tl.length*2.6+5):(s.mode==='season'||s.month==='cycle'?14:9);if(state.demoT>dur){state.demoT=0;if(state.idx<FLAT.length-1)go(state.idx+1);else stopDemo()}}
+ draw();requestAnimationFrame(loop)}
+
+/* ================= 启动 ================= */
+buildLand();buildFields();buildSide();
+window.addEventListener('resize',resize);resize();
+if(innerWidth>1100){$('info').classList.add('open')}syncInfo();
+if(innerWidth<900){$('side').classList.add('hide');$('sideToggle').classList.add('hide');$('sideToggle').textContent='›'}
+go(0);requestAnimationFrame(loop);
+</script>
+</body>
+</html>
