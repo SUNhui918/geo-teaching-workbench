@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<!-- 本教学网页由横山桥高级中学 孙慧制作，仅供地理教学使用，未经许可不得商用 -->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>恒星周日视运动 · 天球交互演示系统</title>
+<style>
+:root{--bg:#070d22;--card:#111c44;--card2:#18265a;--line:#2a3d80;--text:#e8eeff;--muted:#9fb0dd;
+  --accent:#5ee0ff;--gold:#ffc94d;--green:#6fe39a;--red:#ff6b6b;--violet:#d7b4ff}
+*{box-sizing:border-box}
+html,body{margin:0;background:radial-gradient(1200px 700px at 50% -10%,#16245a 0%,var(--bg) 65%);color:var(--text);
+  font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;min-height:100vh}
+button{font-family:inherit}
+header{padding:12px 20px 4px;display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+header h1{margin:0;font-size:27px;letter-spacing:2px}
+header h1 span{color:var(--accent)}
+header p{margin:0;color:var(--muted);font-size:15px}
+header .school{margin-left:auto;font-size:13px;color:var(--muted);text-align:right;line-height:1.5}
+.layout{display:grid;grid-template-columns:300px minmax(0,1fr) 330px;gap:14px;padding:8px 16px 14px;align-items:start}
+.col{display:flex;flex-direction:column;gap:12px}
+.card{background:rgba(17,28,68,.92);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.card h3{margin:0 0 8px;font-size:16px;display:flex;align-items:center;gap:8px;color:var(--accent)}
+.card h3 .val{margin-left:auto;color:var(--gold);font-size:19px;font-variant-numeric:tabular-nums}
+.stage{background:linear-gradient(180deg,#050a1c,#0a1230);border:1px solid var(--line);border-radius:16px;position:relative;overflow:hidden}
+.viewbar{position:absolute;top:10px;right:10px;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;z-index:2;max-width:70%}
+.canvas-wrap{position:relative;height:clamp(520px,calc(100vh - 110px),960px)}
+#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}
+#cv.drag{cursor:grabbing}
+.hint{position:absolute;left:14px;bottom:10px;font-size:13px;color:var(--muted);pointer-events:none}
+.legend{position:absolute;right:12px;bottom:10px;font-size:12.5px;color:var(--muted);background:rgba(8,14,34,.75);border:1px solid var(--line);border-radius:10px;padding:6px 10px;line-height:1.7;pointer-events:none}
+.legend i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.btn{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:7px 12px;font-size:14.5px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.on{background:#1a8fb3;border-color:var(--accent);color:#fff;font-weight:600}
+.btn.space.on{background:#7a4fd0;border-color:var(--violet)}
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:12px;border-radius:6px;background:#26357a;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:4px solid var(--accent);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:4px solid var(--accent);cursor:pointer}
+.ticks{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:3px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:4px 10px;font-size:13.5px;cursor:pointer}
+.chip:hover{border-color:var(--accent)} .chip.on{background:#1a8fb3;border-color:var(--accent);color:#fff}
+.row{display:flex;align-items:center;gap:10px;margin-top:8px}
+.play{width:42px;height:42px;border-radius:50%;border:none;background:var(--accent);color:#04202a;font-size:18px;cursor:pointer;font-weight:700;flex:none}
+select{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:14px;font-family:inherit}
+.toggles{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tg{display:flex;align-items:center;gap:6px;font-size:13.5px;background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:6px 7px;cursor:pointer;user-select:none}
+.tg input{accent-color:var(--accent);width:15px;height:15px;flex:none}
+.read{display:grid;grid-template-columns:1fr auto;gap:6px 10px;font-size:14.5px;margin:0}
+.read dt{color:var(--muted)} .read dd{margin:0;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums;text-align:right}
+.read.hidden dd{filter:blur(7px)}
+.sub{font-size:13px;color:var(--muted);margin:10px 0 4px;border-top:1px dashed var(--line);padding-top:8px}
+.tip{font-size:14.5px;line-height:1.75;border-left:3px solid var(--accent);padding:4px 0 4px 10px;color:#d8e6ff}
+.starsel{display:flex;gap:8px;align-items:center}
+.starsel select{flex:1}
+.section{padding:4px 16px 18px}
+.section h2{font-size:22px;margin:8px 4px 10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.section h2 small{font-size:14px;color:var(--muted);font-weight:400}
+.tasks{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+.task{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.task .no{font-size:13px;color:var(--accent);font-weight:700;letter-spacing:1px}
+.task .q{font-size:16.5px;font-weight:600;line-height:1.55}
+.opt{text-align:left;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:7px 10px;font-size:14.5px;cursor:pointer;width:100%}
+.opt.pick{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.opt.right{background:#1e5a3a;border-color:var(--green)} .opt.wrong{background:#5a1e2a;border-color:var(--red)}
+.opts{display:flex;flex-direction:column;gap:6px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts .btn{font-size:13.5px;padding:6px 11px}
+.look{font-size:14px;color:#cfe0ff;background:#0d1a44;border-left:3px solid var(--accent);padding:8px 10px;border-radius:6px;display:none;line-height:1.6}
+.why{font-size:14.5px;line-height:1.7;background:#13301f;border-left:3px solid var(--green);padding:8px 10px;border-radius:6px;display:none}
+.task.verified .look{display:block} .task.revealed .why{display:block}
+table.rec{border-collapse:collapse;width:100%;font-size:14px}
+table.rec th,table.rec td{border:1px solid var(--line);padding:5px 6px;text-align:center}
+table.rec th{background:var(--card2);font-weight:600}
+table.rec td.v{color:var(--gold);font-weight:700}
+table.rec button{font-size:13px;padding:3px 8px}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:6px 0 20px}
+@media (max-width:1320px){
+  .layout{grid-template-columns:1fr 1fr}
+  .stage{grid-column:1/-1;order:-1}
+  .canvas-wrap{height:min(80vh,82vw);min-height:460px}
+}
+@media (max-width:700px){
+  .layout{grid-template-columns:1fr;padding:6px 8px}
+  .section{padding:4px 8px 14px}
+  header h1{font-size:21px} header .school{display:none}
+  .canvas-wrap{height:104vw;min-height:0}
+  .viewbar{position:static;max-width:none;justify-content:center;padding:8px 6px 0}
+  .legend{display:none}
+  .btn{padding:6px 8px;font-size:13px}
+  .tasks{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>✦ 恒星周日视运动 · <span>天球交互演示系统</span></h1>
+  <p>星星为什么东升西落？哪些星永不落下？换个纬度、换个视角看一看</p>
+  <div class="school">常州市武进区横山桥高级中学 · 地理教研组<br>仅限课堂教学使用</div>
+</header>
+
+<div class="layout">
+  <!-- 左：控制 -->
+  <div class="col" id="leftCol">
+    <div class="card">
+      <h3>🌐 观测纬度 <span class="val" id="latVal">常州 31.8°N</span></h3>
+      <input type="range" id="lat" min="-90" max="90" step="0.1" value="31.8">
+      <div class="ticks"><span>90°S</span><span>0°</span><span>90°N</span></div>
+      <div class="chips" id="places"></div>
+    </div>
+    <div class="card">
+      <h3>⏱ 地方恒星时 <span class="val" id="lstVal">06h 00m</span></h3>
+      <input type="range" id="lst" min="0" max="24" step="0.01" value="6">
+      <div class="ticks"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>24h</span></div>
+      <div class="row">
+        <button class="play" id="play" title="周日运动">▶</button>
+        <span style="font-size:14px;color:var(--muted)">周日运动（自东向西）</span>
+        <select id="speed" style="margin-left:auto"><option value="0.6">慢</option><option value="1.5" selected>中</option><option value="4">快</option></select>
+      </div>
+    </div>
+    <div class="card">
+      <h3>👁 显示选项</h3>
+      <div class="toggles">
+        <label class="tg"><input type="checkbox" data-show="equator" checked>天赤道</label>
+        <label class="tg"><input type="checkbox" data-show="axis" checked>天轴（南北天极）</label>
+        <label class="tg"><input type="checkbox" data-show="lines" checked>星座连线</label>
+        <label class="tg"><input type="checkbox" data-show="names" checked>亮星名称</label>
+        <label class="tg"><input type="checkbox" data-show="circum">恒显圈 / 恒隐圈</label>
+        <label class="tg"><input type="checkbox" data-show="selPath" checked>选中星的周日圈</label>
+        <label class="tg"><input type="checkbox" data-show="trails">星轨（长曝光）</label>
+        <label class="tg"><input type="checkbox" data-show="allPaths">所有亮星周日圈</label>
+        <label class="tg"><input type="checkbox" data-show="earth" checked>地球</label>
+        <label class="tg"><input type="checkbox" data-show="grid">赤道坐标网</label>
+        <label class="tg"><input type="checkbox" data-show="faint" checked>暗星背景</label>
+        <label class="tg"><input type="checkbox" data-show="dimBelow" checked>地平下星变暗</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- 中：舞台 -->
+  <section class="stage">
+    <div class="viewbar">
+      <button class="btn" data-frame="ground">🧍 地面视角（天在转）</button>
+      <button class="btn space" data-frame="space">🚀 太空视角（地在转）</button>
+      <span style="width:100%"></span>
+      <button class="btn" data-view="zenith">天顶朝上</button>
+      <button class="btn" data-view="pole">北天极朝上</button>
+      <button class="btn" data-view="polar">从北天极俯视</button>
+      <button class="btn" id="resetView">⟲ 重置视角</button>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="cv"></canvas>
+      <div class="hint">拖动旋转 · 滚轮缩放 · 点击星星可选中</div>
+      <div class="legend">
+        <div><i style="background:#4da3ff"></i>天赤道</div>
+        <div><i style="background:#d7b4ff"></i>天轴</div>
+        <div><i style="background:#ffc94d"></i>选中星周日圈</div>
+        <div><i style="background:#6fe39a"></i>恒显圈 <i style="background:#ff7a7a;margin-left:6px"></i>恒隐圈</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 右：读数 -->
+  <div class="col" id="rightCol">
+    <div class="card">
+      <h3>📐 当前观测参数 <button class="chip" id="hideData" style="margin-left:auto">预测模式</button></h3>
+      <dl class="read" id="read1">
+        <dt>观测纬度</dt><dd id="rLat">—</dd>
+        <dt>北天极地平高度</dt><dd id="rNP">—</dd>
+        <dt>南天极地平高度</dt><dd id="rSP">—</dd>
+        <dt>天赤道最高高度</dt><dd id="rEq">—</dd>
+        <dt>恒显圈（赤纬）</dt><dd id="rCirc">—</dd>
+        <dt>恒隐圈（赤纬）</dt><dd id="rHid">—</dd>
+        <dt>一年中可见星空占全天</dt><dd id="rFrac">—</dd>
+      </dl>
+    </div>
+    <div class="card">
+      <h3>⭐ 选中恒星</h3>
+      <div class="starsel"><select id="starSel"></select></div>
+      <dl class="read" id="read2" style="margin-top:8px">
+        <dt>赤纬 / 赤经</dt><dd id="sDec">—</dd>
+        <dt>类型</dt><dd id="sType">—</dd>
+        <dt>地平以上时长</dt><dd id="sUp">—</dd>
+        <dt>最大高度（上中天）</dt><dd id="sMax">—</dd>
+        <dt>最小高度（下中天）</dt><dd id="sMin">—</dd>
+        <dt>升起方位</dt><dd id="sRise">—</dd>
+        <dt>此刻高度</dt><dd id="sNow">—</dd>
+      </dl>
+    </div>
+    <div class="card">
+      <h3>💡 教学提示</h3>
+      <div class="tip" id="tip"></div>
+    </div>
+  </div>
+</div>
+
+<section class="section">
+  <h2>🔭 探究任务 <small>日月安属？列星安陈？—— 先猜想，再转动天球验证，最后看原理</small></h2>
+  <div class="tasks" id="tasks"></div>
+</section>
+<footer>横山桥高中地理教研组 · 恒星周日视运动天球交互演示 · 恒星坐标取 J2000 历元（赤经/赤纬），时间为地方恒星时（1 恒星日 ≈ 23 时 56 分）</footer>
+
+<script>
+(()=>{
+const D2R=Math.PI/180,R2D=180/Math.PI;
+/* ---------------- 星表（J2000：赤经 h，赤纬 °，星等） ---------------- */
+const STARS=[
+ // 小熊座
+ ['勾陈一（北极星）',2.530,89.264,2.0,'#fff6d8','UMi0'],['北极二',14.845,74.155,2.1,'#ffd7a0','UMi1'],['北极一',15.345,71.834,3.0,'#fff','UMi2'],
+ ['勾陈二',17.537,86.586,4.4,'#fff','UMi3'],['勾陈三',16.766,82.037,4.2,'#fff','UMi4'],['勾陈四',15.734,77.795,4.3,'#fff','UMi5'],['北极五',16.292,75.755,5.0,'#fff','UMi6'],
+ // 北斗七星
+ ['天枢',11.062,61.751,1.8,'#ffe2b0','UMa1'],['天璇',11.031,56.382,2.4,'#fff','UMa2'],['天玑',11.897,53.695,2.4,'#fff','UMa3'],['天权',12.257,57.033,3.3,'#fff','UMa4'],
+ ['玉衡',12.900,55.960,1.8,'#fff','UMa5'],['开阳',13.399,54.925,2.2,'#fff','UMa6'],['摇光',13.792,49.313,1.9,'#dfe9ff','UMa7'],
+ // 仙后座
+ ['王良一',0.153,59.150,2.3,'#fff','Cas1'],['王良四',0.675,56.537,2.2,'#ffe2b0','Cas2'],['策',0.945,60.717,2.4,'#dfe9ff','Cas3'],['阁道三',1.430,60.235,2.7,'#fff','Cas4'],['阁道二',1.907,63.670,3.4,'#fff','Cas5'],
+ // 猎户座
+ ['参宿四',5.919,7.407,0.5,'#ffae6b','Ori1'],['参宿五',5.419,6.350,1.6,'#dfe9ff','Ori2'],['参宿三',5.533,-0.299,2.2,'#dfe9ff','Ori3'],['参宿二',5.604,-1.202,1.7,'#dfe9ff','Ori4'],
+ ['参宿一',5.679,-1.943,1.8,'#dfe9ff','Ori5'],['参宿六',5.796,-9.670,2.1,'#dfe9ff','Ori6'],['参宿七',5.242,-8.202,0.1,'#cfe0ff','Ori7'],
+ // 大犬座
+ ['天狼星',6.752,-16.716,-1.46,'#d6e6ff','CMa1'],['军市一',6.378,-17.956,2.0,'#dfe9ff','CMa2'],['弧矢一',7.140,-26.393,1.8,'#fff4e0','CMa3'],['弧矢七',6.977,-28.972,1.5,'#dfe9ff','CMa4'],['弧矢二',7.402,-29.303,2.4,'#dfe9ff','CMa5'],
+ // 夏季大三角
+ ['织女一（织女星）',18.616,38.784,0.0,'#dfe9ff','Lyr'],['河鼓二（牛郎星）',19.846,8.868,0.8,'#fff','Aql'],['天津四',20.690,45.280,1.3,'#fff','Cyg'],
+ // 南十字
+ ['十字架二',12.443,-63.099,0.8,'#dfe9ff','Cru1'],['十字架三',12.795,-59.689,1.3,'#dfe9ff','Cru2'],['十字架一',12.519,-57.113,1.6,'#ffb38a','Cru3'],['十字架四',12.252,-58.749,2.8,'#fff','Cru4'],
+ // 其他亮星
+ ['老人星',6.399,-52.696,-0.7,'#fffbe8','Car'],['南门二',14.660,-60.834,-0.3,'#fff2c8','Cen1'],['马腹一',14.064,-60.373,0.6,'#dfe9ff','Cen2'],
+ ['大角星',14.261,19.182,-0.05,'#ffc58a','Boo'],['角宿一',13.420,-11.161,1.0,'#cfe0ff','Vir'],['心宿二',16.490,-26.432,1.0,'#ff7a5c','Sco'],
+ ['轩辕十四',10.140,11.967,1.4,'#dfe9ff','Leo'],['毕宿五',4.599,16.509,0.9,'#ffa866','Tau'],['五车二',5.278,45.998,0.1,'#fff1c8','Aur'],
+ ['南河三',7.655,5.225,0.4,'#fff','CMi'],['北河三',7.755,28.026,1.1,'#ffd7a0','Gem1'],['北河二',7.577,31.888,1.6,'#fff','Gem2'],
+ ['北落师门',22.961,-29.622,1.2,'#fff','PsA'],['水委一',1.629,-57.237,0.5,'#dfe9ff','Eri']
+].map(([n,ra,dec,mag,col,id])=>({n,ra,dec,mag,col,id}));
+const SID={};STARS.forEach((s,i)=>SID[s.id]=i);
+const LINES=[['UMi0','UMi3'],['UMi3','UMi4'],['UMi4','UMi5'],['UMi5','UMi1'],['UMi1','UMi2'],['UMi2','UMi6'],['UMi6','UMi5'],
+ ['UMa1','UMa2'],['UMa2','UMa3'],['UMa3','UMa4'],['UMa4','UMa1'],['UMa4','UMa5'],['UMa5','UMa6'],['UMa6','UMa7'],
+ ['Cas1','Cas2'],['Cas2','Cas3'],['Cas3','Cas4'],['Cas4','Cas5'],
+ ['Ori1','Ori2'],['Ori1','Ori5'],['Ori2','Ori3'],['Ori3','Ori4'],['Ori4','Ori5'],['Ori5','Ori6'],['Ori3','Ori7'],['Ori6','Ori7'],
+ ['CMa1','CMa2'],['CMa1','CMa3'],['CMa3','CMa4'],['CMa3','CMa5'],
+ ['Lyr','Cyg'],['Cyg','Aql'],['Aql','Lyr'],
+ ['Cru3','Cru1'],['Cru2','Cru4'],['Gem1','Gem2'],['Cen1','Cen2']].map(([a,b])=>[SID[a],SID[b]]);
+const CONST_LABEL=[['北斗七星','UMa4',0,-18],['小熊座','UMi5',0,16],['仙后座','Cas3',0,-16],['猎户座','Ori4',0,20],['大犬座','CMa3',0,18],['南十字座','Cru1',0,18]];
+// 暗星背景（固定随机种子）
+const FAINT=[];(function(){let s=20261106;const rnd=()=>((s=(s*1664525+1013904223)>>>0)/4294967296);
+  for(let i=0;i<420;i++){FAINT.push({ra:rnd()*24,dec:Math.asin(rnd()*2-1)*R2D,mag:3.6+rnd()*1.8});}})();
+
+const PLACES=[['北极点',90],['哈尔滨',45.8],['北京',39.9],['常州',31.8],['30°N',30],['北回归线',23+26/60],['赤道',0],['南回归线',-(23+26/60)],['南极点',-90]];
+
+/* ---------------- 几何 ---------------- */
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],mul=(a,k)=>[a[0]*k,a[1]*k,a[2]*k];
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const norm=a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l];};
+function slerp(a,b,t){const w=Math.acos(Math.max(-1,Math.min(1,dot(a,b))));if(w<1e-6)return a;const s=Math.sin(w);return add(mul(a,Math.sin((1-t)*w)/s),mul(b,Math.sin(t*w)/s));}
+function rot(v,k,a){const c=Math.cos(a),s=Math.sin(a);return add(add(mul(v,c),mul(cross(k,v),s)),mul(k,dot(k,v)*(1-c)));}
+// 本地地平坐标 E,N,U；H 为时角（度，向西为正）
+function dirHD(phi,dec,H){const p=phi*D2R,d=dec*D2R,h=H*D2R;
+  return [-Math.cos(d)*Math.sin(h),Math.cos(p)*Math.sin(d)-Math.sin(p)*Math.cos(d)*Math.cos(h),Math.sin(p)*Math.sin(d)+Math.cos(p)*Math.cos(d)*Math.cos(h)];}
+const poleDir=phi=>[0,Math.cos(phi*D2R),Math.sin(phi*D2R)];
+function H0(phi,dec){const pc=Math.max(-89.999,Math.min(89.999,phi));const x=-Math.tan(pc*D2R)*Math.tan(dec*D2R);
+  if(x<=-1)return {type:'circ',h0:180};if(x>=1)return {type:'hid',h0:0};return {type:'rs',h0:Math.acos(x)*R2D};}
+
+/* ---------------- 格式 ---------------- */
+function fmtDM(x){const a=Math.abs(x);let d=Math.floor(a),m=Math.round((a-d)*60);if(m===60){d++;m=0;}return m?`${d}°${String(m).padStart(2,'0')}′`:`${d}°`;}
+const fmtLat=x=>Math.abs(x)<0.05?'0°':fmtDM(x)+(x>0?'N':'S');
+const fmtSgn=x=>(x>=0?'+':'−')+fmtDM(x);
+function fmtH(h){h=((h%24)+24)%24;let H=Math.floor(h),M=Math.round((h-H)*60);if(M===60){H=(H+1)%24;M=0;}return `${String(H).padStart(2,'0')}h ${String(M).padStart(2,'0')}m`;}
+function fmtDur(h){let H=Math.floor(h+1e-9),M=Math.round((h-H)*60);if(M===60){H++;M=0;}return `${H} 时 ${M} 分`;}
+function dirText(E,N){let A=(Math.atan2(E,N)*R2D+360)%360;const near=x=>Math.abs(((A-x+540)%360)-180)<0.3;
+  if(near(0))return '正北';if(near(90))return '正东';if(near(180))return '正南';if(near(270))return '正西';
+  const r=v=>v.toFixed(1)+'°';
+  if(A<90)return `东偏北 ${r(90-A)}`;if(A<180)return `东偏南 ${r(A-90)}`;if(A<270)return `西偏南 ${r(270-A)}`;return `西偏北 ${r(A-270)}`;}
+function placeName(phi){for(const [n,v] of PLACES)if(Math.abs(phi-v)<0.06)return n;return '';}
+
+/* ---------------- 状态 ---------------- */
+const S={lat:31.8,lst:6,frame:'ground',view:'zenith',az:150,el:22,zoom:1,tAz:150,tEl:22,
+  upW:[0,0,1],playing:false,speed:1.5,sel:SID.CMa1,hide:false,earthR:0.2,
+  show:{equator:true,axis:true,lines:true,names:true,circum:false,selPath:true,trails:false,allPaths:false,earth:true,grid:false,faint:true,dimBelow:true,decRing:false}};
+
+/* ---------------- 画布 ---------------- */
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+let W=0,Hh=0,DPR=1,cx=0,cy=0,SC=1;
+const skyC=document.createElement('canvas'),skyX=skyC.getContext('2d');
+const earthC=document.createElement('canvas'),earthX=earthC.getContext('2d');
+let skyKey='';let cam={c:[0,0,1],r:[1,0,0],u:[0,1,0]};
+function resize(){const b=cv.getBoundingClientRect();DPR=Math.min(devicePixelRatio||1,2);W=b.width;Hh=b.height;cv.width=Math.round(W*DPR);cv.height=Math.round(Hh*DPR);skyKey='';}
+addEventListener('resize',resize);try{new ResizeObserver(resize).observe(cv.parentElement);}catch(e){}
+
+// 当前帧的变换
+let F={}; // phi, th(rad), P, Uw, space, Wd(), Wh()
+function frameSetup(){
+  const phi=S.lat,P=poleDir(phi),th=S.lst*15*D2R,space=S.frame==='space',r=S.earthR;
+  const Wd=v=>space?rot(v,P,th):v;
+  const Wh=p=>space?rot(add(p,[0,0,r]),P,th):p;
+  F={phi,P,th,space,r,Wd,Wh,Uw:Wd([0,0,1]),earthC:space?[0,0,0]:[0,0,-r],obs:Wh([0,0,0])};
+}
+function updateCam(){
+  const w=norm(S.upW),f1=[1,0,0],f2=norm(cross(w,f1));
+  const a=S.az*D2R,e=Math.max(-89.9,Math.min(89.9,S.el))*D2R;
+  const c=norm(add(mul(add(mul(f1,Math.sin(a)),mul(f2,Math.cos(a))),Math.cos(e)),mul(w,Math.sin(e))));
+  const r=norm(cross(w,c)),u=cross(c,r);cam={c,r,u};
+  cx=W/2;cy=Hh/2+(W<700?0:10);SC=Math.min(W,Hh)*(W<600?0.42:0.40)*S.zoom;
+}
+const P2=p=>({x:cx+SC*dot(p,cam.r),y:cy-SC*dot(p,cam.u),d:dot(p,cam.c)});
+
+/* 天球玻璃罩（半分辨率逐像素） */
+function renderSky(){
+  const Uw=F.Uw;const key=[W,Hh,S.az.toFixed(2),S.el.toFixed(2),S.zoom.toFixed(3),S.upW.map(v=>v.toFixed(3)),Uw.map(v=>v.toFixed(3))].join();
+  if(key===skyKey)return;skyKey=key;
+  const k=0.5,w=Math.max(1,Math.round(W*k)),h=Math.max(1,Math.round(Hh*k));skyC.width=w;skyC.height=h;
+  const img=skyX.createImageData(w,h),dt=img.data,R=SC*k,ccx=cx*k,ccy=cy*k,{c,r,u}=cam;
+  for(let y=Math.max(0,Math.floor(ccy-R));y<=Math.min(h-1,Math.ceil(ccy+R));y++)for(let x=Math.max(0,Math.floor(ccx-R));x<=Math.min(w-1,Math.ceil(ccx+R));x++){
+    const xs=(x-ccx)/R,ys=-(y-ccy)/R,q=xs*xs+ys*ys;if(q>1)continue;const zs=Math.sqrt(1-q);
+    const p=[xs*r[0]+ys*u[0]+zs*c[0],xs*r[1]+ys*u[1]+zs*c[1],xs*r[2]+ys*u[2]+zs*c[2]];
+    const U=dot(p,Uw),rim=Math.pow(1-zs,2.2),i=(y*w+x)*4;
+    if(U>=0){dt[i]=70;dt[i+1]=120;dt[i+2]=220;dt[i+3]=255*(0.10+0.5*rim);}else{dt[i]=60;dt[i+1]=64;dt[i+2]=84;dt[i+3]=255*(0.30+0.45*rim);}
+    if(q>0.97)dt[i+3]*=Math.max(0,(1-q)/0.03);
+  }
+  skyX.putImageData(img,0,0);
+}
+
+/* 小工具 */
+function label(x,y,txt,col,size,align,weight){
+  ctx.font=`${weight||600} ${size||14}px "PingFang SC","Microsoft YaHei",sans-serif`;ctx.textAlign=align||'center';ctx.textBaseline='middle';
+  const tw=ctx.measureText(txt).width;
+  if((align||'center')==='center')x=Math.max(tw/2+4,Math.min(W-tw/2-4,x));else if(align==='left')x=Math.min(x,W-tw-4);else x=Math.max(x,tw+4);
+  ctx.lineWidth=4;ctx.lineJoin='round';ctx.strokeStyle='rgba(5,9,25,.85)';ctx.strokeText(txt,x,y);ctx.fillStyle=col||'#fff';ctx.fillText(txt,x,y);}
+function seg(a,b,col,w,dash,alpha){const p=P2(a),q=P2(b);ctx.globalAlpha=alpha??1;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.strokeStyle=col;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;}
+/* 曲线：pts 为 {w:世界坐标, up:地平以上?} 序列；按“地平上/下 × 前/后”分段 */
+function curve(pts,opt,filter){
+  let cur=null;const segs=[];
+  for(let i=0;i<pts.length-1;i++){
+    const a=pts[i],b=pts[i+1],above=a.up&&b.up?true:(!a.up&&!b.up?false:(a.up||b.up)),mid=mul(add(a.w,b.w),0.5),front=dot(mid,cam.c)>=0;
+    if(!filter(above,front)){cur=null;continue;}const k=above+'|'+front;
+    if(!cur||cur.k!==k){cur={k,above,front,p:[a.w]};segs.push(cur);}cur.p.push(b.w);
+  }
+  for(const s of segs){ctx.beginPath();s.p.forEach((p3,i)=>{const p=P2(p3);i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);});
+    let a=(s.front?1:0.45)*(s.above?1:(opt.belowAlpha??0.55))*(opt.alpha??1);ctx.globalAlpha=a;ctx.strokeStyle=opt.col;
+    ctx.lineWidth=(s.above?opt.w:Math.max(1,opt.w*0.65))*(s.front?1:0.85);ctx.setLineDash(s.above?(opt.dash||[]):(opt.noDash?[]:[6,6]));ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;}
+}
+// 赤纬圈（随地方恒星时变化的完整周日圈）
+function decCircle(dec,n){const a=[];n=n||120;for(let i=0;i<=n;i++){const H=i/n*360-180;const l=dirHD(F.phi,dec,H);a.push({w:F.Wd(l),up:l[2]>=0});}return a;}
+function raCircle(ra){const a=[];for(let i=0;i<=120;i++){const dec=-90+i*1.5;const l=dirHD(F.phi,dec,S.lst*15-ra*15);a.push({w:F.Wd(l),up:l[2]>=0});}return a;}
+function starLocal(s,lstH){return dirHD(S.lat,s.dec,((lstH??S.lst)-s.ra)*15);}
+function circlePts(center,u,v,rad,n){const a=[];for(let i=0;i<=n;i++){const t=i/n*2*Math.PI;a.push(add(center,add(mul(u,rad*Math.cos(t)),mul(v,rad*Math.sin(t)))));}return a;}
+function earthBasis(phi){const Pv=poleDir(phi);let a=[0,-Math.sin(phi*D2R),Math.cos(phi*D2R)];if(Math.abs(Math.cos(phi*D2R))<1e-6)a=[0,-(Math.sign(phi)||1),0];
+  a=norm(sub(a,mul(Pv,dot(a,Pv))));return {P:Pv,a,b:cross(Pv,a)};}
+function arrowAt(p3a,p3b,col,s){const p=P2(p3a),q=P2(p3b);const ang=Math.atan2(q.y-p.y,q.x-p.x);s=s||11;
+  ctx.save();ctx.translate(q.x,q.y);ctx.rotate(ang);ctx.beginPath();ctx.moveTo(4,0);ctx.lineTo(-s,-s*0.6);ctx.lineTo(-s*0.5,0);ctx.lineTo(-s,s*0.6);ctx.closePath();ctx.fillStyle=col;ctx.fill();ctx.restore();}
+function arc3(center,a,b,rad,col,txt){const pts=[];for(let i=0;i<=30;i++)pts.push(add(center,mul(slerp(a,b,i/30),rad)));
+  ctx.beginPath();pts.forEach((p3,i)=>{const p=P2(p3);i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);});ctx.strokeStyle=col;ctx.lineWidth=2.2;ctx.stroke();
+  if(txt){const m=P2(add(center,mul(slerp(a,b,0.5),rad*1.4)));label(m.x,m.y,txt,col,13.5);}}
+
+/* ---------------- 地球 ---------------- */
+function drawEarth(){
+  const r=F.r,center=F.earthC,pc=P2(center),re=r*SC;const B=earthBasis(F.phi);
+  // 太空视角下地球随自转转动：本地基向量 → 世界
+  const Pw=B.P,aw=F.Wd(B.a),bw=F.Wd(B.b);
+  const sz=Math.ceil(re*2+4);earthC.width=sz;earthC.height=sz;const img=earthX.createImageData(sz,sz),dt=img.data,h=sz/2,{c,r:rr,u}=cam;
+  const light=norm(add(add(mul(rr,-0.45),mul(u,0.6)),mul(c,0.75)));
+  for(let y=0;y<sz;y++)for(let x=0;x<sz;x++){const xs=(x-h)/re,ys=-(y-h)/re,q=xs*xs+ys*ys;if(q>1)continue;const zs=Math.sqrt(1-q);
+    const n=[xs*rr[0]+ys*u[0]+zs*c[0],xs*rr[1]+ys*u[1]+zs*c[1],xs*rr[2]+ys*u[2]+zs*c[2]];
+    const lat=Math.asin(Math.max(-1,Math.min(1,dot(n,Pw))));const lon=Math.atan2(dot(n,bw),dot(n,aw));
+    const k=0.35+0.65*Math.max(0,dot(n,light));const i=(y*sz+x)*4;
+    // 简单“陆地”斑块，使自转看得见
+    const land=Math.abs(lat)<1.25&&(Math.sin(lon*3+1.3)*Math.cos(lat*4)+Math.sin(lon*5-lat*3)*0.5)>0.55;
+    let R=34,G=110,Bc=200;if(land){R=70;G=150;Bc=80;}if(Math.abs(lat)>66.5*D2R){R=215;G=230;Bc=245;}
+    dt[i]=R*k;dt[i+1]=G*k;dt[i+2]=Bc*k;dt[i+3]=q>0.96?255*Math.max(0,(1-q)/0.04):255;}
+  earthX.putImageData(img,0,0);ctx.drawImage(earthC,pc.x-h,pc.y-h);
+  const front=p3=>dot(norm(sub(p3,center)),cam.c)>0;
+  function eLine(pts,col,w,dash){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.beginPath();let on=false;
+    for(const p3 of pts){if(front(p3)){const p=P2(p3);on?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);on=true;}else on=false;}ctx.stroke();ctx.setLineDash([]);}
+  const latC=b=>circlePts(add(center,mul(Pw,r*Math.sin(b*D2R))),aw,bw,r*Math.cos(b*D2R),72);
+  for(const b of [-60,-30,30,60])eLine(latC(b),'rgba(255,255,255,.3)',1);
+  for(let l=0;l<180;l+=30){const v=add(mul(aw,Math.cos(l*D2R)),mul(bw,Math.sin(l*D2R)));eLine(circlePts(center,v,Pw,r,72),'rgba(255,255,255,.3)',1);}
+  eLine(latC(0),'#ff5d5d',2);
+  if(Math.abs(F.phi)<89.5)eLine(latC(F.phi),'#ffd84d',2.2);
+  // 观察者所在经线（太空视角下随地球转）
+  eLine(circlePts(center,aw,Pw,r,72),'rgba(255,216,77,.55)',1.2,[3,3]);
+  seg(add(center,mul(Pw,-r*1.4)),add(center,mul(Pw,r*1.4)),'#d7b4ff',2.4);
+  const n=P2(add(center,mul(Pw,r*1.6))),s=P2(add(center,mul(Pw,-r*1.6)));label(n.x,n.y,'N','#d7b4ff',13);label(s.x,s.y,'S','#d7b4ff',13);
+  if(F.space){ // 自转方向箭头（自西向东）
+    const ring=t=>add(center,mul(add(mul(aw,Math.cos(t)),mul(bw,Math.sin(t))),r*1.18));
+    for(const t0 of [0.6,2.6,4.6]){const pts=[];for(let i=0;i<=10;i++)pts.push(ring(t0+i*0.07));
+      ctx.beginPath();pts.forEach((p3,i)=>{const p=P2(p3);i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);});ctx.strokeStyle='#ff9b5c';ctx.lineWidth=2.4;ctx.stroke();
+      arrowAt(pts[9],pts[10],'#ff9b5c',9);}
+    label(pc.x,pc.y+re*1.35+12,'地球自西向东自转','#ffb38a',14);
+  } else if(re>36)label(pc.x,pc.y+re+14,'地球','#9fd0ff',13);
+}
+
+/* ---------------- 主绘制 ---------------- */
+function draw(){
+  frameSetup();updateCam();renderSky();
+  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,W,Hh);
+  ctx.drawImage(skyC,0,0,W,Hh);
+  ctx.beginPath();ctx.arc(cx,cy,SC,0,7);ctx.strokeStyle='rgba(150,200,255,.5)';ctx.lineWidth=1.4;ctx.stroke();
+  const polar=S.view==='polar';
+  const curves=[];
+  if(S.show.grid){for(const d of [-60,-30,30,60])curves.push({p:decCircle(d,90),o:{col:'rgba(140,180,255,.35)',w:1,noDash:true,belowAlpha:.7}});
+    for(let ra=0;ra<24;ra+=2)curves.push({p:raCircle(ra),o:{col:'rgba(140,180,255,.25)',w:1,noDash:true,belowAlpha:.7}});}
+  if(S.show.equator)curves.push({p:decCircle(0),o:{col:'#4da3ff',w:2}});
+  if(S.show.circum&&Math.abs(F.phi)>0.3){const c=90-Math.abs(F.phi),sg=Math.sign(F.phi);
+    curves.push({p:decCircle(sg*c),o:{col:'#6fe39a',w:2.6,dash:[]}});curves.push({p:decCircle(-sg*c),o:{col:'#ff7a7a',w:2.6,belowAlpha:.9}});}
+  if(S.show.allPaths)for(const s of STARS)if(s.mag<1.6)curves.push({p:decCircle(s.dec,90),o:{col:'rgba(255,220,140,.45)',w:1.1}});
+  const sel=STARS[S.sel];
+  if(S.show.selPath&&sel)curves.push({p:decCircle(sel.dec),o:{col:'#ffc94d',w:3.2,belowAlpha:.8}});
+  const camAbove=dot(F.Uw,cam.c)>=0;
+  const dc=(above,front)=>{for(const c of curves)curve(c.p,c.o,(a,f)=>a===above&&f===front);};
+  const below=()=>{dc(false,false);if(S.show.earth)drawEarth();dc(false,true);};
+  const above=()=>{dc(true,false);dc(true,true);};
+  if(camAbove){below();drawHorizon();above();}else{above();drawHorizon();below();}
+  drawAxis();
+  drawStars();
+  drawSelected(sel);
+  drawPerson();
+  drawHUD();
+}
+function drawHorizon(){
+  const R=F.space?0.94:1,pts=circlePts([0,0,0],[1,0,0],[0,1,0],R,120).map(F.Wh);
+  ctx.beginPath();pts.forEach((p3,i)=>{const p=P2(p3);i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);});ctx.closePath();
+  ctx.fillStyle=S.view==='zenith'?'rgba(70,165,85,.42)':'rgba(70,165,85,.24)';ctx.fill();ctx.strokeStyle='#8be08f';ctx.lineWidth=2.2;ctx.stroke();
+  for(let a=0;a<360;a+=10){const v=[Math.sin(a*D2R),Math.cos(a*D2R),0];const p=F.Wh(mul(v,R)),q=F.Wh(mul(v,R*(a%30?0.97:0.94)));seg(q,p,'rgba(230,255,230,.65)',a%30?1:1.5);}
+  for(const [n,a] of [['北',0],['东',90],['南',180],['西',270]]){const v=[Math.sin(a*D2R),Math.cos(a*D2R),0];const w=F.Wh(mul(v,R*1.1));
+    if(Math.abs(dot(F.Wd(v),cam.c))>0.95)continue;const p=P2(w);label(p.x,p.y,n,'#eaffea',19);}
+}
+function drawAxis(){
+  const P=F.P;
+  if(S.show.axis){
+    seg(mul(P,-1),mul(P,1),'#d7b4ff',2,null,0.9);
+    const n=P2(P),s=P2(mul(P,-1));
+    ctx.beginPath();ctx.arc(n.x,n.y,4,0,7);ctx.fillStyle='#d7b4ff';ctx.fill();ctx.beginPath();ctx.arc(s.x,s.y,4,0,7);ctx.fill();
+    if(n.d>-0.9)label(n.x,n.y-16,'北天极 P','#e8d4ff',14);if(s.d>-0.9)label(s.x,s.y+16,"南天极 P′",'#e8d4ff',14);
+    // 北天极高度角 = 纬度（地面视角）
+    if(!F.space&&Math.abs(F.phi)>0.5&&Math.abs(F.phi)<89.5&&S.view!=='polar'){
+      const up=F.phi>0?P:mul(P,-1);arc3([0,0,0],[0,Math.sign(F.phi),0],up,0.26,'#fff3b0',`${F.phi>0?'北':'南'}天极高度 ${fmtDM(Math.abs(F.phi))}`);}
+  }
+  // 天顶
+  const z=P2(F.Wh([0,0,F.space?0.94:1]));ctx.beginPath();ctx.arc(z.x,z.y,3.5,0,7);ctx.fillStyle='#fff';ctx.fill();label(z.x+10,z.y-12,'天顶','#fff',13,'left');
+  if(!F.space)seg([0,0,0],[0,0,1],'rgba(255,255,255,.3)',1,[3,5]);
+  if(S.show.equator){const l=dirHD(F.phi,0,S.lst*15-(S.lst*15+70));const p=P2(F.Wd(l));label(p.x+8,p.y,'天赤道','#7fc4ff',13,'left');}
+  if(S.show.circum&&Math.abs(F.phi)>0.3&&Math.abs(F.phi)<89.7){const c=90-Math.abs(F.phi),sg=Math.sign(F.phi);
+    const a=P2(F.Wd(dirHD(F.phi,sg*c,130)));label(a.x,a.y-13,`恒显圈 赤纬${sg>0?'+':'−'}${fmtDM(c)}`,'#9ff0bb',13);
+    const b=P2(F.Wd(dirHD(F.phi,-sg*c,40)));label(b.x,b.y+14,`恒隐圈 赤纬${sg>0?'−':'+'}${fmtDM(c)}`,'#ffaaaa',13);}
+}
+function starXY(s){const l=starLocal(s);return {l,w:F.Wd(l),p:P2(F.Wd(l))};}
+let starScreen=[];
+function drawStars(){
+  const dim=S.show.dimBelow;
+  // 星轨（长曝光，过去 3 恒星时）
+  if(S.show.trails){
+    const list=STARS.concat(S.show.faint?FAINT.filter(f=>f.mag<4.6):[]);
+    for(const s of list){ctx.beginPath();let on=false;
+      for(let k=0;k<=24;k++){const t=S.lst-3+k*3/24;const l=dirHD(F.phi,s.dec,(t-s.ra)*15);const w=F.Wd(l);
+        if(dim&&l[2]<0){on=false;continue;}const p=P2(w);on?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y);on=true;}
+      ctx.strokeStyle=s.n?'rgba(255,235,190,.75)':'rgba(200,215,255,.35)';ctx.lineWidth=s.n?1.6:1;ctx.stroke();}
+  }
+  if(S.show.faint)for(const s of FAINT){const l=starLocal(s);const w=F.Wd(l);const p=P2(w);
+    const a=(dim&&l[2]<0?0.18:0.65)*(p.d<0?0.55:1);ctx.globalAlpha=a;ctx.fillStyle='#cdd8ff';ctx.fillRect(p.x-0.8,p.y-0.8,1.6,1.6);}
+  ctx.globalAlpha=1;
+  starScreen=STARS.map(starXY);
+  if(S.show.lines){for(const [i,j] of LINES){const A=starScreen[i],B=starScreen[j];const bel=A.l[2]<0&&B.l[2]<0;
+      ctx.globalAlpha=(dim&&bel?0.25:0.8)*(A.p.d<0&&B.p.d<0?0.6:1);ctx.strokeStyle='#9fc3ff';ctx.lineWidth=1.4;
+      ctx.beginPath();ctx.moveTo(A.p.x,A.p.y);ctx.lineTo(B.p.x,B.p.y);ctx.stroke();}
+    ctx.globalAlpha=1;
+    for(const [n,id,dx,dy] of CONST_LABEL){const A=starScreen[SID[id]];if(dim&&A.l[2]<0)continue;label(A.p.x+dx,A.p.y+dy,n,'rgba(170,200,255,.9)',12.5,'center',400);}
+  }
+  STARS.forEach((s,i)=>{const {l,p}=starScreen[i];const below=l[2]<0;const a=(dim&&below?0.3:1)*(p.d<0?0.7:1);
+    const rad=Math.max(1.6,4.6-s.mag*0.85);ctx.globalAlpha=a;
+    if(s.mag<1.2){const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,rad*3.2);g.addColorStop(0,s.col);g.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,rad*3.2,0,7);ctx.fill();}
+    ctx.fillStyle=s.col;ctx.beginPath();ctx.arc(p.x,p.y,rad,0,7);ctx.fill();ctx.globalAlpha=1;
+    if(S.show.names&&(s.mag<1.6||i===SID.UMi0)&&i!==S.sel&&!(dim&&below))label(p.x+rad+5,p.y-rad-4,s.n.replace(/（.*）/,''),'rgba(235,240,255,.92)',12.5,'left',500);
+  });
+}
+function drawSelected(s){
+  if(!s)return;const {l,w,p}=starXY(s);
+  ctx.beginPath();ctx.arc(p.x,p.y,13,0,7);ctx.strokeStyle='#ffc94d';ctx.lineWidth=2.4;ctx.stroke();
+  label(p.x+18,p.y-14,s.n,'#ffd970',16,'left');
+  if(S.show.selPath){
+    const hh=H0(F.phi,s.dec);
+    if(hh.type==='rs'){for(const sg of [-1,1]){const q=P2(F.Wd(dirHD(F.phi,s.dec,sg*hh.h0)));ctx.beginPath();ctx.arc(q.x,q.y,5.5,0,7);ctx.fillStyle=sg<0?'#ff8a4c':'#7aa8ff';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.3;ctx.stroke();
+      label(q.x,q.y+15,sg<0?'升':'落',sg<0?'#ffb08a':'#a8c4ff',13);}}
+    // 运动方向箭头
+    const Hn=(S.lst-s.ra)*15;arrowAt(F.Wd(dirHD(F.phi,s.dec,Hn+14)),F.Wd(dirHD(F.phi,s.dec,Hn+22)),'#ffc94d',11);
+    // 上中天
+    const top=dirHD(F.phi,s.dec,0);if(top[2]>0){const q=P2(F.Wd(top));ctx.beginPath();ctx.arc(q.x,q.y,3.5,0,7);ctx.fillStyle='#ffe07a';ctx.fill();}
+  }
+  if(S.show.decRing){ // 从天轴→天赤道→赤纬的找星辅助线
+    const P=F.P,hn=(S.lst-s.ra)*15;const eq=F.Wd(dirHD(F.phi,0,hn));
+    const pts=[];for(let i=0;i<=20;i++)pts.push(slerp(eq,w,i/20));
+    ctx.beginPath();pts.forEach((p3,i)=>{const q=P2(p3);i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y);});ctx.strokeStyle='#ff9b5c';ctx.lineWidth=3;ctx.stroke();
+    const m=P2(slerp(eq,w,0.5));label(m.x+10,m.y,`赤纬 ${fmtSgn(s.dec)}`,'#ffb38a',14,'left');
+    const e=P2(eq);ctx.beginPath();ctx.arc(e.x,e.y,4,0,7);ctx.fillStyle='#4da3ff';ctx.fill();
+  }
+}
+function drawPerson(){
+  const h=0.09,f=P2(F.Wh([0,0,0])),hd=P2(F.Wh([0,0,h])),mid=P2(F.Wh([0,0,h*0.55]));
+  ctx.strokeStyle='#e9f1ff';ctx.lineWidth=3.6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(f.x,f.y);ctx.lineTo(mid.x,mid.y);ctx.stroke();ctx.lineCap='butt';
+  ctx.beginPath();ctx.arc(hd.x,hd.y,6,0,7);ctx.fillStyle='#e9f1ff';ctx.fill();ctx.beginPath();ctx.arc(f.x,f.y,3.3,0,7);ctx.fillStyle='#ff5d5d';ctx.fill();
+  if(S.view!=='polar')label(hd.x+11,hd.y-3,'观察者','#e9f1ff',13,'left');
+}
+function drawHUD(){
+  const pn=placeName(F.phi);
+  label(16,22,`${pn?pn+' ':''}${fmtLat(F.phi)} · 地方恒星时 ${fmtH(S.lst)}`,'#fff',18,'left');
+  label(16,48,F.space?'太空视角：天球（恒星）不动，地球自西向东自转':'地面视角：地平不动，天球绕天轴自东向西转','#9fe8ff',14,'left',500);
+}
+
+/* ---------------- 读数 ---------------- */
+const $=id=>document.getElementById(id);
+function tipText(phi){
+  const a=Math.abs(phi),hemi=phi>0?'北':'南';
+  if(a>=89.5)return `<b>${hemi}极点：</b>${hemi}天极就在天顶，天赤道与地平圈重合。恒星绕天顶做<b>平行于地平圈</b>的圆周运动，既不升起也不落下，高度始终不变；只能看到${hemi}天半球的恒星（全天的一半）。`;
+  if(a<0.5)return '<b>赤道：</b>南北天极都在地平线上，天赤道经过天顶。所有恒星的周日圈都<b>垂直于地平面</b>，每颗星在地平以上、以下各约 12 个恒星时；一年中能看到全部星空。';
+  return `<b>${a>60?'高':'中'}纬地区：</b>${hemi}天极高度 = 纬度（${fmtDM(a)}）。恒星周日圈与地平面斜交，夹角 = 90° − 纬度。赤纬${phi>0?'＞+':'＜−'}${fmtDM(90-a)} 的星<b>永不落下</b>（恒显），赤纬${phi>0?'＜−':'＞+'}${fmtDM(90-a)} 的星<b>永不升起</b>（恒隐），其余东升西落；与天极同侧的星在地平以上时间更长。`;
+}
+function updateReadouts(){
+  const phi=S.lat,a=Math.abs(phi),pn=placeName(phi);
+  $('latVal').textContent=`${pn?pn+' ':''}${fmtLat(phi)}`;$('lstVal').textContent=fmtH(S.lst);
+  $('rLat').textContent=fmtLat(phi);$('rNP').textContent=fmtSgn(phi);$('rSP').textContent=fmtSgn(-phi);
+  $('rEq').textContent=fmtDM(90-a);
+  if(a<0.05){$('rCirc').textContent='无';$('rHid').textContent='无';}
+  else{$('rCirc').textContent=(phi>0?'＞ +':'＜ −')+fmtDM(90-a);$('rHid').textContent=(phi>0?'＜ −':'＞ +')+fmtDM(90-a);}
+  $('rFrac').textContent=(50*(1+Math.cos(phi*D2R))).toFixed(1)+'%';
+  const s=STARS[S.sel];
+  $('sDec').textContent=`${fmtSgn(s.dec)} / ${fmtH(s.ra)}`;
+  const hh=H0(phi,s.dec);
+  $('sType').textContent=hh.type==='circ'?'恒显星（永不落下）':hh.type==='hid'?'恒隐星（永不升起）':'东升西落';
+  const up=hh.h0*2/15;$('sUp').textContent=hh.type==='circ'?'24 时（全天）':hh.type==='hid'?'0 时':`${fmtDur(up)}（地平下 ${fmtDur(24-up)}）`;
+  const mx=90-Math.abs(phi-s.dec),mn=Math.abs(phi+s.dec)-90;
+  $('sMax').textContent=(mx).toFixed(1)+'°';$('sMin').textContent=mn.toFixed(1)+'°';
+  if(hh.type==='rs'&&a<89.9){const r=dirHD(phi,s.dec,-hh.h0);$('sRise').textContent=dirText(r[0],r[1]);}else $('sRise').textContent='—';
+  const l=starLocal(s);$('sNow').textContent=(Math.asin(Math.max(-1,Math.min(1,l[2])))*R2D).toFixed(1)+'°';
+  $('tip').innerHTML=tipText(phi);
+  $('read1').classList.toggle('hidden',S.hide);$('read2').classList.toggle('hidden',S.hide);
+  $('hideData').textContent=S.hide?'显示数据':'预测模式';$('hideData').classList.toggle('on',S.hide);
+  $('lat').value=phi;$('lst').value=S.lst;$('starSel').value=S.sel;
+  $('play').textContent=S.playing?'❚❚':'▶';
+  document.querySelectorAll('#places .chip').forEach(b=>b.classList.toggle('on',Math.abs(+b.dataset.lat-phi)<0.06));
+  document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===S.view));
+  document.querySelectorAll('[data-frame]').forEach(b=>b.classList.toggle('on',b.dataset.frame===S.frame));
+  document.querySelectorAll('[data-show]').forEach(b=>b.checked=!!S.show[b.dataset.show]);
+  document.querySelector('[data-view="zenith"]').disabled=S.frame==='space';
+  document.querySelector('[data-view="zenith"]').style.opacity=S.frame==='space'?.4:1;
+}
+
+/* ---------------- 控件 ---------------- */
+const pl=$('places');for(const [n,v] of PLACES){const b=document.createElement('button');b.className='chip';b.dataset.lat=v;b.textContent=n;b.onclick=()=>{S.lat=v;updateReadouts();};pl.appendChild(b);}
+$('lat').oninput=e=>{let v=+e.target.value;for(const [,p] of PLACES)if(Math.abs(v-p)<0.7)v=p;S.lat=v;updateReadouts();};
+$('lst').oninput=e=>{S.lst=+e.target.value;S.playing=false;updateReadouts();};
+$('play').onclick=()=>{S.playing=!S.playing;updateReadouts();};
+$('speed').onchange=e=>S.speed=+e.target.value;
+$('hideData').onclick=()=>{S.hide=!S.hide;updateReadouts();};
+document.querySelectorAll('[data-show]').forEach(b=>b.onchange=()=>{S.show[b.dataset.show]=b.checked;updateReadouts();});
+const sel=$('starSel');[...STARS.keys()].filter(i=>STARS[i].mag<2.5||STARS[i].id==='UMi0').sort((a,b)=>STARS[b].dec-STARS[a].dec)
+  .forEach(i=>{const o=document.createElement('option');o.value=i;o.textContent=`${STARS[i].n}　赤纬 ${fmtSgn(STARS[i].dec)}`;sel.appendChild(o);});
+sel.onchange=e=>{S.sel=+e.target.value;updateReadouts();};
+const VIEWS={zenith:[150,22],pole:[150,18],polar:[180,89.9]};
+let upTarget=[0,0,1];
+function setView(v){if(S.frame==='space'&&v==='zenith')v='pole';S.view=v;[S.tAz,S.tEl]=VIEWS[v];upTarget=v==='zenith'?[0,0,1]:poleDir(S.lat);if(v!=='zenith')S.zoom=Math.min(S.zoom,1);updateReadouts();}
+function setFrame(f){S.frame=f;if(f==='space'&&S.view==='zenith')setView('pole');updateReadouts();}
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>setView(b.dataset.view));
+document.querySelectorAll('[data-frame]').forEach(b=>b.onclick=()=>setFrame(b.dataset.frame));
+$('resetView').onclick=()=>{S.zoom=1;setView(S.view);};
+
+// 拖动 / 缩放 / 点击选星
+let drag=null,moved=0;const pts=new Map();
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);if(pts.size===1){drag={x:e.clientX,y:e.clientY};moved=0;}cv.classList.add('drag');});
+cv.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;const prev=pts.get(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);
+  if(pts.size===2){const vals=[...pts.values()];const other=[...pts.entries()].find(([k])=>k!==e.pointerId)[1];
+    const d0=Math.hypot(prev[0]-other[0],prev[1]-other[1]),d1=Math.hypot(vals[0][0]-vals[1][0],vals[0][1]-vals[1][1]);if(d0>0)S.zoom=Math.max(0.6,Math.min(2.4,S.zoom*d1/d0));moved+=99;return;}
+  if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag={x:e.clientX,y:e.clientY};moved+=Math.abs(dx)+Math.abs(dy);
+  S.az=(S.az-dx*0.4+360)%360;S.el=Math.max(-70,Math.min(89.9,S.el+dy*0.35));S.tAz=S.az;S.tEl=S.el;});
+const endP=e=>{if(pts.size===1&&moved<6){const b=cv.getBoundingClientRect(),x=e.clientX-b.left,y=e.clientY-b.top;let best=-1,bd=18;
+    starScreen.forEach((s,i)=>{const d=Math.hypot(s.p.x-x,s.p.y-y);if(d<bd){bd=d;best=i;}});if(best>=0){S.sel=best;updateReadouts();}}
+  pts.delete(e.pointerId);if(!pts.size){drag=null;cv.classList.remove('drag');}};
+cv.addEventListener('pointerup',endP);cv.addEventListener('pointercancel',e=>{pts.delete(e.pointerId);drag=null;});
+cv.addEventListener('wheel',e=>{e.preventDefault();S.zoom=Math.max(0.6,Math.min(2.4,S.zoom*(e.deltaY>0?0.92:1.08)));},{passive:false});
+
+/* ---------------- 探究任务 ---------------- */
+const SIRIUS=SID.CMa1;
+const TASKS=[
+ {q:'天狼星赤纬约 −16.7°。转动天球，怎样最快找到它？',opts:['先找天顶，再往南数 16.7°','先找天轴 → 再找天赤道 → 天赤道以南 16.7°','先找地平圈，再往上数 16.7°'],ans:1,
+  setup:{lat:31.8,lst:6.8,view:'pole',frame:'ground',sel:SIRIUS,show:{axis:true,equator:true,decRing:true,selPath:true,circum:false,trails:false}},
+  look:'“北天极朝上”视图中，紫色天轴竖直、蓝色天赤道水平。橙色弧线就是从天赤道量到天狼星的赤纬。拖动恒星时，看这段弧线变不变。',
+  why:'赤纬是从<b>天赤道</b>起算的角距离，天赤道又由<b>天轴</b>确定（垂直于天轴）。地平坐标随时间、地点变化，而赤纬不随周日运动改变——所以找星要“天轴 → 天赤道 → 天赤道以南 16.7°”。'},
+ {q:'分别在赤道、30°N、北极点、南极点观察天狼星：一天中它在地平圈以上和以下的时间哪个更长？',rec:[['赤道',0],['30°N',30],['北极点',90],['南极点',-90]],
+  setup:{lst:6.8,view:'zenith',frame:'ground',sel:SIRIUS,show:{selPath:true,circum:false,decRing:false,trails:false}},
+  look:'点表格里的地点按钮，观察黄色周日圈被地平面切成的两段（实线在上，虚线在下），并记下“地平以上时长”。',
+  why:'<b>赤道</b>：周日圈被地平面平分，上下各约 12 时。<b>30°N</b>：天狼星在天赤道以南，与北天极异侧，地平以下的弧更长（以上约 10 时 40 分）。<b>北极点</b>：天赤道与地平圈重合，赤纬为负的星<b>始终在地平以下</b>。<b>南极点</b>：则<b>始终在地平以上</b>。'},
+ {q:'赤道、中纬度地区、极点，一年中能观测到的星空范围哪个更大？',opts:['极点最大','中纬度最大','赤道最大','三地一样大'],ans:2,
+  setup:{lat:30,lst:2,view:'zenith',frame:'ground',show:{circum:true,trails:false,selPath:false,decRing:false}},
+  look:'打开了恒显圈（绿）和恒隐圈（红）。拖动纬度从赤道到极点，看红色恒隐圈怎样变化，并留意右侧“可见星空占全天”。',
+  why:'恒隐圈以内的星永远看不到。纬度越高，恒隐圈越大：赤纬界线为 ∓(90° − φ)。可见比例 = (1 + cos φ)/2：赤道 100%，30°N 约 93%，极点只有 50%。所以<b>赤道看到的星空最大</b>。'},
+ {q:'在常州拍一张“星轨”长曝光照片，为什么北极星几乎不动，其他星都绕着它画圆弧？',opts:['北极星离地球最近','北极星几乎就在天轴的延长线（北天极）上','北极星亮度最大'],ans:1,
+  setup:{lat:31.8,lst:3,view:'zenith',frame:'ground',sel:SID.UMi0,az:180,el:15,show:{trails:true,selPath:true,circum:false,decRing:false,names:true}},
+  look:'镜头朝北。看星轨的圆心在哪里，再看北极星的黄色周日圈有多大。然后切到“从北天极俯视”。',
+  why:'恒星的周日运动是地球自转的反映，所有星都绕<b>天轴</b>转。北极星赤纬 +89.3°，离北天极不到 1°，周日圈极小，看起来几乎不动；它的地平高度 ≈ 当地纬度（常州约 31.8°）。'},
+ {q:'恒星“东升西落”，真正的原因是什么？',opts:['恒星绕地球自东向西转','地球绕地轴自西向东自转','天球自己在转，地球不动'],ans:1,
+  setup:{lat:31.8,lst:4,view:'pole',frame:'space',play:true,sel:SID.Ori1,show:{trails:false,selPath:true,circum:false,decRing:false}},
+  look:'现在是“太空视角”：恒星都不动，地球带着观察者和地平面转。看参宿四什么时候从地平面“下方”跑到“上方”。再切回“地面视角”对比。',
+  why:'两种视角里，恒星相对地平面的运动完全相同。地球<b>自西向东</b>自转，站在地面上就看到整个天球<b>自东向西</b>绕天轴转，这就是恒星的周日视运动，周期为 1 恒星日（23 时 56 分）。'},
+ {q:'挑战：在北京（39.9°N），北斗七星一天中会落到地平线以下吗？',opts:['七颗都不会落下','七颗都会落下','只有摇光（赤纬 +49.3°）会短暂落到地平线以下'],ans:2,
+  setup:{lat:39.9,lst:1.8,view:'zenith',frame:'ground',sel:SID.UMa7,az:180,el:12,show:{circum:true,selPath:true,trails:false,decRing:false}},
+  look:'镜头朝北，绿色是恒显圈。看北斗七星哪几颗在圈内，摇光的周日圈有没有被地平面切到。',
+  why:'北京恒显圈的赤纬界线为 +(90° − 39.9°) = +50.1°。北斗中天枢 +61.8°、天璇 +56.4° 等都大于 50.1°，永不落下；摇光只有 +49.3°，略小于界线，会在下中天前后短暂没入地平线（不到 2 小时，最低约 −0.8°）。'}
+];
+function applySetup(s){
+  if(s.lat!==undefined)S.lat=s.lat;if(s.lst!==undefined)S.lst=s.lst;if(s.sel!==undefined)S.sel=s.sel;
+  Object.assign(S.show,s.show||{});S.playing=!!s.play;S.hide=true;S.frame=s.frame||'ground';setView(s.view);
+  if(s.az!==undefined){S.tAz=s.az;S.tEl=s.el;}
+}
+function buildTasks(){
+  const box=$('tasks');
+  TASKS.forEach((t,i)=>{
+    const el=document.createElement('div');el.className='task';
+    let body='';
+    if(t.rec){body=`<table class="rec"><tr><th>观测地</th><th>地平以上</th><th>地平以下</th></tr>${t.rec.map(([n,v],j)=>`<tr><td><button class="btn" data-r="${j}">${n}</button></td><td class="v" id="t${i}u${j}">?</td><td class="v" id="t${i}d${j}">?</td></tr>`).join('')}</table>`;}
+    else body=`<div class="opts">${t.opts.map((o,j)=>`<button class="opt" data-j="${j}">${String.fromCharCode(65+j)}. ${o}</button>`).join('')}</div>`;
+    el.innerHTML=`<div class="no">任务 ${i+1}</div><div class="q">${t.q}</div>${body}
+      <div class="acts"><button class="btn on vf">🔭 转动天球验证</button><button class="btn rv">💡 看原理</button></div>
+      <div class="look">👀 观察要点：${t.look}</div><div class="why">${t.why}</div>`;
+    let pick=-1;
+    el.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{pick=+b.dataset.j;el.querySelectorAll('.opt').forEach(x=>x.classList.remove('pick','right','wrong'));b.classList.add('pick');});
+    el.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{const j=+b.dataset.r,v=t.rec[j][1];applySetup(Object.assign({},t.setup,{lat:v}));el.classList.add('verified');
+      const hh=H0(v,STARS[t.setup.sel].dec),up=hh.h0*2/15;$(`t${i}u${j}`).textContent=fmtDur(up);$(`t${i}d${j}`).textContent=fmtDur(24-up);updateReadouts();});
+    el.querySelector('.vf').onclick=()=>{applySetup(t.rec?Object.assign({},t.setup,{lat:t.rec[1][1]}):t.setup);el.classList.add('verified');updateReadouts();
+      document.querySelector('.stage').scrollIntoView({behavior:'smooth',block:'start'});};
+    el.querySelector('.rv').onclick=()=>{el.classList.add('revealed');el.querySelectorAll('.opt').forEach((x,j)=>{x.classList.remove('right','wrong');if(j===t.ans)x.classList.add('right');else if(j===pick)x.classList.add('wrong');});};
+    box.appendChild(el);
+  });
+}
+buildTasks();
+
+/* ---------------- 循环 ---------------- */
+let last=performance.now(),tick=0;
+function loop(now){
+  const dt=Math.min(0.05,(now-last)/1000);last=now;
+  const dAz=((S.tAz-S.az+540)%360)-180;
+  if(Math.abs(dAz)>0.05||Math.abs(S.tEl-S.el)>0.05){S.az=(S.az+dAz*Math.min(1,dt*6)+360)%360;S.el+=(S.tEl-S.el)*Math.min(1,dt*6);}
+  // 视图“上方向”平滑过渡（天顶 ↔ 北天极）；北天极随纬度更新
+  if(S.view!=='zenith')upTarget=poleDir(S.lat);
+  const ang=Math.acos(Math.max(-1,Math.min(1,dot(norm(S.upW),norm(upTarget)))));
+  S.upW=ang>0.002?slerp(norm(S.upW),norm(upTarget),Math.min(1,dt*6)):upTarget.slice();
+  if(S.playing){S.lst=(S.lst+dt*S.speed)%24;if(++tick%5===0)updateReadouts();}
+  draw();requestAnimationFrame(loop);
+}
+window.__dbg={dirHD,rot,poleDir,H0,STARS,S};
+resize();updateReadouts();requestAnimationFrame(loop);
+})();
+</script>
+<div style="position:fixed;right:12px;bottom:12px;z-index:9999;background:rgba(255,255,255,0.82);color:#333;font-size:12px;padding:4px 10px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.15);pointer-events:none;">横山桥高级中学 孙慧制作</div>
+</body>
+</html>
