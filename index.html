@@ -130,12 +130,34 @@
         html[data-theme="dark"] .hero-stat-pill{background:rgba(26,39,52,.85);}
         .hero-stat-pill b{color:var(--accent);font-weight:700;font-size:.85rem;}
 
+        /* Hero 右侧控制组（搜索 + 主题切换），毛玻璃胶囊 */
+        .hero-controls{
+            position:absolute;right:3%;top:50%;transform:translateY(-50%);z-index:2;
+            display:flex;align-items:center;gap:8px;
+            background:rgba(255,255,255,.72);backdrop-filter:blur(8px);
+            border:1px solid var(--border);border-radius:var(--radius-pill);
+            padding:6px 8px 6px 12px;box-shadow:0 2px 12px rgba(0,0,0,.07);
+        }
+        html[data-theme="dark"] .hero-controls{background:rgba(26,39,52,.78);}
+        .hero-controls .nav-search-input{
+            width:170px;background:transparent;border:none;box-shadow:none;padding:5px 8px 5px 24px;
+        }
+        .hero-controls .nav-search-input:focus{
+            width:210px;background:transparent;box-shadow:0 0 0 3px var(--accent-glow);
+        }
+        .hero-controls .nav-search-icon{left:9px;}
+        .hero-controls .nav-icon-btn{width:32px;height:32px;border-radius:50%;}
+        @media (max-width:1100px){
+            .hero-controls .nav-search-input{width:130px;}
+            .hero-controls .nav-search-input:focus{width:170px;}
+        }
+
         .hero-deco{
             position:absolute;top:50%;transform:translateY(-50%);
             pointer-events:none;opacity:.85;
         }
         .hero-deco.left{left:3%;animation:heroFloat 6s ease-in-out infinite;}
-        .hero-deco.right{right:3%;animation:heroFloat 7.5s ease-in-out infinite reverse;}
+        .hero-deco.right{display:none;}
         .hero-deco svg{width:80px;height:80px;}
         @keyframes heroFloat{
             0%,100%{transform:translateY(calc(-50% - 3px))}
@@ -143,7 +165,8 @@
         }
         @media (max-width:760px){
             .hero-deco{display:none;}
-            .hero-banner{height:auto;padding:14px 0;}
+            .hero-banner{height:auto;padding:14px 0 12px;flex-direction:column;gap:10px;}
+            .hero-controls{position:static;transform:none;}
         }
 
         .container {
@@ -590,6 +613,13 @@
                 <span class="hero-stat-pill"><b id="heroCountCats">0</b> 资源分类</span>
                 <span class="hero-stat-pill"><b>∞</b> 教学可能</span>
             </div>
+            <div class="hero-controls">
+                <div class="nav-search-wrap">
+                    <span class="nav-search-icon">🔍</span>
+                    <input type="text" class="nav-search-input" id="navSearch" placeholder="搜索资源..." oninput="handleSearch()">
+                </div>
+                <button class="nav-icon-btn" id="themeToggle" onclick="toggleTheme()" title="切换明暗主题">🌙</button>
+            </div>
         </div>
     </div>
 
@@ -597,11 +627,6 @@
     <div class="nav-bar">
         <div class="nav-row nav-row-1">
             <div class="nav-right">
-                <div class="nav-search-wrap">
-                    <span class="nav-search-icon">🔍</span>
-                    <input type="text" class="nav-search-input" id="navSearch" placeholder="搜索资源..." oninput="handleSearch()">
-                </div>
-                <button class="nav-icon-btn" id="themeToggle" onclick="toggleTheme()" title="切换明暗主题">🌙</button>
                 <button class="nav-icon-btn" id="installBtn" title="安装应用到桌面/手机">📲</button>
             </div>
         </div>
