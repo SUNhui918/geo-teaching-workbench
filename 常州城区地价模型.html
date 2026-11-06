@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<!-- 横山桥高级中学 孙慧制作 -->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>常州城区地价空间模型</title>
+<style>
+:root{--ink:#1f2a37;--muted:#64748b;--line:#e2e8f0;--bg:#f3f5f9;--brand:#2b2f7a;--acc:#c2185b;--l1:#d6453d;--l2:#25a0a8}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--brand);color:#fff;padding:12px 22px;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+header h1{margin:0;font-size:22px;letter-spacing:1px}
+header span{font-size:13px;opacity:.85}
+.tabs{display:flex;gap:6px;padding:10px 22px 0}
+.tabs button{border:0;background:#e3e6ef;padding:9px 16px;border-radius:10px 10px 0 0;font-size:15px;cursor:pointer;font-family:inherit;color:var(--ink)}
+.tabs button.on{background:#fff;color:var(--brand);font-weight:bold}
+.page{display:none;padding:0 22px 22px}
+.page.on{display:block}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 430px;gap:14px}
+@media(max-width:1100px){.grid{grid-template-columns:1fr}}
+.card{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:14px}
+.mapbox{position:relative;width:100%;max-width:calc(80vh * 41 / 45);margin:0 auto;aspect-ratio:41/45}
+.mapbox canvas,.mapbox svg{position:absolute;inset:0;width:100%;height:100%}
+.mapbox svg{cursor:crosshair}
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:14px;color:var(--muted);align-items:center}
+.toolbar label{cursor:pointer}
+.big{font-size:44px;font-weight:bold;color:var(--brand);line-height:1.1}
+.big small{font-size:15px;color:var(--muted);font-weight:normal}
+.k3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.k3 div{background:#f5f7fb;border-radius:8px;padding:8px}
+.k3 b{display:block;font-size:20px}
+.k3 i{font-style:normal;font-size:12px;color:var(--muted)}
+.tag{display:inline-block;background:#eef0ff;color:var(--brand);border-radius:6px;padding:3px 8px;font-size:14px;margin-top:10px;font-weight:bold}
+.expl{font-size:14px;line-height:1.7;color:#334155;border-left:3px solid var(--brand);padding-left:10px;margin-top:8px}
+.sw{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:14px}
+.sw input{width:18px;height:18px}
+h3{font-size:15px;margin:2px 0 6px;color:var(--brand)}
+.legend{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:6px}
+.ramp{height:10px;flex:1;border-radius:5px;background:linear-gradient(90deg,#2c7bb6,#abd9e9,#ffffbf,#fdae61,#d7191c)}
+.note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px}
+.q{border-top:1px solid var(--line);padding:10px 0}
+.q b{color:var(--acc)}
+.q p{margin:6px 0;font-size:15px;line-height:1.65}
+.ans{display:none;background:#f4f5ff;border-left:4px solid var(--brand);padding:8px 10px;border-radius:6px;font-size:14px;line-height:1.75}
+.ans.show{display:block}
+.btn{font-family:inherit;font-size:13px;padding:4px 10px;border-radius:7px;border:1px solid var(--line);background:#fff;cursor:pointer}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:5px 4px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+svg text{font-family:inherit}
+.pt{cursor:pointer}
+</style>
+</head>
+<body>
+<header><h1>常州城区地价空间模型</h1><span>高中地理必修二 · 城市内部空间结构：距市中心距离 × 交通通达度如何影响地价</span></header>
+<div class="tabs" id="tabs">
+  <button data-p="p1" class="on">① 地价模型</button>
+  <button data-p="p2">② 真实数据</button>
+  <button data-p="p3">③ 问题链</button>
+</div>
+
+<div class="page on" id="p1">
+<div class="grid">
+  <div class="card">
+    <div class="mapbox" id="mapbox"><canvas id="heat"></canvas><svg id="map" viewBox="-22 -20 41 45"></svg></div>
+    <div class="toolbar">
+      <label><input type="checkbox" id="chkHeat" checked> 地价热力面</label>
+      <label><input type="checkbox" id="chkZ" checked> 住宅标定点</label>
+      <label><input type="checkbox" id="chkS"> 商服标定点</label>
+      <label><input type="checkbox" id="chkG"> 工业标定点</label>
+      <label><input type="checkbox" id="chkLab" checked> 地名</label>
+      <label style="color:#2b2f7a;font-weight:bold"><input type="checkbox" id="chkIso" checked> 地租等值线</label>
+      <span>点地图任意位置查询</span>
+    </div>
+    <div class="legend"><span style="color:#2b2f7a">等值线间隔 4000 元/㎡（1万、1.4万、1.8万、2.2万、2.6万）</span>&nbsp;&nbsp;<span>6000</span><div class="ramp"></div><span>30000+ 元/㎡（住宅地面地价）</span></div>
+  </div>
+  <div>
+    <div class="card">
+      <h3 id="placeName">住宅用地地面地价（模型估算）</h3>
+      <div class="big"><span id="price">—</span> <small>元/㎡</small></div>
+      <div id="delta" style="font-size:13px;color:var(--acc);margin-top:2px"></div>
+      <div class="k3">
+        <div><i>距文化宫</i><b id="d0">—</b><i>老城中心</i></div>
+        <div><i>距最近中心</i><b id="dc">—</b><i id="dcn">—</i></div>
+        <div><i>距最近地铁站</i><b id="dm">—</b><i id="dmn">—</i></div>
+      </div>
+      <div class="tag" id="func">主导功能导向：—</div>
+      <div class="expl" id="expl">点击地图上的任意位置，看看那里的地价。</div>
+      <div class="expl" id="real" style="border-color:var(--acc)"></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <h3>交通通达度情景</h3>
+      <div class="sw"><input type="checkbox" id="swMetro" checked><label for="swMetro">地铁 1、2 号线运营中（关掉看看没有地铁会怎样）</label></div>
+      <div class="sw"><input type="checkbox" id="swExt"><label for="swExt"><b>假设</b>：2 号线向东北延伸到横山桥（规划中并无此线，仅作思维实验）</label></div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <h3>地价衰减剖面（沿“文化宫 → 当前位置”方向）</h3>
+      <div id="profile"></div>
+    </div>
+  </div>
+</div>
+<div class="card note" style="margin-top:12px">
+模型：ln(地面地价) = a − b₁·距文化宫 − b₂·距最近中心 − b₃·距最近地铁站（≤4 km），用 2023 年度 47 个住宅标定宗地的地面地价（元/㎡ 土地面积）拟合，R² ≈ 0.74。三个中心为文化宫（老城）、新北（市民广场）、武进（延政大道）。地图为示意图，站点和宗地位置按街道、道路名称大致摆放，不是精确坐标。数据来源：常州市《2023 年度常州市市区（不含金坛区）建设用地基准地价、标定地价成果》（估价基准日 2024-01-01）；常州地铁 1、2 号线线路图。注：地面地价指每平方米土地的价格；楼面地价 = 地面地价 ÷ 容积率，是摊到每平方米建筑面积上的地价。
+</div>
+</div>
+
+<div class="page" id="p2">
+<div class="grid">
+  <div class="card">
+    <h3>住宅标定地面地价 vs 到文化宫的距离（47 个真实样点）</h3>
+    <div id="scatter"></div>
+    <div class="note">点的颜色表示所在区。注意距离 8–11 km 处又出现一个“小高峰”。</div>
+  </div>
+  <div class="card">
+    <h3>基准地价：按级别看三类用地（元/㎡ 土地面积）</h3>
+    <div id="bid"></div>
+    <div class="note">一级地多在城市中心，级别越高（数字越大）越靠外围。工业用地第一档为“规划限制区”。</div>
+  </div>
+</div>
+<div class="card" style="margin-top:12px">
+  <h3>2023 年度常州市市区国有建设用地基准地价（节选）</h3>
+  <div id="tbl"></div>
+</div>
+</div>
+
+<div class="page" id="p3">
+<div class="card" style="max-width:980px" id="qs"></div>
+</div>
+
+<script>
+const D={"L1": [["森林公园", -3.0, 17.5], ["新龙", -3.0, 16.2], ["旅游学校", -3.0, 14.9], ["新桥", -3.0, 13.6], ["常州北站", -2.0, 12.3], ["北郊中学", -0.9, 12.3], ["外国语学校", 0.2, 12.3], ["环球港", 0.4, 11.0], ["新区公园", 0.4, 9.7], ["河海", 0.4, 8.4], ["奥体中心", 0.4, 7.1], ["市民广场", 0.4, 5.8], ["翠竹", 0.4, 4.5], ["常州火车站", 0.4, 3.2], ["博爱路", 0.3, 1.6], ["文化宫", 0, 0], ["同济桥", 0, -1.4], ["清凉寺", 0, -2.8], ["茶山", 0, -4.1], ["聚湖路", 0, -5.4], ["湖塘", 0, -6.8], ["新天地公园", 0, -8.1], ["长虹路", 0, -9.4], ["延政大道", 0, -10.7], ["科教城北", 0, -12.0], ["科教城南", 0, -13.3], ["武进沿江城际", 0, -14.8], ["阳湖路", 0, -16.2], ["南夏墅", 0, -17.6]], "L2": [["青枫公园", -8.6, 0.6], ["海棠路", -7.2, 0.6], ["五星", -5.8, 0.6], ["勤业", -4.4, 0.6], ["怀德", -3.0, 0.6], ["南大街", -1.4, 0.4], ["文化宫", 0, 0], ["红梅公园", 1.4, -0.2], ["五角场", 2.8, -0.3], ["三角场", 4.2, -0.4], ["紫云", 5.5, -0.5], ["青洋路", 6.8, -0.6], ["丁堰", 8.1, -0.7], ["潞城", 9.4, -0.8], ["五一路", 10.7, -0.9]], "Z": [["Z0100101", "天宁区", "红梅街道，庙湾村西路西侧、竹林北路北侧", 2.2, 22114, 10052, 2.0, 1.6], ["Z0100201", "经开区", "丁堰街道，丁塘河西路西侧、义乌路北侧", 2.0, 14361, 7180, 8.0, -1.6], ["Z0100301", "天宁区", "天宁街道，武青北路东侧、和平北路南侧", 3.7, 40492, 10944, 1.0, 0.8], ["Z0100401", "天宁区", "茶山街道，龙游路东侧、三宝浜南侧", 2.5, 26172, 10469, 2.6, -2.6], ["Z0100501", "天宁区", "雕庄街道，菱溪路东侧、光华路北侧", 2.2, 22463, 10210, 4.6, 0.4], ["Z0100601", "天宁区", "青龙街道，青龙西路北侧、横塘河西路西侧", 1.8, 20407, 11337, 3.4, 3.4], ["Z0100701", "天宁区", "郑陆镇，舜杰路南侧、园西河东侧", 2.2, 12342, 5610, 10.5, 7.5], ["Z0100801", "天宁区", "青龙街道，青洋路西侧、东方西路北侧", 2.0, 18630, 9315, 5.2, 2.4], ["Z0100901", "钟楼区", "西林街道，松涛路以南、月季路以西", 2.2, 20286, 9221, -4.6, -1.8], ["Z0101001", "钟楼区", "五星街道，龙江路西侧、洪庄路南侧", 2.2, 23084, 10493, -4.2, 1.2], ["Z0101101", "钟楼区", "五星街道，长江中路西侧、劳动西路北侧", 2.2, 22232, 10105, -3.2, -0.4], ["Z0101201", "钟楼区", "新闸街道，玉龙南路东侧、新龙路南侧", 2.2, 16560, 7527, -5.8, 2.4], ["Z0101301", "钟楼区", "五星街道，常林路西侧、港务路南侧", 2.2, 19320, 8782, -3.6, 1.9], ["Z0101401", "钟楼区", "南大街街道，勤业南路西侧、怀德中路南侧", 2.5, 28472, 11389, -2.0, -0.6], ["Z0101501", "钟楼区", "邹区镇，邹新路东侧、邹新花园北区北侧", 1.7, 11199, 6588, -14.0, -3.0], ["Z0101601", "新北区", "河海街道，泰山路东侧、湘江路南侧", 3.0, 32497, 10832, -0.8, 6.6], ["Z0101701", "新北区", "三井街道，龙汇路东侧、太湖东路南侧", 1.5, 16524, 11016, 1.4, 7.6], ["Z0101801", "新北区", "三井街道，飞龙中路南侧、天山路西侧", 1.8, 17150, 9528, -1.6, 8.0], ["Z0101901", "新北区", "薛家镇，玉龙路东侧、平阳路北侧", 1.74, 12770, 7339, -5.8, 8.0], ["Z0102001", "新北区", "龙虎塘街道，长江北路东侧、辽河路南侧", 2.2, 18295, 8316, -1.8, 10.6], ["Z0102101", "新北区", "奔牛镇，兴奔路东侧、南观路南侧", 2.5, 10872, 4349, -15.5, 1.0], ["Z0102201", "新北区", "罗溪镇，通达路以东、黄河西路南侧", 2.0, 6353, 3176, -9.5, 12.5], ["Z0102301", "新北区", "西夏墅镇，钟山路东侧、丽江路南侧", 2.3, 7770, 3378, -12.5, 10.5], ["Z0102401", "新北区", "孟河镇，滕龙路东侧、孟河大道南侧", 2.2, 9852, 4478, -17.0, 18.0], ["Z0102501", "新北区", "春江街道，东海路南侧、长江北路西侧", 1.8, 8082, 4490, -2.4, 15.8], ["Z0102601", "经开区", "潞城街道，东方东路北侧、常青路西侧", 2.2, 13946, 6339, 10.0, 0.6], ["Z0102701", "武进区", "湖塘镇，广电东路南侧、青洋南路西侧", 2.2, 10838, 4926, 4.0, -7.6], ["Z0102801", "武进区", "武进高新区北区，星火北路东侧、古方路北侧", 2.0, 23677, 11838, 1.8, -11.0], ["Z0102901", "武进区", "湖塘镇，延政中大道南侧、凤林北路东侧", 1.44, 17512, 12161, 0.8, -10.4], ["Z0103001", "武进区", "湖塘镇，武宜中路西侧、春秋路北侧", 2.2, 21763, 9892, -0.5, -8.0], ["Z0103101", "武进区", "湖塘镇，花园街东侧、人民中路北侧", 2.4, 18975, 7906, -0.8, -6.6], ["Z0103201", "武进区", "牛塘镇，大通西路南侧、东龙北路西侧", 1.5, 10522, 7015, -4.0, -6.0], ["Z0103301", "武进区", "牛塘镇，童子河南路南侧、东龙路西侧", 2.2, 18424, 8375, -3.6, -7.6], ["Z0103401", "武进区", "西湖街道，西太湖大道东侧、环湖北路北侧", 2.0, 16260, 8130, -7.0, -11.5], ["Z0103501", "武进区", "嘉泽镇，庙桥河东侧、茶泽街北侧", 1.8, 8060, 4478, -15.0, -14.5], ["Z0103601", "武进区", "湟里镇，经纬一路北侧、粮管所路西侧", 2.0, 8394, 4197, -20.0, -12.0], ["Z0103701", "武进区", "武进高新区南区，南塘路北侧、桐庄河东侧", 2.0, 10717, 5358, 2.0, -15.5], ["Z0103801", "武进区", "礼嘉镇，礼百路东侧、百兴路南侧", 1.8, 8501, 4723, 7.0, -15.0], ["Z0103901", "武进区", "洛阳镇，珠光路东侧、公园路南侧", 1.8, 8711, 4839, 12.0, -12.0], ["Z0104001", "经开区", "横林镇，顺通路西侧、莳岸河南侧", 2.2, 10393, 4724, 17.0, -4.0], ["Z0104101", "经开区", "横山桥镇，兴庄路西侧、山水路北侧", 2.5, 10828, 4331, 13.5, 5.0], ["Z0104201", "经开区", "遥观镇，华通路南侧、常和路西侧", 2.2, 9813, 4460, 11.0, -5.0], ["Z0104301", "武进区", "雪堰镇，太北路东侧、汇通北侧", 1.73, 7732, 4469, 16.0, -23.0], ["Z0104401", "武进区", "前黄镇，府东路西侧、凤林路北侧", 2.0, 9044, 4522, 2.0, -21.0], ["Z0104501", "武进区", "湖塘镇，春秋路南侧、凤林路北侧", 2.7, 26130, 9678, 1.0, -8.8], ["Z0104601", "新北区", "龙虎塘街道，常澄路东侧、京沪高速北侧", 2.1, 14553, 6930, 3.4, 10.0], ["Z0104701", "新北区", "魏村街道，春江路东侧、金牛路南侧", 1.5, 6566, 4377, -4.8, 18.0]], "G": [["G0100101", "天宁区", "青龙街道，青洋北路东侧、北塘河路北侧", 1.0, 738, 5.6, 3.2], ["G0100201", "天宁区", "雕庄街道，劳动东路南侧、通济河西侧", 1.0, 709, 4.8, -0.9], ["G0100301", "钟楼区", "新闸街道，新龙路南侧、棟树坝路西侧", 1.0, 679, -6.2, 2.2], ["G0100401", "钟楼区", "北港街道，星港大道南侧、梅花路东侧", 1.7, 681, -7.6, 1.6], ["G0100501", "新北区", "罗溪镇，旺贤路北侧、民营三路西侧", 1.16, 638, -9.8, 13.2], ["G0100601", "新北区", "薛家镇，云河路南侧、狮山路东侧", 0.79, 670, -6.4, 8.8], ["G0100701", "新北区", "薛家镇，吕汤路东侧、汉江西路北侧", 1.0, 678, -5.2, 9.4], ["G0100801", "新北区", "薛家镇，汉江路南侧、龙江路东侧", 1.0, 679, -4.4, 8.8], ["G0100901", "新北区", "龙虎塘街道，创新大道东侧、浏阳河路南侧", 1.0, 679, 2.6, 11.4], ["G0101001", "新北区", "春江街道，港区大道南侧、港区东路东侧", 1.0, 670, -1.0, 17.0], ["G0101101", "新北区", "魏村街道，东港三路东侧、黄海路北侧", 1.0, 653, -4.0, 17.0], ["G0101201", "武进区", "武进高新区南区，西塘河南侧、新和路西侧", 1.0, 649, 3.0, -16.5], ["G0101301", "武进区", "西湖街道，禾香路南侧、中沟河西侧", 0.63, 654, -6.2, -12.6], ["G0101501", "武进区", "湖塘镇，轻纺路南侧、杨江路东侧", 0.7, 647, -2.4, -9.8], ["G0101402", "经开区", "潞城街道，武进区东五一路330号", 1.0, 673, 11.0, -1.6]], "S": [["S0100101", "天宁区", "天宁街道，晋陵中路东侧、古村巷南侧", 1.5, 15090, 10060, 0.3, 0.4], ["S0100401", "天宁区", "郑陆镇，迎宾中路东侧、申达花苑南侧", 1.6, 3566, 2229, 10.8, 7.0], ["S0100501", "天宁区", "茶山街道，东城明居3幢", 2.2, 7693, 3497, 2.2, -2.0], ["S0100601", "天宁区", "茶山街道，中吴雅苑11幢", 2.5, 9792, 3917, 1.8, -3.2], ["S0100701", "天宁区", "兰陵街道，新世界花苑15幢", 2.5, 11551, 4620, 1.4, -1.4], ["S0100801", "新北区", "河海街道，通江大道385号", 1.98, 8892, 4491, 0.6, 7.0], ["S0101101", "钟楼区", "邹区镇，华佳时代金街1幢、2幢", 1.11, 2816, 2537, -14.4, -3.4], ["S0101201", "钟楼区", "永红街道，怀德中路135号", 2.84, 11262, 3965, -2.6, -1.0], ["S0101301", "钟楼区", "新闸街道，新昌路410号", 2.95, 8519, 2888, -5.4, 2.8], ["S0101601", "新北区", "薛家镇，奥园路76号", 1.8, 4847, 2693, -5.2, 7.4], ["S0101701", "新北区", "河海街道，富都小区南区商业房", 1.8, 6199, 3444, -0.4, 5.4], ["S0101801", "新北区", "薛家镇，白马公寓17幢", 1.17, 3445, 2944, -6.0, 6.6], ["S0101901", "新北区", "孟河镇，孟河人民医院东侧、藤村路南侧", 1.5, 3500, 2333, -17.4, 17.6], ["S0102001", "新北区", "西夏墅镇，西夏墅西大街282号", 1.18, 2026, 1717, -12.8, 10.8], ["S0102101", "新北区", "罗溪镇，通航广场4幢", 1.5, 2756, 1837, -9.2, 12.8], ["S0102201", "新北区", "春江街道，百馨西苑77幢", 1.8, 3316, 1842, -2.0, 16.4], ["S0102301", "经开区", "潞城街道，东方东路南侧、东城路东侧", 2.4, 4426, 1844, 10.4, 0.0], ["S0102401", "武进区", "湟里镇，武进医院湟里分院东侧、桃园路南侧", 1.5, 2825, 1883, -20.4, -11.6], ["S0102501", "武进区", "湖塘镇，金鸡西路北侧、金太阳幼儿园西侧", 1.3, 4297, 3305, -1.2, -7.2], ["S0102601", "武进区", "雪堰镇，潘南路东侧、兴政路北侧", 1.65, 2221, 1346, 16.4, -23.4], ["S0102801", "武进区", "湖塘镇，花园街西侧、滆湖中路北侧", 1.5, 4906, 3271, -1.4, -7.8], ["S0103001", "武进区", "湖塘镇，武宜北路12-86号", 2.0, 6348, 3174, 0.2, -6.2]]};
+const F={"coef": [10.315752962830006, -0.041909238077062864, -0.012963653116958027, -0.0682019725384602], "r2": 0.7372561920596492, "centers": {"文化宫": [0, 0], "新北（市民广场）": [0.4, 6.6], "武进（延政大道）": [0.4, -9.6]}};
+const C=F.coef;
+const CEN=Object.entries(F.centers);
+const EXT=[["横林大道（假设）",11.6,1.2],["芳茂山（假设）",12.6,3.2],["横山桥（假设）",13.5,5.0]];
+const DISTCOL={"天宁区":"#d6453d","钟楼区":"#7b4fbf","新北区":"#1f78b4","武进区":"#33a02c","经开区":"#ff7f00"};
+let metro=true,ext=false,sel=[13.5,5.0];
+const $=id=>document.getElementById(id);
+function stations(){let s=[];if(metro){s=D.L1.concat(D.L2);if(ext)s=s.concat(EXT)}return s}
+function feat(x,y,st){
+  const d0=Math.hypot(x,y);
+  let dc=1e9,dcn="";for(const [n,[cx,cy]] of CEN){const d=Math.hypot(x-cx,y-cy);if(d<dc){dc=d;dcn=n}}
+  let dm=1e9,dmn="—";for(const [n,sx,sy] of st){const d=Math.hypot(x-sx,y-sy);if(d<dm){dm=d;dmn=n}}
+  return {d0,dc,dcn,dm,dmn};
+}
+function model(x,y,st){const f=feat(x,y,st);return Math.exp(C[0]+C[1]*Math.min(f.d0,25)+C[2]*Math.min(f.dc,25)+C[3]*Math.min(f.dm,4))}
+function color(p){
+  const t=Math.max(0,Math.min(1,(p-6000)/24000));
+  const stops=[[44,123,182],[171,217,233],[255,255,191],[253,174,97],[215,25,28]];
+  const k=t*4,i=Math.min(3,Math.floor(k)),u=k-i,a=stops[i],b=stops[i+1];
+  return `rgb(${a.map((v,j)=>Math.round(v+(b[j]-v)*u)).join(",")})`;
+}
+function drawHeat(){
+  const cv=$("heat"),r=cv.getBoundingClientRect();cv.width=r.width;cv.height=r.height;
+  const g=cv.getContext("2d");g.fillStyle="#eef1f4";g.fillRect(0,0,cv.width,cv.height);
+  if(!$("chkHeat").checked)return;
+  const st=stations(),step=0.4,sx=cv.width/41,sy=cv.height/45;
+  for(let x=-22;x<19;x+=step)for(let y=20;y>-25;y-=step){
+    g.fillStyle=color(model(x+step/2,y-step/2,st));g.fillRect((x+22)*sx,(20-y)*sy,step*sx+1,step*sy+1);
+  }
+}
+const W=(x,y)=>[x,-y];
+function drawMap(){
+  const st=stations();let s="";
+  // water
+  s+=`<path d="M-22,-20 L19,-20 L19,-17.2 C10,-18.6 4,-16.4 -2,-17.6 C-8,-18.8 -14,-16.8 -22,-17.8 Z" fill="#7fb2dd" opacity=".9"/>`;
+  s+=`<text x="-14" y="-18.6" font-size="1.1" fill="#fff" font-style="italic">长  江</text>`;
+  s+=`<ellipse cx="-10.5" cy="16.5" rx="2.6" ry="5.2" fill="#7fb2dd"/><text x="-11.6" y="17" font-size=".9" fill="#fff">滆湖</text>`;
+  s+=`<circle cx="24" cy="30.5" r="10" fill="#7fb2dd"/><text x="16.2" y="24.2" font-size="1.1" fill="#fff">太湖</text>`;
+  // district labels
+  if($("chkLab").checked){
+    for(const [t,x,y] of [["钟楼区",-6,-2.6],["天宁区",5.5,-4.2],["新北区",-7,11],["武进区",-8,-8],["经开区",13,1.8]])
+      s+=`<text x="${x}" y="${-y}" font-size="1.3" fill="#334" opacity=".45" font-weight="bold">${t}</text>`;
+    for(const [t,x,y] of [["郑陆",10.5,8.4],["奔牛",-15.5,2],["邹区",-14,-2],["孟河",-17,19],["湟里",-20,-11],["嘉泽",-15,-13.4],["礼嘉",7,-14],["洛阳",12,-11],["前黄",2,-20],["雪堰",16,-22],["横林",17,-3],["遥观",11,-4],["西太湖",-7,-10.5],["春江",-2.4,16.8],["罗溪",-9.5,13.5],["西夏墅",-12.5,11.5],["魏村",-4.8,19]])
+      s+=`<text x="${x}" y="${-y}" font-size=".85" fill="#333" text-anchor="middle" stroke="#fff" stroke-width=".25" paint-order="stroke">${t}</text>`;
+  }
+  // centers
+  for(const [n,[x,y]] of CEN) s+=`<circle cx="${x}" cy="${-y}" r="1.1" fill="none" stroke="#2b2f7a" stroke-width=".25" stroke-dasharray=".4 .3"/>`;
+  // lines
+  const line=(L,c,dash)=>`<polyline points="${L.map(([n,x,y])=>x+","+(-y)).join(" ")}" fill="none" stroke="${c}" stroke-width=".6" ${dash?'stroke-dasharray=".6 .4"':''} opacity="${metro?1:.25}"/>`;
+  s+=line(D.L1,"#d6453d")+line(D.L2,"#25a0a8");
+  if(ext&&metro)s+=line([D.L2[D.L2.length-1]].concat(EXT),"#25a0a8",true);
+  for(const [n,x,y] of D.L1.concat(D.L2).concat(ext&&metro?EXT:[]))
+    s+=`<circle cx="${x}" cy="${-y}" r=".32" fill="#fff" stroke="#333" stroke-width=".12" opacity="${metro?1:.3}"/>`;
+  if($("chkLab").checked){
+    for(const n of ["森林公园","常州北站","环球港","市民广场","常州火车站","湖塘","延政大道","科教城南","南夏墅"]){const p=D.L1.find(a=>a[0]==n);s+=`<text x="${p[1]+0.7}" y="${-p[2]+0.3}" font-size=".8" fill="#a33" stroke="#fff" stroke-width=".2" paint-order="stroke">${n}</text>`}
+    for(const n of ["青枫公园","南大街","丁堰","五一路"]){const p=D.L2.find(a=>a[0]==n);s+=`<text x="${p[1]}" y="${-p[2]-0.7}" font-size=".8" fill="#167" text-anchor="middle" stroke="#fff" stroke-width=".2" paint-order="stroke">${n}</text>`}
+    s+=`<text x="0.8" y="1.4" font-size="1" font-weight="bold" fill="#2b2f7a" stroke="#fff" stroke-width=".25" paint-order="stroke">文化宫</text>`;
+    s+=`<text x="1.4" y="-1.6" font-size="1" font-weight="bold" fill="#2b2f7a" stroke="#fff" stroke-width=".25" paint-order="stroke" transform="translate(-1 -5)">新北中心</text>`;
+    s+=`<text x="1.6" y="9.8" font-size="1" font-weight="bold" fill="#2b2f7a" stroke="#fff" stroke-width=".25" paint-order="stroke">武进中心</text>`;
+  }
+  if($("chkIso").checked)s+=isolines(st);
+  // line badges
+  const badge=(x,y,txt,c)=>`<g transform="translate(${x} ${-y})"><rect x="-1.9" y="-.65" width="3.8" height="1.3" rx=".35" fill="${c}"/><text y=".38" font-size=".95" text-anchor="middle" fill="#fff" font-weight="bold">${txt}</text></g>`;
+  if(metro){s+=badge(-0.6,18.4,"1号线","#d6453d")+badge(-2.3,-18.6,"1号线","#d6453d")+badge(-9.6,2.2,"2号线","#25a0a8")+badge(12.6,-1.8,"2号线","#25a0a8");
+    s+=`<g transform="translate(-21.6 -16.2)"><rect width="11.2" height="3.4" rx=".4" fill="#fff" opacity=".88"/><line x1=".6" y1="1.1" x2="2.6" y2="1.1" stroke="#d6453d" stroke-width=".5"/><text x="3" y="1.45" font-size=".85">1号线 森林公园—南夏墅</text><line x1=".6" y1="2.5" x2="2.6" y2="2.5" stroke="#25a0a8" stroke-width=".5"/><text x="3" y="2.85" font-size=".85">2号线 青枫公园—五一路</text></g>`;}
+  // sample points
+  const pts=(arr,on,shape,col,iv)=>{if(!on)return"";return arr.map(z=>{const x=z[z.length-2],y=z[z.length-1];
+    const v=z[iv];const tip=`${z[0]} ${z[1]} ${z[2]}  地面价 ${v} 元/㎡`;
+    return shape=="c"?`<circle class="pt" cx="${x}" cy="${-y}" r=".45" fill="${col}" stroke="#fff" stroke-width=".15"><title>${tip}</title></circle>`
+      :shape=="s"?`<rect class="pt" x="${x-.4}" y="${-y-.4}" width=".8" height=".8" fill="${col}" stroke="#fff" stroke-width=".15"><title>${tip}</title></rect>`
+      :`<path class="pt" d="M${x},${-y-.55} L${x+.5},${-y+.4} L${x-.5},${-y+.4}Z" fill="${col}" stroke="#fff" stroke-width=".15"><title>${tip}</title></path>`}).join("")};
+  s+=pts(D.Z,$("chkZ").checked,"c","#222",4)+pts(D.S,$("chkS").checked,"s","#7b1fa2",4)+pts(D.G,$("chkG").checked,"t","#5d4037",4);
+  // school + selection
+  s+=`<g transform="translate(13.5 -5)"><text x="0" y="-1.4" font-size=".9" text-anchor="middle" fill="#c2185b" font-weight="bold" stroke="#fff" stroke-width=".25" paint-order="stroke">★我们学校</text></g>`;
+  s+=`<g transform="translate(${sel[0]} ${-sel[1]})"><circle r=".9" fill="none" stroke="#c2185b" stroke-width=".3"/><circle r=".18" fill="#c2185b"/></g>`;
+  s+=`<line x1="0" y1="0" x2="${sel[0]}" y2="${-sel[1]}" stroke="#c2185b" stroke-width=".12" stroke-dasharray=".5 .3"/>`;
+  s+=`<g transform="translate(16.5 -17.5)"><path d="M0,-1.6 L.6,0 L0,-.4 L-.6,0Z" fill="#333"/><text y="1" font-size=".9" text-anchor="middle">N</text></g>`;
+  s+=`<g transform="translate(-21 23.6)"><line x1="0" y1="0" x2="5" y2="0" stroke="#333" stroke-width=".2"/><text x="2.5" y="-.4" font-size=".8" text-anchor="middle">约 5 km（示意）</text></g>`;
+  $("map").innerHTML=s;
+}
+function isolines(st){
+  const x0=-22,x1=19,y0=-25,y1=20,h=0.5,nx=Math.round((x1-x0)/h),ny=Math.round((y1-y0)/h),G=[];
+  for(let j=0;j<=ny;j++){const r=[];for(let i=0;i<=nx;i++)r.push(model(x0+i*h,y0+j*h,st));G.push(r)}
+  const levels=[10000,14000,18000,22000,26000];let out="";
+  for(const lv of levels){let d="",best=null,bs=1e9;
+    for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){
+      const v=[G[j][i],G[j][i+1],G[j+1][i+1],G[j+1][i]],P=[[i,j],[i+1,j],[i+1,j+1],[i,j+1]],pts=[];
+      for(let k=0;k<4;k++){const a=v[k],b=v[(k+1)%4];if((a<lv)!=(b<lv)){const u=(lv-a)/(b-a),A=P[k],B=P[(k+1)%4];
+        pts.push([x0+(A[0]+(B[0]-A[0])*u)*h,y0+(A[1]+(B[1]-A[1])*u)*h])}}
+      for(let k=0;k+1<pts.length;k+=2){const [p,q]=[pts[k],pts[k+1]];d+=`M${p[0].toFixed(2)},${(-p[1]).toFixed(2)}L${q[0].toFixed(2)},${(-q[1]).toFixed(2)}`;
+        const mx=(p[0]+q[0])/2,my=(p[1]+q[1])/2,ang=Math.atan2(my,mx),sc=Math.abs(ang-(-0.42));if(sc<bs&&Math.hypot(mx,my)>0.8){bs=sc;best=[mx,my]}}
+    }
+    out+=`<path d="${d}" fill="none" stroke="#2b2f7a" stroke-width=".16" opacity=".85"/>`;
+    if(best)out+=`<text x="${best[0]}" y="${-best[1]+.3}" font-size=".8" text-anchor="middle" fill="#2b2f7a" font-weight="bold" stroke="#fff" stroke-width=".3" paint-order="stroke">${lv/10000}万</text>`;
+  }
+  return out;
+}
+function funcOf(p,f){
+  if(f.d0<1.6)return["商业、办公与高档住宅混合","老城核心，通达度最高、地价最高，付租能力强的商业、金融、高档住宅在此竞争。"];
+  if(p>=21000)return["中高档住宅区","离中心或地铁较近，通达度好，住宅地价高，适合中高档住宅开发。"];
+  if(p>=14000)return["普通住宅区","处在中心与外围之间，住宅需求稳定，地价中等。"];
+  if(p>=10000)return["外围住宅与产业混合","离中心较远、地铁覆盖不足，以普通住宅、镇区和产业园为主。"];
+  return["工业与乡镇用地为主","通达度较低，地价低，工业用地付租能力能够在此获得空间。"];
+}
+function update(){
+  const [x,y]=sel,st=stations(),f=feat(x,y,st);
+  const p=model(x,y,st),p0=model(x,y,[]);
+  $("price").textContent=Math.round(p/100)*100;
+  $("delta").textContent=metro&&f.dm<4?`地铁加成 约 +${Math.round((p-p0)/100)*100} 元/㎡（与“没有地铁”相比）`:(metro?"距地铁站超过 4 km，基本没有地铁加成":"地铁已关闭：只剩距离中心的作用");
+  $("d0").textContent=f.d0.toFixed(1)+" km";$("dc").textContent=f.dc.toFixed(1)+" km";$("dcn").textContent=f.dcn;
+  $("dm").textContent=metro?f.dm.toFixed(1)+" km":"—";$("dmn").textContent=metro?f.dmn+"站":"地铁关闭";
+  const [fn,fe]=funcOf(p,f);$("func").textContent="主导功能导向："+fn;
+  $("expl").textContent=`该点距文化宫 ${f.d0.toFixed(1)} km，最近的城市中心是${f.dcn}（${f.dc.toFixed(1)} km）`+(metro?`，最近地铁站${f.dmn}（${f.dm.toFixed(1)} km）。`:"。")+fe;
+  let best=null,bd=1e9;for(const z of D.Z){const d=Math.hypot(z[6]-x,z[7]-y);if(d<bd){bd=d;best=z}}
+  $("real").innerHTML=bd<2.5?`<b>附近真实样点</b>（${bd.toFixed(1)} km）：${best[2]}，标定地面价 <b>${best[4]}</b>（容积率 ${best[3]}） 元/㎡，模型估算 ${Math.round(model(best[6],best[7],stations())/100)*100}。`:"附近 2.5 km 内没有住宅标定样点。";
+  drawProfile();
+}
+function drawProfile(){
+  const [x,y]=sel,L=Math.hypot(x,y)||1,n=80,st=stations(),a=[],b=[];
+  for(let i=0;i<=n;i++){const t=i/n;a.push(model(x*t,y*t,st));b.push(model(x*t,y*t,[]))}
+  const Wd=400,H=170,pl=44,pr=10,pt=10,pb=28,max=34000,min=4000;
+  const X=i=>pl+i/n*(Wd-pl-pr),Y=v=>pt+(1-(v-min)/(max-min))*(H-pt-pb);
+  let s=`<svg viewBox="0 0 ${Wd} ${H}" style="width:100%">`;
+  for(let v=5000;v<=30000;v+=5000)s+=`<line x1="${pl}" x2="${Wd-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="#eef"/><text x="${pl-4}" y="${Y(v)+4}" font-size="10" text-anchor="end" fill="#64748b">${v/1000}k</text>`;
+  s+=`<polyline points="${b.map((v,i)=>X(i)+","+Y(v)).join(" ")}" fill="none" stroke="#999" stroke-dasharray="4 3" stroke-width="1.5"/>`;
+  if(metro)s+=`<polyline points="${a.map((v,i)=>X(i)+","+Y(v)).join(" ")}" fill="none" stroke="#2b2f7a" stroke-width="2.2"/>`;
+  s+=`<circle cx="${X(n)}" cy="${Y(metro?a[n]:b[n])}" r="4" fill="#c2185b"/>`;
+  s+=`<text x="${pl}" y="${H-8}" font-size="11" fill="#333">文化宫</text><text x="${Wd-pr}" y="${H-8}" font-size="11" text-anchor="end" fill="#c2185b">当前位置 ${L.toFixed(1)} km</text>`;
+  s+=`<text x="${Wd-pr}" y="${pt+10}" font-size="10" text-anchor="end" fill="#2b2f7a">— 有地铁</text><text x="${Wd-pr}" y="${pt+23}" font-size="10" text-anchor="end" fill="#888">- - 无地铁</text></svg>`;
+  $("profile").innerHTML=s;
+}
+$("map").addEventListener("click",e=>{
+  const pt=$("map").createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
+  const q=pt.matrixTransform($("map").getScreenCTM().inverse());sel=[q.x,-q.y];drawMap();update();
+});
+for(const id of ["chkHeat"])$(id).onchange=()=>drawHeat();
+for(const id of ["chkZ","chkS","chkG","chkLab","chkIso"])$(id).onchange=()=>drawMap();
+$("swMetro").onchange=e=>{metro=e.target.checked;drawHeat();drawMap();update()};
+$("swExt").onchange=e=>{ext=e.target.checked;drawHeat();drawMap();update()};
+window.addEventListener("resize",drawHeat);
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x==b));
+  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("on",p.id==b.dataset.p));
+  if(b.dataset.p=="p1")drawHeat();
+});
+// page 2
+(function(){
+  const Wd=620,H=330,pl=50,pr=14,pt=14,pb=40,X=d=>pl+d/25*(Wd-pl-pr),Y=v=>pt+(1-v/42000)*(H-pt-pb);
+  let s=`<svg viewBox="0 0 ${Wd} ${H}" style="width:100%">`;
+  for(let v=0;v<=40000;v+=10000)s+=`<line x1="${pl}" x2="${Wd-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="#eef"/><text x="${pl-6}" y="${Y(v)+4}" font-size="11" text-anchor="end" fill="#64748b">${v}</text>`;
+  for(let d=0;d<=25;d+=5)s+=`<text x="${X(d)}" y="${H-pb+16}" font-size="11" text-anchor="middle" fill="#64748b">${d}</text>`;
+  s+=`<text x="${(Wd)/2}" y="${H-6}" font-size="12" text-anchor="middle">到文化宫的距离（km，示意坐标）</text><text x="12" y="${pt+4}" font-size="11" fill="#64748b">元/㎡</text>`;
+  for(const z of D.Z){const d=Math.hypot(z[6],z[7]);s+=`<circle cx="${X(d)}" cy="${Y(z[4])}" r="5" fill="${DISTCOL[z[1]]}" opacity=".85"><title>${z[2]}：地面价 ${z[4]} 元/㎡（容积率 ${z[3]}）</title></circle>`}
+  let lx=pl+230;for(const [k,c] of Object.entries(DISTCOL)){s+=`<circle cx="${lx}" cy="${pt+6}" r="5" fill="${c}"/><text x="${lx+8}" y="${pt+10}" font-size="11">${k}</text>`;lx+=60}
+  $("scatter").innerHTML=s+"</svg>";
+  const B={商服:[13000,8000,6300,5000,3600,2700,2200,1600],住宅:[15000,13000,9600,7500,6000,4800,3800],工业:[680,550,500,450]};
+  const col={商服:"#7b1fa2",住宅:"#d6453d",工业:"#5d4037"};
+  const W2=420,H2=300,X2=i=>50+i*(W2-70)/7,Y2=v=>14+(1-v/16000)*(H2-54);
+  let t=`<svg viewBox="0 0 ${W2} ${H2}" style="width:100%">`;
+  for(let v=0;v<=16000;v+=4000)t+=`<line x1="50" x2="${W2-14}" y1="${Y2(v)}" y2="${Y2(v)}" stroke="#eef"/><text x="44" y="${Y2(v)+4}" font-size="11" text-anchor="end" fill="#64748b">${v}</text>`;
+  "一二三四五六七八".split("").forEach((c,i)=>t+=`<text x="${X2(i)}" y="${H2-24}" font-size="12" text-anchor="middle">${c}级</text>`);
+  t+=`<text x="${W2/2}" y="${H2-6}" font-size="11" text-anchor="middle" fill="#64748b">← 城市中心　　　　　　　　　城市外围 →</text>`;
+  let ly=30;for(const [k,v] of Object.entries(B)){t+=`<polyline points="${v.map((p,i)=>X2(i)+","+Y2(p)).join(" ")}" fill="none" stroke="${col[k]}" stroke-width="2.5"/>`;
+    v.forEach((p,i)=>t+=`<circle cx="${X2(i)}" cy="${Y2(p)}" r="3.5" fill="${col[k]}"/>`);t+=`<text x="${W2-20}" y="${ly}" font-size="13" text-anchor="end" fill="${col[k]}" font-weight="bold">${k}用地</text>`;ly+=18}
+  $("bid").innerHTML=t+"</svg>";
+  const R=[["级别","一","二","三","四","五","六","七","八"],["商服（容积率）","13000（2.5）","8000（2.2）","6300（2.0）","5000（2.0）","3600（1.8）","2700（1.6）","2200（1.5）","1600（1.4）"],["住宅（容积率）","15000（2.0）","13000（1.8）","9600（1.6）","7500（1.5）","6000（1.4）","4800（1.2）","3800（1.1）","—"],["工矿仓储","规划限制区 1000；一级 680","550","500","450","—","—","—","—"]];
+  $("tbl").innerHTML="<table>"+R.map((r,i)=>"<tr>"+r.map(c=>i?`<td>${c}</td>`:`<th>${c}</th>`).join("")+"</tr>").join("")+"</table><div class='note'>单位：元/㎡（土地面积）。工矿仓储一栏中“二、三、四”对应工业二、三、四级。</div>";
+})();
+const QS=[
+ ["感知","点击文化宫、新北中心、武进中心和“我们学校”（横山桥）四个位置，记录模型地价。地价随着离老城中心的距离如何变化？",
+  "总体上，离文化宫越远，地价越低：老城一带住宅地面地价约 3 万元/㎡（武青北路样点 40492、南大街样点 28472），横山桥一带约 1.1 万元/㎡（样点 10828）。这体现了“距市中心越近、通达度越高、地价越高”的一般规律。"],
+ ["发现","切到“② 真实数据”看散点图。距文化宫 8–11 km 处为什么又出现一批高地价点？这说明常州的城市结构有什么特点？",
+  "这些点集中在武进湖塘—延政大道一带和新北河海、三井一带。它们是城市副中心（武进区、新北区的行政、商业中心），本身也有较高的通达度和配套，因此地价在远离老城后又出现次高峰。说明常州是“一主两副”式的多中心结构，地价从多个中心向外递减，而不是只有一个峰值。"],
+ ["推理","在“① 地价模型”里关掉地铁，观察热力面和剖面线。哪些地方地价下降最多？为什么？",
+  "地铁沿线、尤其是 1 号线南北向沿线下降最多，远离地铁的乡镇几乎不变。地铁提高了沿线的交通通达度，使原本较远的地方也能方便到达市中心，所以地价沿线升高，在地图上表现为沿交通线延伸的“高地价走廊”。这对应教材中“交通通达度越好，地价越高”的结论。"],
+ ["质疑","看“基准地价”折线：常州的住宅地价在同一级别上普遍高于商服地价，工业标定地价几乎都在 640–740 元/㎡ 之间。这与教材中“商业付租能力最强”的说法矛盾吗？",
+  "不完全矛盾。教材的竞租模型是理想条件下的规律：在城市中心最核心的地段，商业的付租能力仍然最强（晋陵中路商服样点首层地价很高，商业还有更高的“路线价”）。但从整体看，近年来常州商业用地供应较多，又受到电商冲击，商铺和写字楼需求不旺，而住宅需求较强，所以出现了住宅基准地价高于商服的现象。工业地价空间差异小，是因为政府为招商引资对工业用地价格有统一的指导和限制，工业对中心区位的依赖也较小。这说明真实地价还受市场供求和政府政策的影响。"],
+ ["迁移","勾选“假设 2 号线延伸到横山桥”。我们学校附近的地价会怎样变化？这可能会怎样改变横山桥的功能区？（思维实验，规划中并无此线）",
+  "模型显示横山桥站附近住宅地价会提高约 30%（约 10600→13900 元/㎡）。通达度提高后，原来以工业和镇区为主的地方，可能吸引更多住宅开发和商业配套（如站点周边形成小型商业中心），部分工业用地可能外迁或“退二进三”。同时也要注意：地价上涨会推高房价，需要统筹规划。"],
+ ["应用","如果你是常州的一位规划师，结合本节课的发现，说说应该如何布局新的住宅区和工业区？",
+  "开放题。参考：住宅区宜靠近地铁站点和副中心，并配套学校、医院等设施；工业区宜布局在地价较低、对外交通方便（高速、港口如春江港区）且位于下风向、远离居住区的地方；通过建设轨道交通引导城市沿交通走廊有序发展，避免无序蔓延。"]
+];
+$("qs").innerHTML="<h3 style='font-size:18px'>问题链：常州的地价是怎样分布的？</h3>"+QS.map((q,i)=>`<div class="q"><b>Q${i+1} · ${q[0]}</b><p>${q[1]}</p><button class="btn" onclick="this.nextElementSibling.classList.toggle('show')">参考答案</button><div class="ans">${q[2]}</div></div>`).join("");
+drawHeat();drawMap();update();
+</script>
+<div style='position:fixed;right:12px;bottom:10px;z-index:2147483647;font:12px/1.4 sans-serif;color:#1b2b52;background:rgba(255,255,255,.82);padding:4px 10px;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.3);pointer-events:none;letter-spacing:.5px;'>横山桥高级中学 孙慧制作</div>
+</body>
+</html>

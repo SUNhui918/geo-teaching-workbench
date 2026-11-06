@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<!-- 横山桥高级中学 孙慧制作 -->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>地层侦探——地球的历史书是怎么写成的</title>
+<style>
+:root{--ink:#2a2420;--muted:#6d6259;--paper:#f5efe3;--card:#fffdf8;--line:#e2d6c2;--accent:#b5562f;--accent2:#2f6f8f;--ok:#2e8b57;--bad:#c0392b}
+*{box-sizing:border-box}
+body{margin:0;font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC","Hiragino Sans GB",sans-serif;background:var(--paper);color:var(--ink);font-size:17px;line-height:1.65}
+header{padding:20px 20px 6px;max-width:1200px;margin:0 auto}
+h1{margin:0;font-size:28px;letter-spacing:1px}
+.sub{color:var(--muted);font-size:15px;margin-top:2px}
+.tabs{display:flex;gap:6px;max-width:1200px;margin:12px auto 0;padding:0 20px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);border-bottom:none;background:#ebe2d1;padding:9px 18px;border-radius:12px 12px 0 0;cursor:pointer;font-size:17px;color:var(--muted)}
+.tab.on{background:var(--card);color:var(--ink);font-weight:700}
+main{max-width:1200px;margin:0 auto;padding:0 20px 50px}
+.panel{display:none;background:var(--card);border:1px solid var(--line);border-radius:0 14px 14px 14px;padding:20px}
+.panel.on{display:block}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:20px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+button{font:inherit;font-size:16px;border:1px solid #cdbfa8;background:#fff;border-radius:9px;padding:7px 14px;cursor:pointer;color:var(--ink)}
+button:hover:not(:disabled){border-color:var(--accent)}
+button.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.sec{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+button:disabled{opacity:.42;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.envs{display:flex;gap:6px;flex-wrap:wrap}
+.envs label{border:2px solid var(--line);border-radius:9px;padding:6px 12px;cursor:pointer;background:#fff;font-size:16px}
+.envs input{display:none}
+.envs label.on{border-color:var(--accent2);background:#e6f0f5;font-weight:700}
+.tl{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 10px}
+.chip{font-size:13px;padding:2px 8px;border-radius:20px;background:#eee6d6;color:#8a7d6e}
+.chip.done{background:#d9c7a6;color:#3d3128}
+.chip.now{background:var(--accent);color:#fff;font-weight:700}
+.chip.out{opacity:.35}
+.cap{min-height:56px;background:#fbf4e4;border-left:5px solid var(--accent);padding:10px 14px;border-radius:6px;font-size:18px;margin-top:10px}
+svg{width:100%;height:auto;display:block;border-radius:10px}
+.card{background:#fbf7ef;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.card h3{margin:0 0 8px;font-size:18px}
+details{border-top:1px dashed var(--line);padding:8px 0}
+details:first-of-type{border-top:none}
+summary{cursor:pointer;font-weight:600}
+details p{margin:6px 0 0;color:#4a3f36}
+.task{margin:8px 0;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid var(--line)}
+.task b{color:var(--accent)}
+.msg{font-size:16px;margin-top:6px}
+.ok{color:var(--ok);font-weight:700}.bad{color:var(--bad);font-weight:700}
+textarea{width:100%;min-height:84px;font:inherit;font-size:16px;padding:8px 10px;border-radius:9px;border:1px solid #cdbfa8;resize:vertical}
+.chat{max-height:300px;overflow:auto;margin-top:8px}
+.bub{padding:8px 12px;border-radius:12px;margin:6px 0;font-size:16px;white-space:pre-wrap}
+.bub.me{background:#e6f0f5;margin-left:30px}
+.bub.ai{background:#f6ead8;margin-right:30px}
+.bub.ai::before{content:"🧭 AI地质学家：";font-weight:700;color:var(--accent)}
+.atlas{width:100%;border-collapse:collapse;font-size:14px}
+.atlas td{border-bottom:1px solid var(--line);padding:3px 4px;vertical-align:middle}
+.atlas td.era{writing-mode:vertical-rl;text-align:center;font-weight:700;color:#fff;font-size:13px;padding:2px}
+.atlas .ic{display:inline-flex;align-items:center;gap:2px;margin-right:6px;white-space:nowrap}
+.atlas svg{width:26px;height:26px;display:inline-block}
+.truth{background:#eef6ee;border:1px solid #bcd9bf;border-radius:10px;padding:10px 14px;margin-top:10px;display:none}
+.truth li{margin:4px 0}
+.hint{font-size:14px;color:var(--muted)}
+.tag{display:inline-block;background:var(--accent2);color:#fff;border-radius:6px;padding:0 6px;font-size:13px;margin-right:4px}
+label.ck{display:inline-flex;gap:6px;align-items:center;font-size:16px;cursor:pointer}
+h2{font-size:21px;margin:0 0 4px}
+.lead{color:var(--muted);margin:0 0 8px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs id="defs"></defs></svg>
+<header>
+  <h1>地层侦探 · 地球的历史书是怎么写成的？</h1>
+  <div class="sub">人教版必修第一册 第一章第三节《地球的历史》｜看地层怎样“一页页写成”，再用化石去“读”出地球的过去</div>
+</header>
+<div class="tabs">
+  <div class="tab on" data-p="p1">① 地层是怎么写成的</div>
+  <div class="tab" data-p="p2">② 地层侦探</div>
+  <div class="tab" data-p="p3">③ 想一想 · 拓展</div>
+</div>
+<main>
+<!-- ============ 面板1 ============ -->
+<section class="panel on" id="p1">
+  <div class="grid">
+    <div>
+      <h2>你来当“造物主”：让时间一纪一纪地流过</h2>
+      <p class="lead">先选这里是什么环境，再点“过去一个纪”。看看每种环境会在地层里留下什么。</p>
+      <div class="tl" id="tl1"></div>
+      <div class="row">
+        <div class="envs" id="envs">
+          <label data-v="sea"><input type="radio" name="env" value="sea">🌊 浅海</label>
+          <label data-v="swamp"><input type="radio" name="env" value="swamp">🌿 沼泽/湖泊</label>
+          <label data-v="high"><input type="radio" name="env" value="high">⛰ 抬升成高地</label>
+        </div>
+      </div>
+      <div class="row">
+        <button class="pri" id="bPass">⏩ 过去一个纪</button>
+        <button id="bFold">🌀 褶皱倒转</button>
+        <button id="bUndo">↶ 撤销</button>
+        <button id="bReset">⟲ 重新开始</button>
+        <button class="sec" id="bDemo">▶ 自动演示</button>
+        <label class="ck"><input type="checkbox" id="cNames" checked>显示年代名称</label>
+      </div>
+      <svg id="sv1" viewBox="0 0 900 460"></svg>
+      <div class="cap" id="cap1">现在是寒武纪之初。先选一种环境，再点“过去一个纪”。</div>
+    </div>
+    <aside>
+      <div class="card">
+        <h3>🔍 边玩边想</h3>
+        <details><summary>1. 连续选“浅海”过几个纪：先沉积的在哪儿？化石有什么变化？</summary>
+          <p>先沉积的在下、后沉积的在上；每一层的化石都不一样：越往上（越新），生物越高级、越复杂。这就是地层的两条“阅读规则”。</p></details>
+        <details><summary>2. 选“抬升成高地”过一个纪，再回到“浅海”。两层之间留下了什么？</summary>
+          <p>高地上不沉积，反而被风化侵蚀，这本“书”就少了一页。重新下沉接受沉积后，新旧地层之间留下一条起伏的<b>侵蚀面</b>，它说明这里曾经“缺页”。</p></details>
+        <details><summary>3. 点“褶皱倒转”。如果你是后来的地质学家，还能用“先沉积在下”判断新老吗？</summary>
+          <p>不能，上下颠倒了。但化石不会骗人：三叶虫一定比恐龙古老。所以判断地层年代，<b>化石比上下位置更可靠</b>。</p></details>
+        <details><summary>4. 同样是“浅海”，寒武纪和三叠纪沉积的地层，化石一样吗？</summary>
+          <p>不一样。环境相同，但生物在不断演化，每个时代有自己的“代表生物”，所以化石既能指示<b>时代</b>，也能指示<b>环境</b>（海相化石→当时是海洋）。</p></details>
+      </div>
+      <div class="card hint">说明：图中化石为教学示意，只选取各时代的代表性生物；岩层厚度不按真实比例。</div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ 面板2 ============ -->
+<section class="panel" id="p2">
+  <div class="grid">
+    <div>
+      <h2>三个地点的地层，藏着什么秘密？</h2>
+      <p class="lead">A、B、C 三地相距不远。只看岩层和化石，你能还原它们的历史吗？（地层上<b>不标年代</b>，请对照右侧化石图鉴）</p>
+      <div class="row">
+        <button class="pri" id="bNew">🎲 换一个案例</button>
+        <label class="ck"><input type="checkbox" id="cHard">挑战模式（可能有地层倒转）</label>
+        <button id="bClear">清除连线</button>
+        <button class="sec" id="bCheck">✔ 核对连线</button>
+        <button id="bReveal">🔓 揭晓真相</button>
+      </div>
+      <svg id="sv2" viewBox="0 0 900 560"></svg>
+      <div class="msg" id="msg2">点击某一地的一层岩层，再点击相邻地点中你认为<b>同一时代</b>的岩层，就能连上虚线。</div>
+      <div class="truth" id="truth"><b>真相：</b><ul id="truthList"></ul>
+        <div class="row" id="replayBtns"></div>
+      </div>
+      <div id="replayBox" style="display:none;margin-top:12px">
+        <h2 id="rpTitle">回放</h2>
+        <div class="tl" id="tl2"></div>
+        <div class="row"><button class="pri" id="rpPlay">▶ 自动播放</button><button id="rpStep">下一步 ›</button><button id="rpRestart">⟲ 从头</button></div>
+        <svg id="sv3" viewBox="0 0 900 460"></svg>
+        <div class="cap" id="cap3"></div>
+      </div>
+    </div>
+    <aside>
+      <div class="card">
+        <h3>📖 化石图鉴（地质年代表）</h3>
+        <table class="atlas" id="atlas"></table>
+        <div class="hint" style="margin-top:6px">按地质年代表排列：越往上越年轻。</div>
+      </div>
+      <div class="card">
+        <h3>🕵️ 侦探任务</h3>
+        <div class="task"><b>任务1 对比</b>：用图鉴认出每层化石的时代，把相邻两地<b>同一时代</b>的地层连起来。</div>
+        <div class="task"><b>任务2 找差异</b>：哪一地的地层“缺页”了？缺的是哪个时代？<span id="hardTask"></span></div>
+        <div class="task"><b>任务3 提假说</b>：每处差异可能是什么原因造成的？至少想出两种可能，并说说依据。</div>
+        <textarea id="ta" placeholder="例：B地缺少……纪的地层，我认为可能是……，因为……"></textarea>
+        <div class="row"><button class="sec" id="bAsk">🧭 请AI地质学家追问我</button><span class="hint" id="aiNote"></span></div>
+        <div class="chat" id="chat"></div>
+        <div class="task"><b>任务4 验证</b>：揭晓真相后，回放每个地点“这本书”的写成过程，检验你的假说。</div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ 面板3 ============ -->
+<section class="panel" id="p3">
+  <h2>想一想 · 拓展</h2>
+  <p class="lead">先讨论，再点开看参考思路。</p>
+  <div class="card">
+    <details><summary>1. 判断地层的新老，为什么“化石”比“上下位置”更可靠？</summary>
+      <p>“先沉积的在下”只在地层没有被扰动时成立，褶皱倒转、断层都会打乱上下顺序。生物演化是不可逆的，每个时代都有独特的化石组合，越古老的地层含越低级、越简单的生物化石，化石就像地层的“时间标签”。实际工作中两者结合使用。</p></details>
+    <details><summary>2. 某地“缺页”，可能是当时根本没沉积，也可能沉积后被侵蚀掉了。只看地层柱分辨不出来，野外还能找什么证据？</summary>
+      <p>可以看侵蚀面上方的砾岩：如果砾石里有缺失那个时代的岩石碎块或化石，说明这层曾经存在，后来被剥蚀；还可以追踪周围更多地点，看这一层是不是向这里逐渐变薄、被截断。像这样“一个假说、多种检验”，正是科学家的思维方式。</p></details>
+    <details><summary>3. 在海拔几千米的高山顶上发现了三叶虫、菊石等海洋生物化石，说明什么？</summary>
+      <p>说明这里曾经是海洋，后来地壳抬升成山，也就是“沧海桑田”。例如喜马拉雅山区的海相化石，记录了古海洋消失、板块碰撞造山的历史。化石不仅告诉我们“什么时候”，还告诉我们“当时是什么环境”。</p></details>
+    <details><summary>4. 前寒武纪约占地球历史的 90%，可地层里化石很少。这和“地质年代表一直在补充和完善”有什么关系？</summary>
+      <p>越古老的地层越容易被变质、侵蚀或深埋；早期生物大多没有硬壳和骨骼，难以保存成化石，所以证据少、争议多。随着新化石的发现和测年技术的进步，年代界线不断被修订：例如国际地层委员会新版年代表已把寒武纪的起点从约 5.41 亿年修订为约 5.39 亿年。地质年代表是一本“还在修订的书”。</p></details>
+    <details><summary>5. 走出课本：常州清明山出露泥盆纪观山组石英砂岩。石英砂岩颗粒纯净、层理清楚，推测当时这里可能是什么环境？</summary>
+      <p>颗粒纯净、分选好，说明经过了长时间的水流或波浪反复冲刷、淘洗，推测当时可能是滨海沙滩或河流环境。可以组织学生实地或看照片观察层理、波痕，用“岩石特征→沉积环境→古地理”的思路，读一读家门口这本“地球历史书”。</p></details>
+  </div>
+  <div class="card">
+    <h3>🧑‍🏫 课堂使用建议（约 20 分钟）</h3>
+    <p>① 面板一（5 分钟）：教师投屏，学生指挥“下沉/抬升/倒转”，归纳地层的两条阅读规则。<br>
+    ② 面板二（12 分钟）：分组各用一个案例（“换一个案例”每组不同），完成任务 1–3，组内写下假说，可请 AI 地质学家追问；再揭晓真相、回放过程，看哪组的假说最接近。开启“挑战模式”可以检验学生是否真正理解“化石定年”。<br>
+    ③ 面板三（3 分钟）：用问题 2、4 引出“科学结论需要证据，地质年代表仍在补充完善”。</p>
+  </div>
+</section>
+</main>
+
+<script>
+/* ================= 数据 ================= */
+const P=[
+ {name:'寒武纪',era:'古生代',ma:'5.41亿',env:'sea',rock:'shale',sig:[['trilobite','三叶虫']]},
+ {name:'奥陶纪',era:'古生代',ma:'4.85亿',env:'sea',rock:'shale',sig:[['graptolite','笔石']]},
+ {name:'志留纪',era:'古生代',ma:'4.44亿',env:'sea',rock:'limestone',sig:[['coral','珊瑚']]},
+ {name:'泥盆纪',era:'古生代',ma:'4.19亿',env:'sea',rock:'quartz',sig:[['fish','鱼类']]},
+ {name:'石炭纪',era:'古生代',ma:'3.59亿',env:'swamp',rock:'coal',sig:[['fern','鳞木(蕨类)']]},
+ {name:'二叠纪',era:'古生代',ma:'2.99亿',env:'sea',rock:'limestone',sig:[['fusulina','蜓类']]},
+ {name:'三叠纪',era:'中生代',ma:'2.52亿',env:'sea',rock:'limestone',sig:[['ammonite','菊石']]},
+ {name:'侏罗纪',era:'中生代',ma:'2.01亿',env:'land',rock:'sandstone',sig:[['dino','恐龙'],['cycad','苏铁(裸子植物)']]},
+ {name:'白垩纪',era:'中生代',ma:'1.45亿',env:'land',rock:'redsand',sig:[['dino','恐龙'],['flower','被子植物']]},
+ {name:'古近纪',era:'新生代',ma:'6600万',env:'land',rock:'mudstone',sig:[['mammal','小型哺乳动物']]},
+ {name:'新近纪',era:'新生代',ma:'2300万',env:'land',rock:'redclay',sig:[['horse','三趾马']]},
+ {name:'第四纪',era:'新生代',ma:'260万',env:'land',rock:'loose',sig:[['mammoth','猛犸象']]}
+];
+const SEA=[[['trilobite','三叶虫']],[['graptolite','笔石']],[['coral','珊瑚']],[['fish','鱼类']],[['fusulina','蜓类']],[['fusulina','蜓类']],[['ammonite','菊石']],[['ammonite','菊石']],[['ammonite','菊石']],[['shell','贝类']],[['shell','贝类']],[['shell','贝类']]];
+const LAND=[[],[],[['fern','裸蕨']],[['fern','蕨类']],[['fern','鳞木']],[['fern','鳞木']],[['dino','早期恐龙']],[['dino','恐龙'],['cycad','苏铁']],[['dino','恐龙'],['flower','被子植物']],[['mammal','小型哺乳动物']],[['horse','三趾马']],[['mammoth','猛犸象']]];
+const ROCK={
+ shale:{n:'页岩',c:'#8f9ba4',m:'<path d="M2 4H10M14 4H22M6 12H18" stroke="#5c6870" stroke-width="1.3"/>'},
+ limestone:{n:'石灰岩',c:'#bac6cd',m:'<path d="M0 .5H24M0 8.5H24M6 0V8M18 8V16" stroke="#7b8991" stroke-width="1"/>'},
+ quartz:{n:'石英砂岩',c:'#f0e3c0',m:'<circle cx="4" cy="4" r="1.1" fill="#b39a66"/><circle cx="15" cy="10" r="1.1" fill="#b39a66"/><circle cx="21" cy="3" r=".9" fill="#b39a66"/><circle cx="9" cy="13" r=".9" fill="#b39a66"/>'},
+ sandstone:{n:'砂岩',c:'#dcc18c',m:'<circle cx="4" cy="4" r="1.2" fill="#9c7f4b"/><circle cx="15" cy="10" r="1.2" fill="#9c7f4b"/><circle cx="21" cy="3" r="1" fill="#9c7f4b"/><circle cx="9" cy="13" r="1" fill="#9c7f4b"/>'},
+ coal:{n:'含煤砂页岩',c:'#8b8478',m:'<rect y="5" width="24" height="5" fill="#26231f"/><circle cx="6" cy="13" r="1" fill="#4a453e"/><circle cx="18" cy="2" r="1" fill="#4a453e"/>'},
+ redsand:{n:'红色砂岩',c:'#cd8260',m:'<circle cx="4" cy="4" r="1.2" fill="#8c4a30"/><circle cx="15" cy="10" r="1.2" fill="#8c4a30"/><circle cx="21" cy="3" r="1" fill="#8c4a30"/><circle cx="9" cy="13" r="1" fill="#8c4a30"/>'},
+ mudstone:{n:'泥岩',c:'#ad9f82',m:'<path d="M2 4H8M14 4H20M8 12H14M20 12H24" stroke="#7a6d55" stroke-width="1.2"/>'},
+ redclay:{n:'红土',c:'#bb6c50',m:'<path d="M3 4H7M15 4H19M9 12H13" stroke="#7d3c27" stroke-width="1.4"/>'},
+ loose:{n:'松散沉积物',c:'#ddcca4',m:'<circle cx="5" cy="5" r="2.2" fill="none" stroke="#8c7a55"/><circle cx="17" cy="11" r="1.8" fill="none" stroke="#8c7a55"/>'}
+};
+const ERA_C={'古生代':'#5f7f8f','中生代':'#6f8f4f','新生代':'#c08a3a'};
+
+/* ================= 化石图标 ================= */
+const S='stroke="#2b241e" stroke-width="1.4"';
+const ICON={
+ trilobite:(()=>{let s=`<ellipse cx="20" cy="21" rx="11" ry="15" fill="#7a6650" ${S}/><ellipse cx="20" cy="21" rx="3.6" ry="13" fill="#a88f70" stroke="#2b241e" stroke-width="1"/><path d="M9 13Q20 3 31 13" fill="none" ${S}/>`;for(let y=15;y<=33;y+=4)s+=`<path d="M10 ${y}H16.4M23.6 ${y}H30" stroke="#2b241e" stroke-width="1"/>`;return s})(),
+ graptolite:(()=>{let s='<path d="M6 35L33 6" stroke="#2b241e" stroke-width="2"/>';for(let i=0;i<7;i++){const x=7+i*3.8,y=34-i*4;s+=`<path d="M${x} ${y}l5 1l-2 -4z" fill="#4a3f36"/>`}return s})(),
+ coral:`<path d="M16 35Q9 20 15 7L28 7Q24 20 22 35Z" fill="#c98b6b" ${S}/><ellipse cx="21.5" cy="7" rx="6.5" ry="2.6" fill="#e6b99b" ${S}/><path d="M13 15Q20 17 27 15M12 22Q19 24 25 22M14 29Q19 31 23 29" fill="none" stroke="#2b241e" stroke-width="1"/>`,
+ fish:`<path d="M4 20Q16 9 28 20Q16 31 4 20Z" fill="#6f8fa6" ${S}/><path d="M28 20L37 12L35 20L37 28Z" fill="#6f8fa6" ${S}/><circle cx="10" cy="18.5" r="1.7" fill="#2b241e"/><path d="M16 14Q19 10 22 14" fill="#6f8fa6" stroke="#2b241e" stroke-width="1"/>`,
+ fern:(()=>{let s='<path d="M20 37Q19 20 23 3" stroke="#3f6b35" stroke-width="2.2" fill="none"/>';for(let i=0;i<7;i++){const y=33-i*4.4,x=20+i*0.45,w=10-i*1.1;s+=`<path d="M${x} ${y}q${-w} -1 ${-w-2} -5M${x} ${y}q${w} -1 ${w+2} -5" stroke="#4f8a42" stroke-width="2" fill="none"/>`}return s})(),
+ fusulina:`<ellipse cx="20" cy="20" rx="16" ry="7" fill="#d8c79f" ${S}/><ellipse cx="20" cy="20" rx="11" ry="4.3" fill="none" stroke="#2b241e" stroke-width="1"/><ellipse cx="20" cy="20" rx="5.5" ry="2" fill="none" stroke="#2b241e" stroke-width="1"/>`,
+ ammonite:`<circle cx="20" cy="20" r="15" fill="#c9a77a" ${S}/><path d="M20 20m0 -3a3 3 0 1 1 -3 3a6 6 0 0 1 6 -6a9 9 0 0 1 9 9a12 12 0 0 1 -12 12" fill="none" ${S}/><path d="M20 5V9M33 13L29 15M35 24L31 23M25 34L24 30M9 30L12 27M5 18L9 19M10 8L13 11" stroke="#2b241e" stroke-width="1"/>`,
+ dino:`<path d="M3 26Q10 21 16 22Q24 19 28 22L32 12Q33 7 37 8L38 10L35 12L31 24Q30 28 26 28L26 35L23 35L23 29L15 29L15 35L12 35L12 28Q8 27 3 26Z" fill="#6f7f52" ${S}/>`,
+ cycad:`<rect x="17.5" y="22" width="5" height="14" fill="#8a6a45" ${S}/><path d="M20 22Q10 14 3 18M20 22Q12 10 8 4M20 22Q20 10 20 3M20 22Q28 10 32 4M20 22Q30 14 37 18" stroke="#3f6b35" stroke-width="2.4" fill="none"/>`,
+ flower:(()=>{let s='<path d="M20 22V37M20 31Q14 27 11 30" stroke="#3f6b35" stroke-width="2" fill="none"/>';for(let i=0;i<5;i++){const a=i*Math.PI*2/5-Math.PI/2;s+=`<circle cx="${(20+6*Math.cos(a)).toFixed(1)}" cy="${(14+6*Math.sin(a)).toFixed(1)}" r="5" fill="#e58fa6" stroke="#2b241e" stroke-width="1"/>`}return s+'<circle cx="20" cy="14" r="3.2" fill="#f3c94b" stroke="#2b241e" stroke-width="1"/>'})(),
+ mammal:`<path d="M12 30v5M24 30v5" stroke="#2b241e" stroke-width="2"/><ellipse cx="18" cy="25" rx="11" ry="6" fill="#8b6f5a" ${S}/><circle cx="30" cy="21" r="4.6" fill="#8b6f5a" ${S}/><circle cx="29" cy="16.5" r="2" fill="#8b6f5a" ${S}/><path d="M7 24Q1 22 2 15" stroke="#2b241e" stroke-width="1.6" fill="none"/>`,
+ horse:`<path d="M10 24v12M14 24v12M23 24v12M27 24v12" stroke="#2b241e" stroke-width="2"/><ellipse cx="18" cy="20" rx="11" ry="6" fill="#9a7552" ${S}/><path d="M25 17L30 6L37 8L34 12L30 20Z" fill="#9a7552" ${S}/><path d="M7 18Q2 23 4 30" stroke="#2b241e" stroke-width="2" fill="none"/>`,
+ mammoth:`<path d="M6 26Q4 10 18 9Q30 8 32 16Q37 19 35 27Q34 32 31 28Q29 26 27 29V35H23V30H13V35H9V30Q6 29 6 26Z" fill="#7a5a44" ${S}/><path d="M31 22Q37 31 27 32" stroke="#f3ead6" stroke-width="2.6" fill="none"/><circle cx="27" cy="16" r="1.3" fill="#2b241e"/>`,
+ shell:`<path d="M6 28Q20 0 34 28Q20 34 6 28Z" fill="#e0c9a6" ${S}/><path d="M20 31L20 8M20 31L12 13M20 31L28 13M20 31L8 22M20 31L32 22" stroke="#2b241e" stroke-width="1"/>`
+};
+const icon=(k,x,y,s)=>`<g transform="translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${(s/40).toFixed(3)})">${ICON[k]}</g>`;
+
+document.getElementById('defs').innerHTML=Object.entries(ROCK).map(([k,r])=>`<pattern id="pat-${k}" width="24" height="16" patternUnits="userSpaceOnUse"><rect width="24" height="16" fill="${r.c}"/>${r.m}</pattern>`).join('');
+
+/* ================= 地层引擎 ================= */
+let UID=1;
+const ENVN={sea:'浅海',swamp:'沼泽/湖泊',land:'陆地河湖',high:'高地'};
+const newState=t0=>({layers:[],env:'sig',t:t0,gap:false,hidden:0,over:false});
+const clone=o=>JSON.parse(JSON.stringify(o));
+function fossilsFor(t,env){return env==='sig'?P[t].sig:env==='sea'?SEA[t]:LAND[t]}
+function rockFor(t,env){
+  if(env==='sig')return P[t].rock;
+  if(env==='sea')return t<=1?'shale':t===3?'quartz':'limestone';
+  if(t===4||t===5||t===7)return 'coal';
+  if(t===8)return 'redsand'; if(t===10)return 'redclay'; if(t===11)return 'loose';
+  return t<=1?'mudstone':'sandstone';
+}
+const names=f=>f.map(x=>x[1]).join('、');
+function step(s0,ev){
+  const s=clone(s0);let cap=ev.cap||'';
+  if(ev.do==='env'){s.env=ev.env;}
+  else if(ev.do==='pass'){
+    if(s.t>11)return{s,cap:'已经到“今天”了，地球的历史书还在继续写……'};
+    const p=P[s.t];
+    if(s.env==='high'){
+      const top=s.layers[s.layers.length-1];
+      if(top){top.h*=0.65;if(top.h<0.3)s.layers.pop();}
+      s.gap=true;
+      cap=cap||`${p.name}：这里是高地，没有接受沉积，地表反而被风化、侵蚀——这本书“少了一页”。`;
+    }else{
+      const env=s.env==='sig'?p.env:s.env;
+      const L={uid:UID++,t:s.t,rock:rockFor(s.t,s.env),fos:fossilsFor(s.t,s.env),h:ev.h||(0.85+Math.random()*0.35),unconf:s.gap};
+      s.layers.push(L);s.gap=false;
+      if(!cap){cap=`${p.name}：${env==='sea'&&s.t===3&&s.env==='sig'?'滨海':ENVN[env]}环境，沉积了一层${ROCK[L.rock].n}`+(L.fos.length?`，${names(L.fos)}的遗体被埋藏，形成化石。`:'，当时陆地上几乎没有生物，没有化石。');
+        if(L.unconf)cap+=' 它和下面的地层之间隔着一条侵蚀面。';}
+    }
+    s.t++;
+  }
+  else if(ev.do==='erode'){for(let i=0;i<ev.n;i++)s.layers.pop();s.gap=true;}
+  else if(ev.do==='fold'){s.layers.reverse();s.over=!s.over;}
+  else if(ev.do==='hide'){s.hidden=ev.n;}
+  return{s,cap};
+}
+
+/* ================= 剖面绘制 ================= */
+function wavy(x0,x1,y){let d=`M${x0} ${y}`;for(let x=x0;x<x1;x+=30)d+=` q15 -6 30 0`;return d}
+function drawSection(svg,s,cur,showNames){
+  const W=900,H=460,B=436,X0=30,X1=870;
+  const total=cur.reduce((a,o)=>a+o.h,0);
+  const unit=Math.min(46,330/Math.max(7,total));
+  const surf=B-total*unit;
+  const se=s.env==='sig'?P[Math.min(11,Math.max(0,s.t-1))].env:s.env;
+  let g=`<rect width="${W}" height="${H}" fill="#e2eef4"/>`;
+  if(se==='sea'){const sy=Math.min(64,surf-30);g+=`<rect x="0" y="${sy}" width="${W}" height="${surf-sy}" fill="#79aecd"/><path d="${wavy(0,W,sy)}" stroke="#4d88ab" stroke-width="2" fill="none"/><text x="${W/2}" y="${sy+(surf-sy)/2+7}" text-anchor="middle" font-size="22" fill="#fff" font-weight="700">🌊 浅海</text>`;}
+  else if(se==='swamp'){g+=`<rect x="0" y="${surf-12}" width="${W}" height="12" fill="#8fbaa6"/>`;[90,260,520,700,820].forEach(x=>g+=icon('fern',x,surf-40,36));g+=`<text x="${W/2}" y="${surf-50}" text-anchor="middle" font-size="22" fill="#3f6b35" font-weight="700">🌿 沼泽 / 湖泊</text>`;}
+  else if(se==='land'){g+=`<rect x="0" y="${surf-6}" width="${W}" height="6" fill="#9bb56a"/><text x="${W/2}" y="${surf-24}" text-anchor="middle" font-size="22" fill="#5d7a35" font-weight="700">🏞 陆地（河湖平原）</text>`;}
+  else{g+=`<path d="M0 ${surf}Q220 ${surf-80} 450 ${surf-46}T900 ${surf}Z" fill="#9c8468"/>`;for(let i=0;i<26;i++){const x=20+i*34,y=10+(i%3)*12;g+=`<path d="M${x} ${y}l-6 16" stroke="#6b8fa6" stroke-width="2"/>`}g+=`<text x="${W/2}" y="${Math.max(60,surf-60)}" text-anchor="middle" font-size="22" fill="#5a4630" font-weight="700">⛰ 抬升成高地：风化、侵蚀 ↓</text>`;}
+  let y=B;const hid=s.hidden;
+  cur.forEach((o,i)=>{
+    const hp=o.h*unit;y-=hp;const L=o.L;
+    g+=`<rect x="${X0}" y="${y}" width="${X1-X0}" height="${hp}" fill="url(#pat-${L.rock})" stroke="rgba(0,0,0,.25)"/>`;
+    if(hp>=20){
+      const sz=Math.min(36,hp-4);
+      if(L.fos.length)[190,400,610].forEach((x,j)=>{const f=L.fos[j%L.fos.length];g+=icon(f[0],x-sz/2,y+(hp-sz)/2,sz)});
+      else g+=`<text x="400" y="${y+hp/2+5}" text-anchor="middle" font-size="14" fill="#3a3028">（几乎没有化石）</text>`;
+      const rn=ROCK[L.rock].n;g+=`<rect x="${X0+6}" y="${y+hp/2-12}" width="${rn.length*15+12}" height="24" rx="6" fill="rgba(255,255,255,.85)"/><text x="${X0+12}" y="${y+hp/2+6}" font-size="15" fill="#2a2420">${rn}</text>`;
+      if(showNames){const pn=P[L.t].name;g+=`<rect x="${X1-80}" y="${y+hp/2-13}" width="74" height="26" rx="6" fill="rgba(47,111,143,.9)"/><text x="${X1-43}" y="${y+hp/2+6}" text-anchor="middle" font-size="16" fill="#fff" font-weight="700">${pn}</text>`;}
+    }
+    if(L.unconf){const yb=s.over?y:y+hp;g+=`<path d="${wavy(X0,X1,yb)}" stroke="#3a2614" stroke-width="3" fill="none"/><text x="${X1-100}" y="${yb-6}" font-size="13" fill="#3a2614" text-anchor="end" paint-order="stroke" stroke="#fff" stroke-width="3">侵蚀面</text>`;}
+  });
+  if(hid>0){let hh=0;for(let i=0;i<hid&&i<cur.length;i++)hh+=cur[i].h*unit;g+=`<rect x="${X0}" y="${B-hh}" width="${X1-X0}" height="${hh}" fill="rgba(50,40,30,.62)"/><text x="${W/2}" y="${B-hh/2+7}" text-anchor="middle" font-size="19" fill="#fff" font-weight="700">埋在地下，野外看不到（未出露）</text>`;}
+  g+=`<rect x="0" y="${B}" width="${W}" height="${H-B}" fill="#5e5145"/><text x="${W/2}" y="${B+17}" text-anchor="middle" font-size="13" fill="#e8dcc8">更深处……</text>`;
+  if(s.over)g+=`<rect x="20" y="10" width="420" height="34" rx="8" fill="rgba(192,57,43,.92)"/><text x="34" y="34" font-size="18" fill="#fff" font-weight="700">⚠ 地层已倒转：老的在上，新的在下！</text>`;
+  svg.innerHTML=g;
+}
+function drawTL(el,s,range){
+  el.innerHTML=P.map((p,i)=>{let c='chip';if(range&&(i<range[0]||i>range[1]))c+=' out';if(i<s.t)c+=' done';if(i===s.t)c+=' now';return`<span class="${c}">${p.name}</span>`}).join('')+`<span class="chip ${s.t>11?'now':''}">今天</span>`;
+}
+class Stage{
+  constructor(svg,cap,tl){this.svg=svg;this.cap=cap;this.tl=tl;this.names=true;this.range=null;this.raf=0;}
+  reset(s,msg){cancelAnimationFrame(this.raf);this.s=s;this.cur=s.layers.map(L=>({L,h:L.h}));if(msg!==undefined)this.cap.textContent=msg;this.draw();}
+  draw(){drawSection(this.svg,this.s,this.cur,this.names);drawTL(this.tl,this.s,this.range);}
+  apply(ev){
+    const prev=this.cur;const r=step(this.s,ev);this.s=r.s;if(r.cap)this.cap.textContent=r.cap;
+    if(ev.do==='fold'||ev.do==='hide'){this.reset(this.s);return}
+    const pm=new Map(prev.map(o=>[o.L.uid,o.h]));const keep=new Set(this.s.layers.map(L=>L.uid));
+    const items=this.s.layers.map(L=>({L,a:pm.has(L.uid)?pm.get(L.uid):0,b:L.h}));
+    prev.filter(o=>!keep.has(o.L.uid)).forEach(o=>items.push({L:o.L,a:o.h,b:0}));
+    cancelAnimationFrame(this.raf);const t0=performance.now(),D=700;
+    const f=now=>{let k=Math.min(1,(now-t0)/D);k=1-Math.pow(1-k,3);
+      this.cur=items.map(it=>({L:it.L,h:it.a+(it.b-it.a)*k})).filter(o=>o.h>0.002);this.draw();
+      if(k<1)this.raf=requestAnimationFrame(f);else{this.cur=this.s.layers.map(L=>({L,h:L.h}));this.draw();}};
+    this.raf=requestAnimationFrame(f);
+  }
+}
+
+/* ================= 面板切换 ================= */
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id===t.dataset.p));
+});
+
+/* ================= 面板1：沙盘 ================= */
+const st1=new Stage(document.getElementById('sv1'),document.getElementById('cap1'),document.getElementById('tl1'));
+let undo=[],demoTimer=null;
+function initSandbox(){const s=newState(0);s.env='sea';st1.reset(s,'现在是寒武纪之初，这里是一片浅海。选好环境，点“过去一个纪”。');undo=[];syncEnv();upd1();}
+function syncEnv(){document.querySelectorAll('#envs label').forEach(l=>l.classList.toggle('on',l.dataset.v===st1.s.env))}
+function upd1(){const b=document.getElementById('bPass');const t=st1.s.t;b.disabled=t>11||!!demoTimer;b.textContent=t>11?'已到今天':`⏩ 过去一个纪（${P[t].name}）`;
+  ['bFold','bUndo'].forEach(id=>document.getElementById(id).disabled=!!demoTimer);document.getElementById('bUndo').disabled=!undo.length||!!demoTimer;
+  document.getElementById('bDemo').textContent=demoTimer?'■ 停止演示':'▶ 自动演示';}
+function act1(ev){undo.push({s:clone(st1.s),c:st1.cap.textContent});st1.apply(ev);syncEnv();upd1();}
+const ENVCAP={sea:'地壳下沉，海水淹没了这里，成为浅海。',swamp:'这里变成了沼泽、湖泊。',high:'地壳抬升，这里成为高地。'};
+document.querySelectorAll('#envs label').forEach(l=>l.onclick=e=>{e.preventDefault();if(demoTimer||st1.s.env===l.dataset.v)return;act1({do:'env',env:l.dataset.v,cap:ENVCAP[l.dataset.v]})});
+document.getElementById('bPass').onclick=()=>act1({do:'pass'});
+document.getElementById('bFold').onclick=()=>{if(!st1.s.layers.length)return;act1({do:'fold',cap:'强烈的挤压使岩层褶皱、倒转。假如你是后来的地质学家，看到这样的地层，还能判断谁老谁新吗？'})};
+document.getElementById('bUndo').onclick=()=>{const u=undo.pop();if(u){st1.reset(u.s,u.c);syncEnv();upd1();}};
+document.getElementById('bReset').onclick=()=>{stopDemo();initSandbox()};
+document.getElementById('cNames').onchange=e=>{st1.names=e.target.checked;st1.draw()};
+function stopDemo(){if(demoTimer){clearInterval(demoTimer);demoTimer=null;upd1();}}
+document.getElementById('bDemo').onclick=()=>{
+  if(demoTimer){stopDemo();return}
+  const seq=[{do:'env',env:'sea',cap:'演示：一部“被撕掉几页”的历史书。寒武纪之初，这里是浅海。'},{do:'pass'},{do:'pass'},{do:'env',env:'high',cap:ENVCAP.high},{do:'pass'},{do:'env',env:'sea',cap:ENVCAP.sea},{do:'pass'},{do:'env',env:'swamp',cap:ENVCAP.swamp},{do:'pass'},{do:'env',env:'sea',cap:ENVCAP.sea},{do:'pass'},{do:'pass'},{do:'env',env:'high',cap:ENVCAP.high},{do:'pass'},{do:'env',env:'swamp',cap:ENVCAP.swamp},{do:'pass'},{do:'pass'},{do:'pass'},{do:'pass',cap:'第四纪：沉积了松散沉积物，猛犸象等被埋藏。演示结束：数一数，这本书缺了哪几页？每处缺页上方都留下了什么？'}];
+  const s=newState(0);s.env='sea';st1.reset(s);undo=[];let i=0;
+  demoTimer=setInterval(()=>{if(i>=seq.length){stopDemo();return}st1.apply(seq[i++]);syncEnv();upd1();},1500);upd1();
+};
+initSandbox();
+
+/* ================= 面板2：地层侦探 ================= */
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const SITES=['A地','B地','C地'];
+let K=null; // 当前案例
+function genCase(seed,hard){
+  const r=rng(seed);const start=Math.floor(r()*7);
+  const roles=['full','gap','edge'];for(let i=2;i>0;i--){const j=Math.floor(r()*(i+1));[roles[i],roles[j]]=[roles[j],roles[i]]}
+  const gapM=1+Math.floor(r()*4),gapCause=r()<.5?'hiatus':'erosion',edgeKind=r()<.5?'top':'bottom',edgeK=r()<.4?2:1;
+  const sites=roles.map((role,ci)=>{
+    const ev=[{do:'env',env:'sig',cap:`${P[start].name}开始，这片地区接受沉积……`}];
+    for(let k=0;k<6;k++){const t=start+k,h=0.85+r()*0.35;
+      if(role==='gap'&&k===gapM){
+        if(gapCause==='hiatus'){ev.push({do:'env',env:'high',cap:`${P[t].name}开始前，这里地壳抬升，成了陆地上的高处。`});ev.push({do:'pass',cap:`${P[t].name}：这里是高地，没有接受沉积（沉积间断），地表还受到侵蚀。`});ev.push({do:'env',env:'sig',cap:'地壳再次下沉，又开始接受沉积。'});}
+        else{ev.push({do:'pass',h});ev.push({do:'env',env:'high',cap:`${P[t].name}后期，地壳抬升成陆地。`});ev.push({do:'erode',n:1,cap:`风化侵蚀把刚沉积的${P[t].name}地层全部剥蚀掉了！`});ev.push({do:'env',env:'sig',cap:'地壳再次下沉，又开始接受沉积。'});}
+      }else ev.push({do:'pass',h});
+    }
+    const lost=[];
+    if(role==='edge'){
+      if(edgeKind==='top'){for(let i=0;i<edgeK;i++)lost.unshift(P[start+5-i].name);ev.push({do:'env',env:'high',cap:'后来地壳抬升，这里成为山地。'});ev.push({do:'erode',n:edgeK,cap:`长期的风化侵蚀，把顶部的${lost.join('、')}地层剥蚀掉了。`});}
+      else{for(let i=0;i<edgeK;i++)lost.push(P[start+i].name);ev.push({do:'hide',n:edgeK,cap:`下部的${lost.join('、')}地层其实都在，只是埋在地下，没有出露到地表。`});}
+    }
+    if(role==='full'&&hard)ev.push({do:'fold',cap:'强烈的地壳运动使岩层褶皱、倒转：最老的地层翻到了最上面！'});
+    let s=newState(start);ev.forEach(e=>{s=step(s,e).s});
+    const nm=SITES[ci];let truth;
+    if(role==='full')truth=`${nm}：${P[start].name}—${P[start+5].name}的地层连续完整`+(hard?`，但后来被褶皱倒转了——最老的${P[start].name}地层翻到了最上面。“先沉积的在下”在这里失效，只有化石能识破。`:'，是最好的“对照组”。');
+    else if(role==='gap')truth=gapCause==='hiatus'?`${nm}：缺失${P[start+gapM].name}地层。原因：${P[start+gapM].name}时这里抬升成陆地，根本没有接受沉积（沉积间断），上下地层之间留下了侵蚀面。`:`${nm}：缺失${P[start+gapM].name}地层。原因：${P[start+gapM].name}地层曾经沉积过，但不久地壳抬升，这一层被侵蚀掉了，留下侵蚀面。`;
+    else truth=edgeKind==='top'?`${nm}：顶部缺失${lost.join('、')}地层。原因：后来地壳抬升，顶部地层被侵蚀掉了。`:`${nm}：底部看不到${lost.join('、')}地层。原因：它们其实存在，只是埋在地下，没有出露。`;
+    return{name:nm,role,ev,final:s,truth,vis:s.layers.slice(s.hidden).reverse()};
+  });
+  return{seed,hard,start,sites,links:[],sel:null,checked:false,revealed:false,chat:[]};
+}
+const sv2=document.getElementById('sv2'),msg2=document.getElementById('msg2');
+const CX=[60,365,670],CW=170,TOP=64,U=62;
+let boxes=[];
+function drawCase(){
+  boxes=[];let g='';let maxH=0;
+  K.sites.forEach((st,c)=>{
+    const x=CX[c];let y=TOP;
+    g+=`<text x="${x+CW/2}" y="30" text-anchor="middle" font-size="22" font-weight="700" fill="#2a2420">${st.name}</text><rect x="${x-4}" y="${TOP-8}" width="${CW+8}" height="8" fill="#9bb56a"/><text x="${x+CW/2}" y="${TOP-12}" text-anchor="middle" font-size="12" fill="#5d7a35">地表</text>`;
+    st.vis.forEach((L,i)=>{
+      const hp=L.h*U;const sel=K.sel&&K.sel.c===c&&K.sel.i===i;
+      g+=`<g data-c="${c}" data-i="${i}" style="cursor:pointer"><rect x="${x}" y="${y}" width="${CW}" height="${hp}" fill="url(#pat-${L.rock})" stroke="${sel?'#e67e22':'rgba(0,0,0,.35)'}" stroke-width="${sel?5:1}"/>`;
+      const sz=Math.min(34,hp-8);
+      L.fos.forEach((f,j)=>{g+=icon(f[0],x+8+j*(sz+2),y+(hp-sz)/2,sz)});
+      const lx=x+12+L.fos.length*(sz+2);
+      g+=`<text x="${lx}" y="${y+hp/2+5}" font-size="13" fill="#1f1a16" paint-order="stroke" stroke="rgba(255,255,255,.85)" stroke-width="3">${L.fos.map(f=>f[1].replace(/\(.*\)/,'')).join('+')}</text>`;
+      if(K.revealed)g+=`<rect x="${x+CW-58}" y="${y+3}" width="54" height="20" rx="5" fill="rgba(47,111,143,.92)"/><text x="${x+CW-31}" y="${y+18}" text-anchor="middle" font-size="13" fill="#fff" font-weight="700">${P[L.t].name}</text>`;
+      g+='</g>';
+      const over=st.final.over;
+      if(L.unconf){const yb=over?y:y+hp;g+=`<path d="${wavy(x,x+CW,yb)}" stroke="#3a2614" stroke-width="3" fill="none" pointer-events="none"/>`;}
+      boxes.push({c,i,L,y0:y,y1:y+hp});y+=hp;
+    });
+    g+=`<path d="M${x} ${y} l14 10 l14 -8 l14 9 l14 -9 l14 10 l14 -9 l14 8 l14 -9 l14 10 l14 -8 l14 9 l16 -12" fill="none" stroke="#6d6259" stroke-width="1.5"/><text x="${x+CW/2}" y="${y+32}" text-anchor="middle" font-size="13" fill="#6d6259">……未见底</text>`;
+    maxH=Math.max(maxH,y);
+  });
+  K.links.forEach(lk=>{
+    const a=boxes.find(b=>b.c===lk[0]&&b.i===lk[1]),b=boxes.find(b=>b.c===lk[2]&&b.i===lk[3]);if(!a||!b)return;
+    const ok=a.L.t===b.L.t;const col=K.checked?(ok?'#2e8b57':'#c0392b'):'#3b2f26';
+    g+=`<path d="M${CX[a.c]+CW} ${(a.y0+a.y1)/2}L${CX[b.c]} ${(b.y0+b.y1)/2}" stroke="${col}" stroke-width="3" stroke-dasharray="9 6"/>`;
+    if(K.checked)g+=`<text x="${(CX[a.c]+CW+CX[b.c])/2}" y="${((a.y0+a.y1)/2+(b.y0+b.y1)/2)/2-6}" text-anchor="middle" font-size="18" fill="${col}" font-weight="700">${ok?'✔':'✘'}</text>`;
+  });
+  const H=maxH+50;sv2.setAttribute('viewBox',`0 0 900 ${H}`);
+  sv2.innerHTML=`<rect width="900" height="${H}" fill="#f3ede1"/>`+g;
+}
+sv2.addEventListener('click',e=>{
+  const gEl=e.target.closest('[data-c]');if(!gEl)return;
+  const c=+gEl.dataset.c,i=+gEl.dataset.i;
+  if(!K.sel||K.sel.c===c){K.sel=(K.sel&&K.sel.c===c&&K.sel.i===i)?null:{c,i};drawCase();return}
+  if(Math.abs(K.sel.c-c)!==1){msg2.innerHTML='只能和<b>相邻</b>地点的地层连线（A–B 或 B–C）。';K.sel={c,i};drawCase();return}
+  const a=K.sel.c<c?[K.sel.c,K.sel.i,c,i]:[c,i,K.sel.c,K.sel.i];
+  const ex=K.links.findIndex(l=>l.join()===a.join());
+  if(ex>=0)K.links.splice(ex,1);else K.links.push(a);
+  K.sel=null;K.checked=false;msg2.innerHTML=`已连 ${K.links.length} 条。再点同一对可以取消。全部连完后点“核对连线”。`;drawCase();
+});
+document.getElementById('bClear').onclick=()=>{K.links=[];K.sel=null;K.checked=false;drawCase();msg2.textContent='连线已清除。'};
+document.getElementById('bCheck').onclick=()=>{
+  K.checked=true;let ok=0,bad=0;
+  K.links.forEach(l=>{const a=K.sites[l[0]].vis[l[1]],b=K.sites[l[2]].vis[l[3]];a.t===b.t?ok++:bad++});
+  let need=0;[[0,1],[1,2]].forEach(([p,q])=>{const ts=new Set(K.sites[p].vis.map(L=>L.t));K.sites[q].vis.forEach(L=>{if(ts.has(L.t))need++})});
+  const miss=need-ok;
+  msg2.innerHTML=`<span class="ok">正确 ${ok} 条</span>　<span class="bad">错误 ${bad} 条</span>　还差 ${Math.max(0,miss)} 对没连。`+(bad?' 红色的那条：两层的化石真的一样吗？':'')+(!bad&&!miss?' 🎉 全部连对！接下来看看：哪里“缺页”了？为什么？':'');
+  drawCase();
+};
+document.getElementById('bReveal').onclick=()=>{
+  K.revealed=true;drawCase();
+  document.getElementById('truthList').innerHTML=K.sites.map(s=>`<li>${s.truth}</li>`).join('');
+  document.getElementById('replayBtns').innerHTML=K.sites.map((s,c)=>`<button class="sec" data-r="${c}">▶ 回放${s.name}的形成过程</button>`).join('');
+  document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>openReplay(+b.dataset.r));
+  document.getElementById('truth').style.display='block';
+};
+function buildAtlas(){
+  let h='';let lastEra='';
+  for(let i=11;i>=0;i--){const p=P[i];
+    let eraCell='';if(p.era!==lastEra){const n=P.filter(x=>x.era===p.era).length;eraCell=`<td class="era" rowspan="${n}" style="background:${ERA_C[p.era]}">${p.era}</td>`;lastEra=p.era}
+    h+=`<tr>${eraCell}<td><b>${p.name}</b><br><span class="hint">距今${p.ma}年起</span></td><td>${p.sig.map(f=>`<span class="ic"><svg viewBox="0 0 40 40">${ICON[f[0]]}</svg>${f[1]}</span>`).join('')}</td></tr>`;}
+  document.getElementById('atlas').innerHTML=h;
+}
+buildAtlas();
+function newCase(){
+  K=genCase(Math.floor(Math.random()*1e9),document.getElementById('cHard').checked);
+  drawCase();msg2.innerHTML='点击某一地的一层岩层，再点击相邻地点中你认为<b>同一时代</b>的岩层，就能连上虚线。';
+  document.getElementById('truth').style.display='none';document.getElementById('replayBox').style.display='none';
+  document.getElementById('chat').innerHTML='';document.getElementById('ta').value='';stopRp();
+  document.getElementById('hardTask').innerHTML=K.hard?'<br><span class="tag">挑战</span>有没有哪一地的地层“上下颠倒”了？你凭什么判断？':'';
+}
+document.getElementById('bNew').onclick=newCase;
+document.getElementById('cHard').onchange=newCase;
+
+/* ---- 回放 ---- */
+const st3=new Stage(document.getElementById('sv3'),document.getElementById('cap3'),document.getElementById('tl2'));
+let rp={ev:[],i:0,timer:null};
+function openReplay(c){
+  stopRp();const site=K.sites[c];rp.ev=site.ev;rp.i=0;
+  st3.range=[K.start,K.start+5];st3.reset(newState(K.start),`${site.name}：点击“自动播放”或“下一步”，看这本“书”是怎样一页页写成的。`);
+  document.getElementById('rpTitle').textContent=`回放：${site.name}的地层是怎样形成的`;
+  const box=document.getElementById('replayBox');box.style.display='block';box.scrollIntoView({behavior:'smooth',block:'start'});updRp();
+}
+function stopRp(){if(rp.timer){clearInterval(rp.timer);rp.timer=null}updRp()}
+function updRp(){const pb=document.getElementById('rpPlay');pb.textContent=rp.timer?'■ 暂停':'▶ 自动播放';document.getElementById('rpStep').disabled=!!rp.timer||rp.i>=rp.ev.length}
+function rpNext(){if(rp.i>=rp.ev.length){stopRp();return false}st3.apply(rp.ev[rp.i++]);if(rp.i>=rp.ev.length){st3.cap.textContent+='　（回放结束：和你的假说一致吗？）'}updRp();return true}
+document.getElementById('rpStep').onclick=rpNext;
+document.getElementById('rpRestart').onclick=()=>{stopRp();rp.i=0;st3.reset(newState(K.start),'从头开始。');updRp()};
+document.getElementById('rpPlay').onclick=()=>{if(rp.timer){stopRp();return}if(rp.i>=rp.ev.length){rp.i=0;st3.reset(newState(K.start))}rp.timer=setInterval(()=>{if(!rpNext())stopRp()},1600);rpNext();updRp()};
+
+/* ---- AI 地质学家 ---- */
+let sampleFn=null;const aiNote=document.getElementById('aiNote'),bAsk=document.getElementById('bAsk');
+bAsk.style.display='none';aiNote.textContent='（在 claude.ai 中打开本页时，可请 AI 追问）';
+try{if(window.claude&&claude.use)claude.use('sample').then(s=>{if(s){sampleFn=s;bAsk.style.display='';aiNote.textContent='';}}).catch(()=>{})}catch(e){}
+function caseBrief(){
+  const vis=K.sites.map(s=>`${s.name}（自上而下）：`+s.vis.map(L=>`${ROCK[L.rock].n}[${names(L.fos)||'无化石'}]${L.unconf?'(其下有侵蚀面)':''}`).join(' / ')).join('\n');
+  return `学生看到的三地地层柱：\n${vis}\n学生手里有地质年代化石图鉴。\n真相（不要直接告诉学生）：\n${K.sites.map(s=>s.truth).join('\n')}`;
+}
+function addBub(cls,txt){const d=document.createElement('div');d.className='bub '+cls;d.textContent=txt;const ch=document.getElementById('chat');ch.appendChild(d);ch.scrollTop=ch.scrollHeight;return d}
+bAsk.onclick=async()=>{
+  const ta=document.getElementById('ta');const txt=ta.value.trim();if(!txt){ta.focus();return}
+  if(!sampleFn)return;
+  addBub('me',txt);ta.value='';
+  if(!K.chat.length){
+    K.chat.push({role:'user',content:`你是高中地理课上的“AI地质学家”，用苏格拉底式追问引导高一学生学习《地球的历史》（地层、化石与地质年代）。\n${caseBrief()}\n规则：用不超过90字的中文口语回复，不用markdown；先指出学生推理中有依据的地方，再只提一个追问，引导他找证据或考虑另一种可能；不要直接说出真相。如果学生已经基本推对，就肯定他，并追问更深一层的问题（例如：怎样区分“当时没有沉积”和“沉积后被侵蚀掉”？倒转了怎么识别？）。若学生的说法有科学错误，要用问题引导他自己发现。\n学生的推理：${txt}`});
+  }else K.chat.push({role:'user',content:txt});
+  const b=addBub('ai','思考中……');bAsk.disabled=true;
+  try{
+    const r=await sampleFn(K.chat,{cache:false,modelTier:'quick',onText:({text})=>{b.textContent=text}});
+    b.textContent=r.text;K.chat.push({role:'assistant',content:r.text});
+  }catch(e){
+    K.chat.pop();
+    if(e&&e.code==='not_granted'){bAsk.style.display='none';aiNote.textContent='（AI 追问未获授权）';b.remove();}
+    else b.textContent=(e&&e.code==='rate_limited')?'请求有点多，稍等一会儿再试。':'暂时没有连上，请稍后再试。';
+  }
+  bAsk.disabled=false;
+};
+newCase();
+</script>
+<div style='position:fixed;right:12px;bottom:10px;z-index:2147483647;font:12px/1.4 sans-serif;color:#1b2b52;background:rgba(255,255,255,.82);padding:4px 10px;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.3);pointer-events:none;letter-spacing:.5px;'>横山桥高级中学 孙慧制作</div>
+</body>
+</html>
