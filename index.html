@@ -548,6 +548,32 @@
 <style id='wb-copyright-style'>
 #wb-copyright-note{position:fixed;left:50%;bottom:8px;transform:translateX(-50%);z-index:9998;pointer-events:none;font-size:12px;font-family:sans-serif;color:#555;opacity:.78;line-height:1.4;background:rgba(255,255,255,.78);border:1px solid rgba(0,0,0,.07);border-radius:999px;padding:3px 14px;white-space:nowrap;max-width:94vw;overflow:hidden;text-overflow:ellipsis;}
 </style>
+<script src="lib/changelog.js"></script>
+<style id="wb-update-style">
+.wb-update-wrap{max-width:1240px;margin:0 auto;padding:0 20px 10px;}
+.wb-update-card{display:flex;align-items:center;gap:12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-card);padding:10px 16px;box-shadow:var(--shadow-card);}
+.wb-update-title{flex:none;font-weight:700;font-size:0.9rem;color:var(--text);}
+.wb-update-marquee{flex:1;overflow:hidden;white-space:nowrap;cursor:pointer;min-width:0;}
+.wb-marquee-inner{display:inline-block;white-space:nowrap;font-size:0.82rem;color:var(--text);will-change:transform;animation:wbMarquee 24s linear infinite;}
+.wb-marquee-inner:hover{animation-play-state:paused;}
+.wb-marq-date{color:var(--accent);font-weight:700;margin-right:6px;}
+.wb-marq-sep{color:var(--text-muted);margin:0 18px;}
+@keyframes wbMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.wb-update-card.wb-expanded{display:block;}
+.wb-update-card.wb-expanded .wb-update-marquee{display:none;}
+.wb-update-card.wb-expanded .wb-update-list{display:block !important;}
+.wb-update-card.wb-expanded .wb-update-title{display:block;margin-bottom:6px;}
+.wb-update-list{list-style:none;margin:0;padding:0;}
+.wb-update-item{display:flex;gap:12px;padding:6px 0;border-bottom:1px dashed var(--border);font-size:0.85rem;color:var(--text);}
+.wb-update-item:last-child{border-bottom:none;}
+.wb-update-date{flex:none;font-weight:700;color:var(--accent);white-space:nowrap;padding-top:1px;}
+.wb-update-item ul{margin:0;padding:0;list-style:none;}
+.wb-update-item li{color:var(--text);line-height:1.6;}
+.wb-update-item li::before{content:"· ";color:var(--accent);}
+.wb-update-more{flex:none;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;padding:4px 12px;border-radius:var(--radius-pill);cursor:pointer;transition:color .2s,border-color .2s;}
+.wb-update-more:hover{color:var(--accent);border-color:var(--accent);}
+.wb-new-badge{position:absolute;top:8px;right:8px;background:#ff4d4f;color:#fff;font-size:11px;font-weight:700;line-height:1;padding:3px 7px;border-radius:999px;z-index:6;box-shadow:0 1px 4px rgba(255,77,79,.45);}
+</style>
 </head>
 <body>
     <!-- Hero Banner 迷你 Header（地球IP + 大标题 + Slogan + 3胶囊 + 左右手绘插画） -->
@@ -625,6 +651,18 @@
         </div>
     </div>
 
+    <!-- 最近更新（新增，不改动原有布局：一行滚动播报，点击展开全部） -->
+    <div class="wb-update-wrap">
+        <div class="wb-update-card" id="wbUpdateCard">
+            <span class="wb-update-title">📢 最近更新</span>
+            <div class="wb-update-marquee" id="wbUpdateMarquee" title="点击查看全部更新">
+                <span class="wb-marquee-inner" id="wbMarqueeInner"></span>
+            </div>
+            <button class="wb-update-more" id="wbUpdateMore">全部 ▾</button>
+            <ul class="wb-update-list" id="wbUpdateList" style="display:none;"></ul>
+        </div>
+    </div>
+
     <!-- Nav Bar（分类 tab 行，📲 安装按钮靠右） -->
     <div class="nav-bar">
         <div class="nav-row nav-row-2">
@@ -651,6 +689,7 @@
             <p>地理智能化教学工作台 · 汇集优质地理教学资源 · 助力高效课堂</p>
             <p style="margin-top:4px; opacity:0.6;">仅课堂教学使用，非商业用途</p>
             <p style="margin-top:6px; opacity:0.45; font-size:0.85em;">© 2026 常州市武进区横山桥高级中学地理教研组</p>
+            <p style="margin-top:4px; opacity:0.4; font-size:0.8em;">本站使用匿名访问统计，仅用于了解工具使用情况</p>
         </footer>
 
         <!-- 版权水印 -->
@@ -676,18 +715,18 @@
                 color: '#feca57',
                 desc: '地球运动、星空、天文教具',
                 sites: [
-                    { title: '太阳视运动·天球模型', url: 'file:///F:/教学工作台素材/太阳视运动天球模型.html', icon: '☀️', desc: '天球探究模型，直观展示太阳周日/周年视运动、日出日落方位与正午太阳高度变化。', local: true, kind: 'html', cloud: '太阳视运动天球模型.html', path: 'F:\\教学工作台素材\\太阳视运动天球模型.html' },
-                    { title: '恒星视运动·天球模型', url: 'file:///F:/教学工作台素材/恒星视运动·天球模型.html', icon: '⭐', desc: '天球交互演示系统，展示恒星周日视运动的轨迹与成因。', local: true, kind: 'html', cloud: '恒星视运动·天球模型.html', path: 'F:\\教学工作台素材\\恒星视运动·天球模型.html' },
-                    { title: '地球公转与黄赤交角', url: 'file:///D:/360MoveData/Users/29621/Desktop/地球公转与黄赤交角.html', icon: '🌍', desc: '交互演示地球公转与黄赤交角的关系，理解四季更替、太阳直射点回归运动与昼夜长短、正午太阳高度的季节变化。', local: true, kind: 'html', cloud: '地球公转与黄赤交角.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\地球公转与黄赤交角.html' },
-                    { title: '正午太阳高度及其应用', url: 'file:///F:/教学工作台素材/太阳高度 杆影规律应用日晷(1).html', icon: '🌞', desc: '交互演示正午太阳高度的变化规律，及其在日晷、楼间距等生活中的应用。', local: true, kind: 'html', cloud: '太阳高度杆影规律应用日晷.html', path: 'F:\\教学工作台素材\\太阳高度 杆影规律应用日晷(1).html' },
-                    { title: '昼夜长短的变化', url: 'file:///D:/29621/微信下载文件/xwechat_files/wxid_st7xrbkwoqqs22_c0ed/msg/file/2026-11/昼夜长短的变化 光照图探究.html', icon: '🌓', desc: '交互探究任意日期、纬度的昼夜长短变化，结合光照图理解晨昏线、极昼极夜与季节更替。', local: true, kind: 'html', cloud: '昼夜长短的变化光照图探究.html', path: 'D:\\29621\\微信下载文件\\xwechat_files\\wxid_st7xrbkwoqqs22_c0ed\\msg\\file\\2026-11\\昼夜长短的变化 光照图探究.html' },
-                    { title: '地球自转及其地理意义', url: 'file:///F:/教学工作台素材/地球自转及其地理意义.html', icon: '🌏', desc: '交互演示地球自转特征、恒星日与太阳日、地转偏向力及时差等地理意义。', local: true, kind: 'html', cloud: '地球自转及其地理意义.html', path: 'F:\\教学工作台素材\\地球自转及其地理意义.html' },
-                    { title: '月相演示', url: 'file:///F:/教学工作台素材/月相.html', icon: '🌙', desc: '交互式月相成因光路图：新月、上弦月、满月、下弦月的形成原理。', local: true, kind: 'html', cloud: '月相.html', path: 'F:\\教学工作台素材\\月相.html' },
-                    { title: '地球运动flash课件', url: 'file:///E:/课件、教材、教学设计/自然地理视频与动画/地球运动/地球的运动flash课件.exe', icon: '🌍', desc: '系统讲解自转与公转的规律、周期、速度及其地理意义。', local: true, cloud: 'player.html?swf=swf/diqiuyundong_0.swf', path: 'E:\\课件、教材、教学设计\\自然地理视频与动画\\地球运动\\地球的运动flash课件.exe' },
+                    { title: '太阳视运动·天球模型', url: '太阳视运动天球模型.html', icon: '☀️', desc: '天球探究模型，直观展示太阳周日/周年视运动、日出日落方位与正午太阳高度变化。', local: true, kind: 'html', cloud: '太阳视运动天球模型.html' },
+                    { title: '恒星视运动·天球模型', url: '恒星视运动·天球模型.html', icon: '⭐', desc: '天球交互演示系统，展示恒星周日视运动的轨迹与成因。', local: true, kind: 'html', cloud: '恒星视运动·天球模型.html' },
+                    { title: '地球公转与黄赤交角', url: '地球公转与黄赤交角.html', icon: '🌍', desc: '交互演示地球公转与黄赤交角的关系，理解四季更替、太阳直射点回归运动与昼夜长短、正午太阳高度的季节变化。', local: true, kind: 'html', cloud: '地球公转与黄赤交角.html' },
+                    { title: '正午太阳高度及其应用', url: '太阳高度杆影规律应用日晷.html', icon: '🌞', desc: '交互演示正午太阳高度的变化规律，及其在日晷、楼间距等生活中的应用。', local: true, kind: 'html', cloud: '太阳高度杆影规律应用日晷.html' },
+                    { title: '昼夜长短的变化', url: '昼夜长短的变化光照图探究.html', icon: '🌓', desc: '交互探究任意日期、纬度的昼夜长短变化，结合光照图理解晨昏线、极昼极夜与季节更替。', local: true, kind: 'html', cloud: '昼夜长短的变化光照图探究.html' },
+                    { title: '地球自转及其地理意义', url: '地球自转及其地理意义.html', icon: '🌏', desc: '交互演示地球自转特征、恒星日与太阳日、地转偏向力及时差等地理意义。', local: true, kind: 'html', cloud: '地球自转及其地理意义.html' },
+                    { title: '月相演示', url: '月相.html', icon: '🌙', desc: '交互式月相成因光路图：新月、上弦月、满月、下弦月的形成原理。', local: true, kind: 'html', cloud: '月相.html' },
+                    { title: '地球运动flash课件', url: 'player.html?swf=swf/diqiuyundong_0.swf', icon: '🌍', desc: '系统讲解自转与公转的规律、周期、速度及其地理意义。', local: true, cloud: 'player.html?swf=swf/diqiuyundong_0.swf' },
                     { title: '10万颗星星', url: 'http://stars.chromeexperiments.com/', icon: '✨', desc: '谷歌星球实验项目，浏览 10 万颗近真实星星。' },
                     { title: '虚拟天文馆', url: 'https://stellarium-web.org', icon: '🪐', desc: '免费开源星空模拟在线版，设定任意地点与时间模拟当时星空。' },
                     { title: '人造天体过境', url: 'http://www.heavens-above.com/', icon: '🛰️', desc: '查询人造卫星、空间站等天体过境时间和方位。' },
-                    { title: '经纬网及其应用', url: 'file:///C:/Users/29621/WorkBuddy/2026-08-20-07-32-53/dist/经纬网.html', icon: '🌐', desc: '3D 交互式经纬网：球面/平面双视图，含经度/纬度/球对称点/最短航向 4 个知识点。', local: true, kind: 'html', cloud: '经纬网.html', path: 'C:\\Users\\29621\\WorkBuddy\\2026-08-20-07-32-53\\dist\\经纬网.html' },
+                    { title: '经纬网及其应用', url: '经纬网.html', icon: '🌐', desc: '3D 交互式经纬网：球面/平面双视图，含经度/纬度/球对称点/最短航向 4 个知识点。', local: true, kind: 'html', cloud: '经纬网.html' },
                     { title: '空间环境研究预报中心', url: 'http://www.sepc.ac.cn/', icon: '🌌', desc: '空间天气预报与太阳活动监测。' },
                 ]
             },
@@ -698,15 +737,15 @@
                 color: '#e17055',
                 desc: '地质、地貌、板块运动',
                 sites: [
-                    { title: '在线地形图', url: 'file:///C:/Users/29621/WorkBuddy/2026-08-20-07-32-53/dist/地形图.html', icon: '⛰️', desc: '默认地形底图，可切换卫星/地形/矢量，含中文地名、5 组地形区、6 条分界线。', local: true, kind: 'html', cloud: '地形图.html', path: 'C:\\Users\\29621\\WorkBuddy\\2026-08-20-07-32-53\\dist\\地形图.html' },
+                    { title: '在线地形图', url: '地形图.html', icon: '⛰️', desc: '默认地形底图，可切换卫星/地形/矢量，含中文地名、5 组地形区、6 条分界线。', local: true, kind: 'html', cloud: '地形图.html' },
                     { title: '板块运动', url: 'https://dinosaurpictures.org/ancient-earth#260', icon: '🧩', desc: '拖动时间轴查看地球各时期大陆漂移面貌。' },
-                    { title: '古生物图谱', url: 'file:///J:/C-地质专业课件/古生物学/古生物图谱.exe', icon: '🦕', desc: '收录 276 种古生物图文资料（三叶虫、恐龙、猛犸象等）。', local: true, cloud: 'gushengwutupu/gushengwutupu.html', path: 'J:\\C-地质专业课件\\古生物学\\古生物图谱.exe' },
-                    { title: '岩石图谱', url: 'file:///D:/360MoveData/Users/29621/Desktop/新建文件夹/沉积岩', icon: '🪨', desc: '24 种常见岩石手标本图文资料，分沉积岩/岩浆岩/变质岩三大类。', local: true, cloud: 'yanshitupu/yanshitupu.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\新建文件夹' },
-                    { title: '地层侦探', url: 'file:///F:/教学工作台素材/地层侦探.html', icon: '🧭', desc: '交互式演示地层层序与地质年代，读懂地球这本"历史书"。', local: true, kind: 'html', cloud: '地层侦探.html', path: 'F:\\教学工作台素材\\地层侦探.html' },
+                    { title: '古生物图谱', url: 'gushengwutupu/gushengwutupu.html', icon: '🦕', desc: '收录 276 种古生物图文资料（三叶虫、恐龙、猛犸象等）。', local: true, cloud: 'gushengwutupu/gushengwutupu.html' },
+                    { title: '岩石图谱', url: 'yanshitupu/yanshitupu.html', icon: '🪨', desc: '24 种常见岩石手标本图文资料，分沉积岩/岩浆岩/变质岩三大类。', local: true, cloud: 'yanshitupu/yanshitupu.html' },
+                    { title: '地层侦探', url: '地层侦探.html', icon: '🧭', desc: '交互式演示地层层序与地质年代，读懂地球这本"历史书"。', local: true, kind: 'html', cloud: '地层侦探.html' },
                     { title: '海岸线变迁', url: 'https://linad3d.github.io/contourlines/', icon: '🌊', desc: '输入区域即可生成等高线与高程可视化，对比古今海岸线变化。' },
-                    { title: '常州3D地形', url: 'file:///F:/教学工作台素材/常州3D地形.html', icon: '🗻', desc: '基于真实高程数据的常州及周边三维地形，可旋转缩放观察地貌。', local: true, kind: 'html', cloud: '常州3D地形.html', path: 'F:\\教学工作台素材\\常州3D地形.html' },
-                    { title: '江苏3D地形', url: 'file:///F:/教学工作台素材/江苏3D地形.html', icon: '🗻', desc: '基于真实高程数据的江苏全域三维地形，可旋转缩放观察地貌。', local: true, kind: 'html', cloud: '江苏3D地形.html', path: 'F:\\教学工作台素材\\江苏3D地形.html' },
-                    { title: '等高线地形图（清明山和茅山）', url: 'file:///F:/教学工作台素材/等高线地形图 清明山与茅山.html', icon: '⛰️', desc: '交互式等高线地形图判读：对比清明山与茅山的等高线形态，掌握地形图阅读方法。', local: true, kind: 'html', cloud: '等高线地形图清明山与茅山.html', path: 'F:\\教学工作台素材\\等高线地形图 清明山与茅山.html' },
+                    { title: '常州3D地形', url: '常州3D地形.html', icon: '🗻', desc: '基于真实高程数据的常州及周边三维地形，可旋转缩放观察地貌。', local: true, kind: 'html', cloud: '常州3D地形.html' },
+                    { title: '江苏3D地形', url: '江苏3D地形.html', icon: '🗻', desc: '基于真实高程数据的江苏全域三维地形，可旋转缩放观察地貌。', local: true, kind: 'html', cloud: '江苏3D地形.html' },
+                    { title: '等高线地形图（清明山和茅山）', url: '等高线地形图清明山与茅山.html', icon: '⛰️', desc: '交互式等高线地形图判读：对比清明山与茅山的等高线形态，掌握地形图阅读方法。', local: true, kind: 'html', cloud: '等高线地形图清明山与茅山.html' },
 
                 ]
             },
@@ -717,10 +756,10 @@
                 color: '#54a0ff',
                 desc: '天气、风场、卫星云图',
                 sites: [
-                    { title: '世界气候分布图', url: 'file:///F:/教学工作台素材/世界气候分布图.html', icon: '🌍', desc: '交互式 3D 地球上判读世界气候类型分布，点击查看各地气候特征。', local: true, kind: 'html', cloud: '世界气候分布图.html', path: 'F:\\教学工作台素材\\世界气候分布图.html' },
-                    { title: '世界陆地自然带', url: 'file:///F:/教学工作台素材/世界陆地自然带.html', icon: '🌿', desc: '交互式世界陆地自然带分布地图，查看各自然带的位置、特征与典型植被。', local: true, kind: 'html', cloud: '世界陆地自然带.html', path: 'F:\\教学工作台素材\\世界陆地自然带.html' },
-                    { title: 'AI地理实验室：锋与天气', url: 'file:///D:/360MoveData/Users/29621/Desktop/AI地理实验室 锋与天气.html', icon: '⛈️', desc: '交互式演示冷暖气团相遇形成锋面及锋面天气，含动画与气温气压曲线。', local: true, kind: 'html', cloud: '锋与天气.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\AI地理实验室 锋与天气.html' },
-                    { title: '大气环流交互模拟器', url: 'file:///D:/360MoveData/Users/29621/Desktop/大气环流交互模拟器.html', icon: '🌪️', desc: '交互模拟全球大气环流模式，直观呈现三圈环流、气压带与风带的成因与分布。', local: true, kind: 'html', cloud: '大气环流交互模拟器.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\大气环流交互模拟器.html' },
+                    { title: '世界气候分布图', url: '世界气候分布图.html', icon: '🌍', desc: '交互式 3D 地球上判读世界气候类型分布，点击查看各地气候特征。', local: true, kind: 'html', cloud: '世界气候分布图.html' },
+                    { title: '世界陆地自然带', url: '世界陆地自然带.html', icon: '🌿', desc: '交互式世界陆地自然带分布地图，查看各自然带的位置、特征与典型植被。', local: true, kind: 'html', cloud: '世界陆地自然带.html' },
+                    { title: 'AI地理实验室：锋与天气', url: '锋与天气.html', icon: '⛈️', desc: '交互式演示冷暖气团相遇形成锋面及锋面天气，含动画与气温气压曲线。', local: true, kind: 'html', cloud: '锋与天气.html' },
+                    { title: '大气环流交互模拟器', url: '大气环流交互模拟器.html', icon: '🌪️', desc: '交互模拟全球大气环流模式，直观呈现三圈环流、气压带与风带的成因与分布。', local: true, kind: 'html', cloud: '大气环流交互模拟器.html' },
                     { title: '全球气象平台 Ventusky', url: 'https://www.ventusky.com/', icon: '🌡️', desc: '全球气象可视化平台，实时展示温度/降水/风场等多维气象数据。' },
                     { title: '地球风图nullschool', url: 'https://earth.nullschool.net/', icon: '🌀', desc: '全球风场、气象与海洋状况实时可视化。' },
                     { title: '风云四号卫星天气应用平台', url: 'http://rsapp.nsmc.org.cn/geofy/?i=0&isPlay=true&speed=2&sat=fy-4a&pro=geos&type=full_disk&band=1', icon: '🛰️', desc: '国产风云四号气象卫星云图实时展示。' },
@@ -736,7 +775,7 @@
                 sites: [
                     { title: '地球 NullSchool 洋流地图', url: 'https://earth.nullschool.net/#current/ocean/surface/currents/orthographic', icon: '🌐', desc: '全球海洋洋流实时可视化。' },
                     { title: 'NowCoast 实时海岸观测', url: 'https://nowcoast.noaa.gov/', icon: '🗺️', desc: '美国 NOAA 实时海岸观测平台。' },
-                    { title: '世界洋流分布图', url: 'file:///D:/360MoveData/Users/29621/Desktop/index(3).html', icon: '🌊', desc: '交互式世界表层洋流分布地图，查看洋流详情、分布规律与渔场分布。', local: true, kind: 'html', cloud: '世界洋流分布图.html', path: 'D:\\360MoveData\\Users\\29621\\Desktop\\index(3).html' },
+                    { title: '世界洋流分布图', url: '世界洋流分布图.html', icon: '🌊', desc: '交互式世界表层洋流分布地图，查看洋流详情、分布规律与渔场分布。', local: true, kind: 'html', cloud: '世界洋流分布图.html' },
                 ]
             },
             {
@@ -746,8 +785,8 @@
                 color: '#ff6b6b',
                 desc: '人口、迁徙、城市数据',
                 sites: [
-                    { title: '常州城区地价模型', url: 'file:///F:/教学工作台素材/常州城区地价模型.html', icon: '🏙️', desc: '常州城区地价空间分布三维模型，直观呈现地价梯度与城市结构。', local: true, kind: 'html', cloud: '常州城区地价模型.html', path: 'F:\\教学工作台素材\\常州城区地价模型.html' },
-                    { title: '江苏常州城市扩张1995-2025', url: 'file:///F:/教学工作台素材/江苏常州城市扩张1995-2025.html', icon: '🛰️', desc: '基于卫星影像对比江苏与常州 1995–2025 年城市扩张过程。', local: true, kind: 'html', cloud: '江苏常州城市扩张1995-2025.html', path: 'F:\\教学工作台素材\\江苏常州城市扩张1995-2025.html' },
+                    { title: '常州城区地价模型', url: '常州城区地价模型.html', icon: '🏙️', desc: '常州城区地价空间分布三维模型，直观呈现地价梯度与城市结构。', local: true, kind: 'html', cloud: '常州城区地价模型.html' },
+                    { title: '江苏常州城市扩张1995-2025', url: '江苏常州城市扩张1995-2025.html', icon: '🛰️', desc: '基于卫星影像对比江苏与常州 1995–2025 年城市扩张过程。', local: true, kind: 'html', cloud: '江苏常州城市扩张1995-2025.html' },
                     { title: '世界人口时钟', url: 'https://countrymeters.info/cn/World', icon: '⏰', desc: '全球及各国人口实时变动数据。' },
                     { title: '百度迁徙', url: 'http://qianxi.baidu.com/', icon: '🚂', desc: '百度大数据迁徙地图，展示人口流动方向与规模。' },
                 ]
@@ -801,7 +840,7 @@
                 color: '#5b8def',
                 desc: '中国·世界地理教学常用图集',
                 sites: [
-                    { title: '中国·世界地理教学常用图', url: 'file:///D:/360MoveData/Users/29621/Desktop/教学地图集(1).html', icon: '📚', desc: '集中国与世界地理常用地图于一体的教学图集，便于课堂调用展示。', local: true, kind: 'html', cloud: '教学地图集.html', path: 'D:\\\\360MoveData\\\\Users\\\\29621\\\\Desktop\\\\教学地图集(1).html' },
+                    { title: '中国·世界地理教学常用图', url: '教学地图集.html', icon: '📚', desc: '集中国与世界地理常用地图于一体的教学图集，便于课堂调用展示。', local: true, kind: 'html', cloud: '教学地图集.html' },
                 ]
             },
             {
@@ -811,7 +850,7 @@
                 color: '#f368e0',
                 desc: '课堂互动游戏，寓教于乐',
                 sites: [
-                    { title: '地理快问快答', url: 'file:///D:/360MoveData/Users/29621/Desktop/geo-quiz.html', icon: '⚡', desc: '课堂快问快答抢答游戏，支持老师自定义题目，适合课堂复习互动。', local: true, kind: 'html', cloud: 'geo-quiz.html', path: 'D:\\\\360MoveData\\\\Users\\\\29621\\\\Desktop\\\\geo-quiz.html' },
+                    { title: '地理快问快答', url: 'geo-quiz.html', icon: '⚡', desc: '课堂快问快答抢答游戏，支持老师自定义题目，适合课堂复习互动。', local: true, kind: 'html', cloud: 'geo-quiz.html' },
                 ]
             },
         ];
@@ -869,16 +908,13 @@
 
                 filteredSites.forEach(site => {
                     globalCardIdx++;
-                    const isCloudEnv = location.protocol !== 'file:';
-                    const isCloudCard = isCloudEnv && site.cloud;
+                    // 原创工具一律用仓库内相对路径：线上、U盘、本机打开都能用
+                    const isCloudCard = !!site.cloud;
 
                     // 决定链接 href（云端有 cloud → 用 cloud 链接；本地 → 直接打开本地路径；纯外链 → 原 URL）
                     let href = '#', target = '', cursorStyle = 'cursor: pointer;';
                     if (isCloudCard) {
                         href = site.cloud; target = 'target="_blank"';
-                    } else if (site.local) {
-                        const fp = 'file:///' + site.path.replace(/\\/g, '/');
-                        href = encodeURI(fp); target = 'target="_blank"';
                     } else {
                         href = site.url; target = 'target="_blank"';
                     }
@@ -998,6 +1034,98 @@
   });
   function closeInstall(){ var m=document.getElementById('installModal'); if(m) m.style.display='none'; }
   window.closeInstall = closeInstall;
+</script>
+
+<script>
+// ===== 最近更新（新增，不改动原有分类/卡片/搜索/样式）：一行滚动播报 + 可展开完整列表 =====
+(function () {
+  var data = window.WB_CHANGELOG || [];
+  var card = document.getElementById('wbUpdateCard');
+  var marq = document.getElementById('wbUpdateMarquee');
+  var inner = document.getElementById('wbMarqueeInner');
+  var list = document.getElementById('wbUpdateList');
+  var moreBtn = document.getElementById('wbUpdateMore');
+  if (!card || !inner || !data.length) return;
+
+  function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+  function shortDate(s) { return s && s.length >= 10 ? s.slice(5) : s; }
+
+  // 一行滚动：只播报最新一条记录，内容重复两遍实现无缝循环
+  var rec = data[0];
+  var seg = '';
+  (rec.items || []).forEach(function (it) {
+    seg += '<span><b class="wb-marq-date">' + esc(shortDate(rec.date)) + '</b>' + esc(it) + '<span class="wb-marq-sep">｜</span></span>';
+  });
+  inner.innerHTML = seg + seg;
+  // 按内容长度自适应滚动速度（约 45px/秒）
+  setTimeout(function () {
+    try { inner.style.animationDuration = Math.max(12, Math.round(inner.scrollWidth / 2 / 45)) + 's'; } catch (e) {}
+  }, 0);
+
+  // 点击展开完整列表 / 收起回到滚动
+  var expanded = false;
+  function renderList() {
+    var html = '';
+    data.forEach(function (r) {
+      html += '<li class="wb-update-item"><span class="wb-update-date">' + esc(r.date) + '</span><ul>';
+      (r.items || []).forEach(function (it) { html += '<li>' + esc(it) + '</li>'; });
+      html += '</ul></li>';
+    });
+    list.innerHTML = html;
+  }
+  function toggle() {
+    expanded = !expanded;
+    card.classList.toggle('wb-expanded', expanded);
+    if (expanded) renderList();
+    moreBtn.textContent = expanded ? '收起 ▴' : '全部 ▾';
+  }
+  moreBtn.addEventListener('click', toggle);
+  marq.addEventListener('click', toggle);
+
+  // 「新」角标：最近 30 天记录里 tools 命中的工具卡片右上角加角标
+  var newTools = {};
+  var now = Date.now();
+  data.forEach(function (rec) {
+    var t = new Date(rec.date.replace(/-/g, '/') + ' 00:00:00').getTime();
+    if (!isNaN(t) && (now - t) <= 30 * 86400000) {
+      (rec.tools || []).forEach(function (tool) { newTools[tool] = true; });
+    }
+  });
+
+  function markNew() {
+    document.querySelectorAll('#content .card').forEach(function (card) {
+      var t = card.querySelector('.card-title');
+      if (!t) return;
+      var name = t.textContent.trim();
+      if (newTools[name] && !card.querySelector('.wb-new-badge')) {
+        var b = document.createElement('span');
+        b.className = 'wb-new-badge';
+        b.textContent = '新';
+        card.appendChild(b);
+      }
+    });
+  }
+  markNew();
+  // 卡片切换分类/搜索会重绘，用 MutationObserver 自动补角标
+  var mo = new MutationObserver(markNew);
+  mo.observe(document.getElementById('content'), { childList: true, subtree: true });
+})();
+</script>
+
+<script>
+// ===== 51.la 匿名访问统计（断网加载失败时静默，不影响页面使用）=====
+try {
+  var st = document.createElement('script');
+  st.charset = 'UTF-8';
+  st.id = 'LA_COLLECT';
+  st.src = 'https://sdk.51.la/js-sdk-pro.min.js';
+  st.async = true;
+  st.onload = function () {
+    try { if (window.LA && LA.init) LA.init({ id: '3RklpAP0q2Wra3rt', ck: '3RklpAP0q2Wra3rt' }); } catch (e) {}
+  };
+  st.onerror = function () {};
+  (document.head || document.documentElement).appendChild(st);
+} catch (e) {}
 </script>
 </body>
 </html>

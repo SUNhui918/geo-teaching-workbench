@@ -92,9 +92,9 @@ section h3{margin:0 0 7px;font-size:13px;color:var(--acc);font-weight:600}
 <script>
 /* ================= 数据加载 ================= */
 var CDN={
- d3:['https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js','https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js','https://unpkg.com/d3@7.9.0/dist/d3.min.js'],
- china:['https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/china.js','https://unpkg.com/echarts@4.9.0/map/js/china.js','https://fastly.jsdelivr.net/npm/echarts@4.9.0/map/js/china.js'],
- world:['https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js','https://unpkg.com/echarts@4.9.0/map/js/world.js','https://fastly.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js']
+ d3:['lib/d3.min.js','https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js','https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js','https://unpkg.com/d3@7.9.0/dist/d3.min.js'],
+ china:['lib/echarts-map/china.js','https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/china.js','https://unpkg.com/echarts@4.9.0/map/js/china.js','https://fastly.jsdelivr.net/npm/echarts@4.9.0/map/js/china.js'],
+ world:['lib/echarts-map/world.js','https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js','https://unpkg.com/echarts@4.9.0/map/js/world.js','https://fastly.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js']
 };
 window.__MAPS={};
 window.echarts={registerMap:function(n,g){window.__MAPS[n]=g;}};
@@ -977,5 +977,6 @@ async function ensureData(){
 buildUI();
 ensureData().then(render);
 </script>
+<script src="lib/workbench-bar.js"></script>
 </body>
 </html>

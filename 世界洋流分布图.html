@@ -437,12 +437,13 @@ function buildLand(json){
 window.echarts={registerMap:(name,geo)=>{ if(name==='world'){ try{land=buildLand(decodeGeo(geo));dirty=true;document.getElementById('msg').style.display='none';}catch(err){console.error(err);} } }};
 function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s);});}
 (async()=>{
-  const urls=['https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js','https://unpkg.com/echarts@4.9.0/map/js/world.js'];
+  const urls=['lib/echarts-map/world.js','https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js','https://unpkg.com/echarts@4.9.0/map/js/world.js'];
   for(const u of urls){ try{ await loadScript(u); if(land) return; }catch(e){} }
   if(!land){document.getElementById('msg').textContent='底图加载失败（需联网一次），洋流仍可演示';setTimeout(()=>document.getElementById('msg').style.display='none',4000);}
 })();
 
 resize();applyExtent();requestAnimationFrame(frame);
 </script>
+<script src="lib/workbench-bar.js"></script>
 </body>
 </html>

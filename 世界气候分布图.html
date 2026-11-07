@@ -370,10 +370,11 @@ function buildLand(j){const polys=[];for(const f of j.features){const g=f.geomet
   return {type:'MultiPolygon',coordinates:polys};}
 window.echarts={registerMap:(n,g)=>{if(n==='world'){try{land=buildLand(decodeGeo(g));$('msg').style.display='none';}catch(e){console.error(e);}}}};
 function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s);});}
-(async()=>{for(const u of ['https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js','https://unpkg.com/echarts@4.9.0/map/js/world.js']){try{await loadScript(u);if(land)return;}catch(e){}}
+(async()=>{for(const u of ['lib/echarts-map/world.js','https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js','https://unpkg.com/echarts@4.9.0/map/js/world.js']){try{await loadScript(u);if(land)return;}catch(e){}}
   if(!land){$('msg').style.display='none';}})();
 
 buildTypes();resize();setMode('quiz');requestAnimationFrame(loop);
 </script>
+<script src="lib/workbench-bar.js"></script>
 </body>
 </html>
