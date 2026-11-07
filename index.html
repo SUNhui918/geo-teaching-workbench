@@ -545,9 +545,6 @@
             if (b) b.textContent = next === 'dark' ? '☀ 浅色' : '🌙 深色';
         }
     </script>
-<style id='wb-copyright-style'>
-#wb-copyright-note{position:fixed;left:50%;bottom:8px;transform:translateX(-50%);z-index:9998;pointer-events:none;font-size:12px;font-family:sans-serif;color:#555;opacity:.78;line-height:1.4;background:rgba(255,255,255,.78);border:1px solid rgba(0,0,0,.07);border-radius:999px;padding:3px 14px;white-space:nowrap;max-width:94vw;overflow:hidden;text-overflow:ellipsis;}
-</style>
 <script src="lib/changelog.js"></script>
 <style id="wb-update-style">
 .wb-update-wrap{max-width:1240px;margin:0 auto;padding:0 20px 10px;}
@@ -573,6 +570,12 @@
 .wb-update-more{flex:none;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;padding:4px 12px;border-radius:var(--radius-pill);cursor:pointer;transition:color .2s,border-color .2s;}
 .wb-update-more:hover{color:var(--accent);border-color:var(--accent);}
 .wb-new-badge{position:absolute;top:8px;right:8px;background:#ff4d4f;color:#fff;font-size:11px;font-weight:700;line-height:1;padding:3px 7px;border-radius:999px;z-index:6;box-shadow:0 1px 4px rgba(255,77,79,.45);}
+.wb-license-card{max-width:560px;margin:0 auto;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:22px 20px 16px;text-align:center;box-shadow:var(--shadow-card);}
+.wb-license-icon{width:44px;height:44px;margin:0 auto 8px;display:block;}
+.wb-license-main{font-size:1.05rem;font-weight:700;color:var(--text);letter-spacing:1px;}
+.wb-license-cc{display:inline-block;margin-top:10px;background:#e3f4e8;color:#1d7a5b;font-weight:700;font-size:.85rem;padding:4px 16px;border-radius:10px;letter-spacing:.5px;}
+.wb-license-author{margin-top:12px;color:var(--text-muted);font-size:.9rem;display:flex;align-items:center;gap:14px;justify-content:center;}
+.wb-license-author::before,.wb-license-author::after{content:"";height:1px;width:64px;background:var(--border);}
 </style>
 </head>
 <body>
@@ -686,10 +689,16 @@
         <div class="toast" id="toast"></div>
 
         <footer>
-            <p>地理智能化教学工作台 · 汇集优质地理教学资源 · 助力高效课堂</p>
-            <p style="margin-top:4px; opacity:0.6;">仅课堂教学使用，非商业用途</p>
-            <p style="margin-top:6px; opacity:0.45; font-size:0.85em;">© 2026 常州市武进区横山桥高级中学地理教研组</p>
-            <p style="margin-top:4px; opacity:0.4; font-size:0.8em;">本站使用匿名访问统计，仅用于了解工具使用情况</p>
+            <div class="wb-license-card">
+                <svg class="wb-license-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                    <circle cx="24" cy="24" r="20" stroke="#2bb8a3" stroke-width="3.4"/>
+                    <path d="M30.5 17.5 a9 9 0 1 0 0 13" stroke="#2bb8a3" stroke-width="3.4" stroke-linecap="round" fill="none"/>
+                </svg>
+                <div class="wb-license-main">教学免费使用 · 转载请注明出处 · 禁止商用</div>
+                <span class="wb-license-cc">CC BY-NC 4.0</span>
+                <div class="wb-license-author">常州市横山桥高中 · 孙慧制作</div>
+            </div>
+            <p style="margin-top:10px; opacity:0.4; font-size:0.8em;">本站使用匿名访问统计，仅用于了解工具使用情况</p>
         </footer>
 
         <!-- 版权水印 -->
@@ -973,12 +982,11 @@
     </script>
 <!-- 动态时间水印 -->
 <div id="time-wm" style="position:fixed;right:10px;bottom:8px;z-index:99999;pointer-events:none;user-select:none;text-align:right;font:11px/1.7 -apple-system,'Microsoft YaHei',sans-serif;color:rgba(255,255,255,.88);background:rgba(0,0,0,.42);padding:3px 10px;border-radius:12px;letter-spacing:.5px;white-space:nowrap;">
-  <span id="wm-now">--</span><br>横山桥高中地理教研组 创建于：2026-08-20
+  <span id="wm-now">--</span><br>江苏常州·横山桥高中·孙慧 创建于：2026-08-20
 </div>
 <script>
 (function(){var e=document.getElementById("wm-now");function p(n){return (n<10?"0":"")+n}function t(){var d=new Date();e.textContent="当前时间 "+d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes())}t();setInterval(t,30000)})();
 </script>
-<div id='wb-copyright-note'>本教学工作台由横山桥高级中学孙慧原创，仅供教学使用，未经许可不得商用</div>
 
 <!-- 安装应用引导弹窗 -->
 <div id="installModal" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(15,30,40,.55);align-items:center;justify-content:center;" onclick="if(event.target===this)closeInstall()">
