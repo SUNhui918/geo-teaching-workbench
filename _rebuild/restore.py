@@ -26,6 +26,7 @@ import zipfile
 import hashlib
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 REPO = "SUNhui918/geo-teaching-workbench"
 BRANCH = "main"
@@ -137,16 +138,16 @@ def main():
               % (len(blobs), len(big)), flush=True)
 
     total = len(blobs)
-    ok = skip = fail = 0
-    for i, t in enumerate(blobs, 1):
+    workers = 8
+
+    def job(t):
         path, want = t["path"], t["sha"]
         dst = os.path.join(out, *path.split("/"))
         if os.path.exists(dst):
             try:
                 with open(dst, "rb") as f:
                     if blob_sha(f.read()) == want:
-                        skip += 1
-                        continue
+                        return "skip", path
             except Exception:
                 pass
         raw = None
@@ -156,13 +157,25 @@ def main():
                 break
             time.sleep(1)
         if raw is None:
-            fail += 1
-            print("  X %s" % path, flush=True)
-            continue
+            return "fail", path
         write_file(out, path, raw)
-        ok += 1
-        if i % 50 == 0 or i == total:
-            print("  %d/%d  新增%d 跳过%d 失败%d" % (i, total, ok, skip, fail), flush=True)
+        return "ok", path
+
+    print("并发 %d 线程下载 ..." % workers, flush=True)
+    ok = skip = fail = 0
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(job, t) for t in blobs]
+        for i, fu in enumerate(as_completed(futures), 1):
+            status, path = fu.result()
+            if status == "ok":
+                ok += 1
+            elif status == "skip":
+                skip += 1
+            else:
+                fail += 1
+                print("  X %s" % path, flush=True)
+            if i % 100 == 0 or i == total:
+                print("  %d/%d  新增%d 跳过%d 失败%d" % (i, total, ok, skip, fail), flush=True)
 
     print("完成：新增 %d，跳过 %d，失败 %d" % (ok, skip, fail), flush=True)
     if fail:
