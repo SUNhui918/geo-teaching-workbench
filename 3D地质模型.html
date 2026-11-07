@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<!-- 本页面由横山桥高级中学 孙慧制作，仅供教学使用，未经许可不得商用 -->
+
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>3D地质模型</title>
+<style>
+:root{--ink:#1f2a33;--sub:#5b6872;--line:#d9e0e5;--bg:#f2f3ef;--in:#b5452f;--st:#7a4fa0;--ex:#2f6f9f;--acc:#2f6f9f}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+header h1{font-size:19px;margin:0;letter-spacing:.5px}
+header .tip{color:var(--sub);font-size:13px;flex:1}
+header button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 12px;font-size:13px;cursor:pointer;color:var(--ink)}
+.wrap{display:grid;grid-template-columns:270px 1fr;gap:14px;padding:14px;max-width:1560px;margin:0 auto}
+nav{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;align-self:start;position:sticky;top:64px;max-height:calc(100vh - 80px);overflow:auto}
+.tabs{display:flex;gap:6px;margin-bottom:8px}
+.tabs button{flex:1;border:0;border-radius:8px;padding:8px 0;font-size:14.5px;font-weight:600;cursor:pointer;background:#eef1f3;color:var(--sub)}
+.tabs button.on[data-c="内"]{background:var(--in);color:#fff}
+.tabs button.on[data-c="构"]{background:var(--st);color:#fff}
+.tabs button.on[data-c="外"]{background:var(--ex);color:#fff}
+.grp{margin:6px 0 10px}
+.grp h3{font-size:13px;margin:6px 4px 4px;font-weight:600;display:flex;align-items:center;gap:6px}
+.grp h3:before{content:"";width:4px;height:12px;border-radius:2px;background:currentColor;opacity:.55}
+.mbtn{display:block;width:100%;text-align:left;border:0;background:transparent;border-radius:8px;padding:6px 10px;font-size:14.5px;cursor:pointer;color:var(--ink)}
+.mbtn small{color:var(--sub);font-size:12px;margin-right:4px}
+.mbtn:hover{background:#f1f4f6}
+.mbtn.on{background:#e6eef5;color:var(--acc);font-weight:600}
+main{min-width:0}
+.stage{position:relative;background:#dfe8ee;border:1px solid var(--line);border-radius:12px;overflow:hidden;height:min(66vh,640px)}
+#cv{width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#cv:active{cursor:grabbing}
+.cap{position:absolute;left:12px;top:10px;right:12px;pointer-events:none}
+.cap .crumb{font-size:12.5px;color:#3d4a54}
+.cap .ttl{font-size:21px;font-weight:700;text-shadow:0 1px 0 rgba(255,255,255,.7)}
+.cap .stg{display:inline-block;margin-top:6px;background:rgba(255,255,255,.92);border-left:4px solid var(--acc);padding:5px 10px;border-radius:6px;font-size:15px;max-width:600px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.ctrl{display:flex;align-items:center;gap:10px;padding:10px 4px;flex-wrap:wrap}
+.ctrl button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;font-size:14px;cursor:pointer;color:var(--ink)}
+.ctrl button.pri{background:var(--acc);color:#fff;border-color:var(--acc);min-width:78px}
+.ctrl input[type=range]{flex:1;min-width:160px;accent-color:var(--acc)}
+.ctrl .pct{font-variant-numeric:tabular-nums;color:var(--sub);font-size:13px;width:40px}
+.info{display:grid;grid-template-columns:1.2fr 1fr;gap:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.card h4{margin:2px 0 6px;font-size:15px}
+.card p{margin:4px 0}
+.card ul{margin:4px 0;padding-left:20px}
+.kd{margin-top:8px;padding:8px 10px;background:#fbf6ea;border-radius:8px;font-size:14px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:13px;color:var(--sub)}
+.legend i{display:inline-block;width:16px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:4px;border:1px solid rgba(0,0,0,.18);background-size:cover}
+.note{font-size:12.5px;color:var(--sub);margin-top:10px}
+#err{display:none;position:absolute;inset:0;align-items:center;justify-content:center;text-align:center;padding:30px;color:var(--sub);background:#eef1ee;line-height:1.9}
+#loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--sub);background:#e7ece9}
+@media (max-width:900px){
+ .wrap{grid-template-columns:1fr;padding:8px;gap:8px}
+ header .tip{display:none}
+ nav{position:static;max-height:none;padding:8px}
+ .grps{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+ .grp{flex:0 0 auto;margin:0}
+ .grp h3{margin:2px 2px}
+ .grp .list{display:flex;gap:4px}
+ .mbtn{white-space:nowrap;width:auto;background:#f1f4f6;padding:6px 10px;font-size:13.5px}
+ .stage{height:54vh}
+ .cap .ttl{font-size:17px}.cap .stg{font-size:13.5px}
+ .info{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header>
+ <h1>3D地质模型</h1>
+ <div class="tip">单指/左键拖动旋转 · 滚轮/双指缩放 · 右键/双指拖动平移 · 拖动进度条看过程</div>
+ <button id="fs">全屏</button>
+</header>
+<div class="wrap">
+ <nav>
+  <div class="tabs"><button data-c="内" class="on">内力作用</button><button data-c="构">地质构造</button><button data-c="外">外力作用</button></div>
+  <div class="grps" id="grps"></div>
+ </nav>
+ <main>
+  <div class="stage" id="stage">
+   <canvas id="cv"></canvas>
+   <div class="cap"><div class="crumb" id="crumb"></div><div class="ttl" id="ttl"></div><div class="stg" id="stg"></div></div>
+   <div id="loading">正在加载 3D 引擎……</div>
+   <div id="err">3D 引擎（three.js）没有加载成功。<br>本页需要联网从公共 CDN 加载 three.js，请检查网络后刷新；<br>若学校网络屏蔽了 CDN，可换手机热点再试。</div>
+  </div>
+  <div class="ctrl">
+   <button class="pri" id="play">▶ 播放</button>
+   <button id="replay">↺ 重播</button>
+   <input type="range" id="prog" min="0" max="1000" value="0">
+   <span class="pct" id="pct">0%</span>
+   <button id="lab">标签：开</button>
+   <button id="view">视角复位</button>
+  </div>
+  <div class="info">
+   <div class="card"><h4>原理</h4><div id="pr"></div><div class="legend" id="lg"></div></div>
+   <div class="card"><h4>观察要点</h4><ul id="ob"></ul><div class="kd" id="kd"></div></div>
+  </div>
+  <div class="note">模型为示意：比例、厚度、速度均已简化和夸张，用于帮助理解过程。部分素材参考“桔灯勘探·经典地质动图”。</div>
+ </main>
+</div>
+
+<script>
+/* ---------- 加载 three.js：依次尝试多个 CDN（只需要主库，旋转控制为本页自带） ---------- */
+const CDNS=['https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js',
+ 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+ 'https://unpkg.com/three@0.128.0/build/three.min.js',
+ 'https://cdn.bootcdn.net/ajax/libs/three.js/r128/three.min.js',
+ 'https://lib.baomitu.com/three.js/r128/three.min.js',
+ 'https://cdn.staticfile.org/three.js/r128/three.min.js'];
+function loadScript(src,ms){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;const tm=setTimeout(()=>{s.remove();no('timeout');},ms||9000);s.onload=()=>{clearTimeout(tm);ok();};s.onerror=()=>{clearTimeout(tm);s.remove();no('err');};document.head.appendChild(s);});}
+async function loadThree(){for(const u of CDNS){if(window.THREE)break;try{await loadScript(u);}catch(e){}}return !!window.THREE;}
+</script>
+
+<script>
+/* ---------- 数学与噪声 ---------- */
+const PI=Math.PI;
+function G(v,c,w){const t=(v-c)/w;return Math.exp(-t*t);}
+function sq(v){return v*v;}
+function cl(v,a,b){return v<a?a:(v>b?b:v);}
+function sm(a,b,v){const t=cl((v-a)/(b-a),0,1);return t*t*(3-2*t);}
+function lerp(a,b,t){return a+(b-a)*t;}
+function fr(v){return v-Math.floor(v);}
+function rng(seed){let s=seed>>>0;return function(){s+=0x6D2B79F5;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
+function hash2(i,j){let h=Math.imul(i|0,0x27d4eb2d)^Math.imul((j|0)+0x5bd1e995,0x165667b1);h=Math.imul(h^(h>>>15),0x85ebca6b);h=Math.imul(h^(h>>>13),0xc2b2ae35);h^=h>>>16;return (h>>>0)/4294967296;}
+function vnoise(x,y){const i=Math.floor(x),j=Math.floor(y),fx=x-i,fy=y-j;const u=fx*fx*(3-2*fx),v=fy*fy*(3-2*fy);
+ return lerp(lerp(hash2(i,j),hash2(i+1,j),u),lerp(hash2(i,j+1),hash2(i+1,j+1),u),v);}
+/* 预计算分形噪声贴片，nz(u,v) 返回 0~1 */
+const NT=256;const NOISE=new Float32Array(NT*NT);
+function pnoise(x,y,p){const i=Math.floor(x),j=Math.floor(y),fx=x-i,fy=y-j;const u=fx*fx*(3-2*fx),v=fy*fy*(3-2*fy);const i0=((i%p)+p)%p,j0=((j%p)+p)%p,i1=(i0+1)%p,j1=(j0+1)%p;
+ return lerp(lerp(hash2(i0,j0),hash2(i1,j0),u),lerp(hash2(i0,j1),hash2(i1,j1),u),v);}
+(function(){for(let j=0;j<NT;j++)for(let i=0;i<NT;i++){let s=0,a=1,f=1/16,n=0;for(let o=0;o<5;o++){s+=a*pnoise(i*f,j*f,Math.round(NT*f));n+=a;a*=0.5;f*=2;}NOISE[j*NT+i]=s/n;}
+ let mn=1,mx=0;for(const v of NOISE){if(v<mn)mn=v;if(v>mx)mx=v;}for(let k=0;k<NOISE.length;k++)NOISE[k]=(NOISE[k]-mn)/(mx-mn);})();
+function nz(u,v){const fu=Math.floor(u),fv=Math.floor(v);const tx=u-fu,ty=v-fv;const i=((fu%NT)+NT)%NT,j=((fv%NT)+NT)%NT,i1=(i+1)%NT,j1=(j+1)%NT;
+ const a=NOISE[j*NT+i],b=NOISE[j*NT+i1],c=NOISE[j1*NT+i],d=NOISE[j1*NT+i1];return a+(b-a)*tx+(c-a)*ty+(a-b-c+d)*tx*ty;}
+function rough(x,z,a){return a*(nz(x*9+40,z*9+17)-0.5)+0.5*a*(nz(x*31,z*31+90)-0.5);}
+function spk(x,y){return hash2(Math.floor(x),Math.floor(y));}
+function wob(x,y){return 0.5+0.5*Math.sin(x*1.7+y*0.6)*Math.sin(y*1.3-x*0.9);}
+function hx(s){return parseInt(s.slice(1),16);}
+function mix(c1,c2,t){t=cl(t,0,1);const r=lerp(c1>>16&255,c2>>16&255,t),g=lerp(c1>>8&255,c2>>8&255,t),b=lerp(c1&255,c2&255,t);return (r<<16)|(g<<8)|(b|0);}
+function scl(c,f){const r=cl((c>>16&255)*f,0,255),g=cl((c>>8&255)*f,0,255),b=cl((c&255)*f,0,255);return (r<<16)|(g<<8)|(b|0);}
+function shade(c,f){return scl(c,f);}
+
+/* ---------- 岩性与地表：颜色 + 纹理类型 ---------- */
+const PAT={};function L(s,p){const c=hx(s);PAT[c]=p;return c;}
+const P={
+ SS:L('#c2a273','sand'),SH:L('#74706a','shale'),LS:L('#b9b5a8','lime'),RS:L('#9e5f45','sand'),SI:L('#8f7d63','shale'),DO:L('#cfc6ae','lime'),
+ GR:L('#d4ad9b','granite'),GRD:L('#a99a8e','granite'),BA:L('#403e3c','basalt'),GB:L('#4c5750','granite'),MAG:L('#e4572e','magma'),
+ MAN:L('#c47a43','mantle'),AST:L('#d68f4c','mantle'),LITH:L('#8e6b4c','mantle'),CC:L('#9a7d5f','granite'),
+ OCN:L('#3a4247','basalt'),OCR:L('#6a737a','basalt'),ICE:L('#dcebf4','ice'),GRV:L('#a8916a','gravel'),TILL:L('#87827a','till'),
+ SOIL:L('#76593f','soil'),LOE:L('#cfae7f','loess'),SAND:L('#d6bc86','sand'),MUD:L('#7b8070','shale'),MAR:L('#ebe9e2','marble'),
+ QZ:L('#ece2cc','sand'),SL:L('#4a4f57','shale'),BED:L('#87888a','granite'),CIN:L('#4a2e27','basalt'),CIN2:L('#2c2522','basalt'),
+ CAVE:L('#3e362e','soil'),LAKE:L('#c9a77a','shale'),FAULT:L('#5a2a1c','plain'),ROOT:L('#5b3a22','soil'),CRACK:L('#2b2723','plain'),
+ VOL:L('#4b4542','basalt'),VOL2:L('#38322f','basalt'),SILT:L('#b9a989','shale')
+};
+const STRATA=[P.SS,P.SH,P.LS,P.RS,P.SI,P.DO];
+const C={mag:P.MAG,water:hx('#2f78a8')};
+function pebble(a,y,s,base,angular){
+ const ci=Math.floor(a/s),cj=Math.floor(y/s);let best=null;
+ for(let di=-1;di<=1;di++)for(let dj=-1;dj<=1;dj++){const i=ci+di,j=cj+dj;const h=hash2(i*7+3,j*13+5);
+  const px=(i+0.25+0.5*hash2(i,j+91))*s,py=(j+0.25+0.5*hash2(i+57,j))*s;const r=s*(0.32+0.3*h);
+  let d;if(angular){const an=h*6.28,ca=Math.cos(an),sa=Math.sin(an);const u=(a-px)*ca+(y-py)*sa,v=-(a-px)*sa+(y-py)*ca;d=Math.max(Math.abs(u)*1.15,Math.abs(v)*0.9+Math.abs(u)*0.25);}else{d=Math.hypot(a-px,(y-py)*1.25);}
+  if(d<r&&(!best||d/r<best.q))best={q:d/r,h};}
+ if(!best)return -1;
+ const pal=[hx('#8f8b84'),hx('#a69b8a'),hx('#6c6862'),hx('#b8a98c'),hx('#7e7064'),hx('#9c9c96')];
+ const c=pal[Math.floor(best.h*6)%6];
+ return angular?scl(c,0.82+0.25*hash2(Math.floor(a/s*3),Math.floor(y/s*3))):scl(c,1.08-0.38*best.q*best.q);
+}
+function patCol(c,a,y){
+ const p=PAT[c];let f=1;
+ switch(p){
+  case 'sand':{f=0.9+0.16*nz(a*70,y*70);if(spk(a*260,y*260)>0.93)f*=0.74;f*=0.97+0.05*Math.sin(y*160+3*nz(a*6,y*6));break;}
+  case 'shale':{f=(0.9+0.1*Math.sin(y*320+5*nz(a*5,y*5)))*(0.94+0.1*nz(a*50,y*50));break;}
+  case 'lime':{const bh=0.08,r=(y+0.012*nz(a*4,7))/bh,f1=fr(r),fj=fr((a+Math.floor(r)*0.11)/0.23);f=0.92+0.1*nz(a*40,y*40);if(f1<0.06||fj<0.022)f*=0.66;break;}
+  case 'granite':{const h=spk(a*170,y*170);if(h>0.9)return scl(mix(c,0x1e1e1e,0.75),0.95+0.1*nz(a*9,y*9));if(h>0.77)return mix(c,0xf4f1ec,0.55);f=0.94+0.1*nz(a*30,y*30);break;}
+  case 'basalt':{f=0.82+0.28*nz(a*28,y*28);if(spk(a*200,y*200)>0.95)f*=0.55;if(fr(a/0.11)<0.035)f*=0.78;break;}
+  case 'magma':{return mix(hx('#ffbf3a'),hx('#b8220d'),cl(nz(a*14,y*14)*1.4-0.2,0,1));}
+  case 'mantle':{f=0.8+0.32*nz(a*6,y*6);break;}
+  case 'ice':{return scl(mix(c,hx('#9cc6df'),cl(nz(a*4,y*22)*1.3-0.35,0,1)),0.97+0.05*nz(a*30,y*30));}
+  case 'gravel':{const pc=pebble(a,y,0.045,c,false);if(pc>=0)return pc;f=0.9+0.15*nz(a*60,y*60);return scl(P.SAND,f);}
+  case 'till':{const big=hash2(Math.floor(a/0.13),Math.floor(y/0.13))>0.55?pebble(a,y,0.13,c,true):-1;if(big>=0)return big;const pc=pebble(a,y,0.032,c,true);if(pc>=0)return pc;f=0.88+0.18*nz(a*50,y*50);return scl(hx('#8b8478'),f);}
+  case 'loess':{f=0.93+0.1*nz(a*30,y*30);if(fr(a/0.13+0.2*nz(a*3,y*3))<0.02)f*=0.8;break;}
+  case 'soil':{f=0.78+0.34*nz(a*25,y*25);break;}
+  case 'marble':{f=0.95+0.06*nz(a*20,y*20);if(Math.abs(Math.sin((a+y*0.7)*26+5*nz(a*3,y*3)))<0.06)return mix(c,hx('#8d9092'),0.6);break;}
+  case 'plain':{f=0.95+0.08*nz(a*40,y*40);break;}
+  default:{f=0.93+0.12*nz(a*35,y*35);}
+ }
+ return scl(c,f);
+}
+/* 地表材质（顶面贴图）：返回颜色 */
+const TOPC={grass1:hx('#55702e'),grass2:hx('#83a04a'),rock1:hx('#7a756c'),rock2:hx('#a19a8e'),sand1:hx('#d3b77f'),sand2:hx('#ead6a5')};
+function rockC(x,z){let c=mix(TOPC.rock1,TOPC.rock2,nz(x*20,z*20));if(nz(x*90+5,z*90)>0.82)c=scl(c,0.72);return c;}
+function topCol(k,x,z,y,sl){
+ if(typeof k==='number')return patTop(k,x,z);
+ const n1=nz(x*11+3,z*11+7),n2=nz(x*48+37,z*48+11);
+ switch(k){
+  case 'grass':{let c=mix(TOPC.grass1,TOPC.grass2,n1*0.9+0.1*n2);c=scl(c,0.82+0.3*n2);if(spk(x*300,z*300)>0.97)c=scl(c,1.25);
+   if(sl>0.75)c=mix(c,rockC(x,z),cl((sl-0.75)*1.6,0,1));return c;}
+  case 'forest':{return scl(mix(hx('#3f5a25'),hx('#5b7a32'),n1),0.8+0.3*n2);}
+  case 'marsh':{return scl(mix(hx('#6f7f3a'),hx('#8a9658'),n1),0.85+0.25*n2);}
+  case 'rock':return rockC(x,z);
+  case 'cliff':return scl(rockC(x,z),0.9);
+  case 'sand':{let c=mix(TOPC.sand1,TOPC.sand2,n1);c=scl(c,0.93+0.1*n2+0.05*Math.sin(x*70+z*12+n1*8));return c;}
+  case 'desert':{let c=mix(hx('#c9a56d'),hx('#e3c58f'),n1);return scl(c,0.92+0.12*n2+0.05*Math.sin(x*60+z*8+n1*6));}
+  case 'snow':{return scl(mix(hx('#f3f6f8'),hx('#d6e3ec'),n2*0.8),0.98+0.04*n1);}
+  case 'ice':{let c=mix(hx('#e2f0f7'),hx('#a9cfe3'),cl(n1*1.2-0.2,0,1));if(Math.abs(Math.sin(z*30+n1*6))<0.04)c=scl(c,0.8);return c;}
+  case 'soil':return scl(mix(hx('#6e5238'),hx('#8b6b4a'),n1),0.85+0.25*n2);
+  case 'mud':return scl(mix(hx('#5f6250'),hx('#7c7d66'),n1),0.9+0.2*n2);
+  case 'silt':return scl(mix(hx('#b7a684'),hx('#cdbf9c'),n1),0.92+0.12*n2);
+  case 'gravel':{const pc=pebble(x,z,0.05,0,false);return pc>=0?pc:scl(TOPC.sand1,0.85+0.2*n2);}
+  case 'scree':{const pc=pebble(x,z,0.06,0,true);return pc>=0?pc:scl(hx('#7d776d'),0.85+0.2*n2);}
+  case 'till':{const pc=hash2(Math.floor(x/0.14),Math.floor(z/0.14))>0.6?pebble(x,z,0.14,0,true):pebble(x,z,0.04,0,true);return pc>=0?pc:scl(hx('#8b8478'),0.85+0.2*n2);}
+  case 'water':{let c=mix(hx('#24597e'),hx('#3f88b5'),n1);if(spk(x*200,z*200)>0.985)c=hx('#cfe6f2');return c;}
+  case 'lake':{return mix(hx('#24636f'),hx('#3c8590'),n1);}
+  case 'lava':{return mix(hx('#ffb12e'),hx('#a31d0b'),cl(n1*1.5-0.2,0,1));}
+  case 'cinder':{let c=mix(hx('#3a2622'),hx('#5c3428'),n1);if(spk(x*220,z*220)>0.9)c=hx('#1e1816');return c;}
+  case 'loess':return scl(mix(hx('#c39f6e'),hx('#d9bc8c'),n1),0.9+0.15*n2);
+  case 'limestone':{let c=scl(mix(hx('#b7b3a6'),hx('#d0ccc0'),n1),0.9+0.15*n2);if(nz(x*70,z*70)>0.8)c=scl(c,0.8);return c;}
+  case 'moss':return scl(mix(hx('#7a8a3c'),hx('#a0a85a'),n2),0.9+0.2*n1);
+  default:return 0x888888;
+ }
+}
+function patTop(c,x,z){return patCol(c,x*0.8+z*0.6,z*0.8-x*0.3);}
+</script>
+
+<script>
+/* ---------- 3D 工具 ---------- */
+const QUAL=(typeof window!=='undefined'&&window.innerWidth&&window.innerWidth<900)?0.7:1;
+let FORCE=false,renderer,scene,camera,controls,world,labelsG,current=null,ENV={},state={t:0,playing:false,time:0,labels:true};
+function lin(hex){return new THREE.Color(hex).convertSRGBToLinear();}
+function texOf(cv){const t=new THREE.CanvasTexture(cv);t.encoding=THREE.sRGBEncoding;t.anisotropy=renderer?Math.min(8,renderer.capabilities.getMaxAnisotropy()):1;return t;}
+function stdMat(o){return new THREE.MeshStandardMaterial(Object.assign({roughness:0.92,metalness:0},o));}
+
+/* 地块：顶面高度 h(x,z,t)；内部岩性 col(x,y,z,t)→颜色；顶面 top(x,z,y,t)→地表类型或颜色 */
+function Block(o){
+ const W=o.W,L=o.L,D=o.D,YM=o.ymax,x0=o.x0||0;
+ const NX=o.nx||110,NZ=o.nz||Math.max(12,Math.round(NX*L/W));
+ const flat=!!o.mat;
+ const g=new THREE.Group();
+ const tg=new THREE.PlaneGeometry(W,L,NX,NZ);tg.rotateX(-PI/2);
+ const tp=tg.attributes.position;const cnt=tp.count;
+ const xs=new Float32Array(cnt),zs=new Float32Array(cnt),hv=new Float32Array(cnt),sv=new Float32Array(cnt);
+ for(let i=0;i<cnt;i++){xs[i]=tp.getX(i)+x0;zs[i]=tp.getZ(i);}
+ let topMat,topCv,topCtx,topTex,topImg;
+ const TW=Math.round((o.tw||512)*QUAL),TH=Math.max(64,Math.round(TW*L/W));
+ if(flat){topMat=stdMat({color:lin(o.mat.color),transparent:true,opacity:o.mat.opacity,roughness:0.12,metalness:0.05,depthWrite:false,side:THREE.DoubleSide});}
+ else{topCv=document.createElement('canvas');topCv.width=TW;topCv.height=TH;topCtx=topCv.getContext('2d');topImg=topCtx.createImageData(TW,TH);
+  topTex=texOf(topCv);topMat=stdMat({map:topTex,bumpMap:topTex,bumpScale:0.0025,side:THREE.DoubleSide});}
+ const top=new THREE.Mesh(tg,topMat);top.position.x=x0;top.castShadow=!flat;top.receiveShadow=true;g.add(top);
+ if(flat)top.renderOrder=2;
+ const sides=[{len:W,p:s=>[-W/2+s*W,L/2]},{len:L,p:s=>[W/2,L/2-s*L]},{len:W,p:s=>[W/2-s*W,-L/2]},{len:L,p:s=>[-W/2,-L/2+s*L]}];
+ const walls=sides.map(sd=>{
+  const n=Math.max(12,Math.round(NX*sd.len/W));const geo=new THREE.BufferGeometry();
+  const pos=new Float32Array((n+1)*6),uv=new Float32Array((n+1)*4),idx=[];
+  for(let i=0;i<=n;i++){const s=i/n;uv[i*4]=s;uv[i*4+1]=1;uv[i*4+2]=s;uv[i*4+3]=0;if(i<n){const a=i*2;idx.push(a,a+1,a+2,a+2,a+1,a+3);}}
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('uv',new THREE.BufferAttribute(uv,2));geo.setIndex(idx);
+  let mat,cv,ctx,tex,img,cw=0,chh=0,pc=[];
+  if(flat){mat=topMat;}
+  else{cw=Math.round(360*QUAL*sd.len/W);cw=cl(cw,120,420);chh=cl(Math.round(cw*(YM+D)/sd.len),90,300);cv=document.createElement('canvas');cv.width=cw;cv.height=chh;ctx=cv.getContext('2d');img=ctx.createImageData(cw,chh);
+   tex=texOf(cv);mat=stdMat({map:tex,bumpMap:tex,bumpScale:0.003,side:THREE.DoubleSide});
+   for(let i=0;i<cw;i++)pc.push(sd.p(i/(cw-1)));}
+  const m=new THREE.Mesh(geo,mat);m.position.x=x0;m.receiveShadow=true;m.castShadow=!flat;g.add(m);if(flat)m.renderOrder=2;
+  return {sd,geo,pos,cv,ctx,tex,img,n,pc,cw,chh,hc:new Float32Array(cw||1)};
+ });
+ if(!flat){const bt=new THREE.Mesh(new THREE.PlaneGeometry(W,L),stdMat({color:lin(0x4b4640)}));bt.rotation.x=PI/2;bt.position.set(x0,-D,0);g.add(bt);}
+ let edge=null,epos=null,vl=null;
+ if(!flat&&o.edges!==false){let ne=0;walls.forEach(w=>ne+=w.n);epos=new Float32Array((ne+1)*3);const eg=new THREE.BufferGeometry();eg.setAttribute('position',new THREE.BufferAttribute(epos,3));
+  edge=new THREE.Line(eg,new THREE.LineBasicMaterial({color:0x2a2a2a,transparent:true,opacity:.35}));g.add(edge);
+  const vg=new THREE.BufferGeometry();const vp=[];[[-W/2,L/2],[W/2,L/2],[W/2,-L/2],[-W/2,-L/2]].forEach(([a,b])=>{vp.push(a+x0,-D,b,a+x0,0,b);});
+  vg.setAttribute('position',new THREE.Float32BufferAttribute(vp,3));vl=new THREE.LineSegments(vg,new THREE.LineBasicMaterial({color:0x2a2a2a,transparent:true,opacity:.35}));g.add(vl);}
+ /* 树木 */
+ let trees=null,tc=[];
+ if(o.trees&&!flat){const n=o.trees;const R=rng(o.seed||17);
+  const crownG=new THREE.ConeGeometry(0.05,0.17,7);crownG.translate(0,0.13,0);const trunkG=new THREE.CylinderGeometry(0.009,0.013,0.07,5);trunkG.translate(0,0.03,0);
+  const cm=new THREE.InstancedMesh(crownG,stdMat({flatShading:true,roughness:.85}),n),tm=new THREE.InstancedMesh(trunkG,stdMat({color:lin(0x5a4330)}),n);
+  cm.castShadow=tm.castShadow=true;cm.receiveShadow=true;const col=new THREE.Color();
+  for(let i=0;i<n;i++){tc.push({x:(R()-0.5)*W*0.96+x0,z:(R()-0.5)*L*0.96,s:0.6+R()*0.75,r:R()*6.28});col.setHex(mix(hx('#2f4a1e'),hx('#5d7a2e'),R())).convertSRGBToLinear();cm.setColorAt(i,col);}
+  g.add(cm,tm);trees={cm,tm,d:new THREE.Object3D()};}
+ let first=true,lastG=-9,lastT=-9;
+ function hAt(x,z){const gx=cl((x-x0+W/2)/W*NX,0,NX),gz=cl((z+L/2)/L*NZ,0,NZ);const i0=Math.min(NX-1,Math.floor(gx)),j0=Math.min(NZ-1,Math.floor(gz));const fx=gx-i0,fz=gz-j0;const k=j0*(NX+1)+i0;
+  return [lerp(lerp(hv[k],hv[k+1],fx),lerp(hv[k+NX+1],hv[k+NX+2],fx),fz),lerp(lerp(sv[k],sv[k+1],fx),lerp(sv[k+NX+1],sv[k+NX+2],fx),fz)];}
+ function update(t,force){
+  force=force||FORCE;const ends=(t<=0||t>=1);
+  if(!first&&!force&&!ends&&Math.abs(t-lastG)<0.006)return;
+  const doTex=first||force||ends||Math.abs(t-lastT)>=0.03;lastG=t;if(doTex)lastT=t;
+  if(o.static&&!first){if(o.topDraw&&doTex){o.topDraw(topCtx,TW,TH,t,W,L);topTex.needsUpdate=true;}return;}
+  for(let i=0;i<cnt;i++){const y=o.h(xs[i],zs[i],t);hv[i]=y;tp.setY(i,y);}
+  for(let j=0;j<=NZ;j++)for(let i=0;i<=NX;i++){const k=j*(NX+1)+i;const a=hv[j*(NX+1)+Math.min(NX,i+1)]-hv[j*(NX+1)+Math.max(0,i-1)],b=hv[Math.min(NZ,j+1)*(NX+1)+i]-hv[Math.max(0,j-1)*(NX+1)+i];
+   sv[k]=Math.hypot(a/(2*W/NX),b/(2*L/NZ));}
+  tp.needsUpdate=true;tg.computeVertexNormals();tg.computeBoundingSphere();
+  if(!flat&&doTex){
+   if(o.topDraw){o.topDraw(topCtx,TW,TH,t,W,L);}
+   else{const d=topImg.data;
+    for(let py=0;py<TH;py++){const z=-L/2+py/(TH-1)*L;for(let px=0;px<TW;px++){const x=-W/2+px/(TW-1)*W+x0;const hs=hAt(x,z);
+     const k=o.top?o.top(x,z,hs[0],t):o.col(x,hs[0]-0.004,z,t);const c=topCol(k,x,z,hs[0],hs[1]);const q=(py*TW+px)*4;d[q]=c>>16&255;d[q+1]=c>>8&255;d[q+2]=c&255;d[q+3]=255;}}
+    topCtx.putImageData(topImg,0,0);}
+   topTex.needsUpdate=true;}
+  for(const w of walls){const {sd,pos,n}=w;
+   for(let i=0;i<=n;i++){const [x,z]=sd.p(i/n);const y=o.h(x+x0,z,t);pos[i*6]=x;pos[i*6+1]=y;pos[i*6+2]=z;pos[i*6+3]=x;pos[i*6+4]=-D;pos[i*6+5]=z;w.geo.attributes.uv.array[i*4+1]=(y+D)/(YM+D);}
+   w.geo.attributes.position.needsUpdate=true;w.geo.attributes.uv.needsUpdate=true;w.geo.computeVertexNormals();w.geo.computeBoundingSphere();
+   if(w.ctx&&doTex){const d=w.img.data,cw=w.cw,chh=w.chh;const prevRow=new Int32Array(cw).fill(-1);const kc=new Array(cw);
+    for(let i=0;i<cw;i++){const q=w.pc[i];w.hc[i]=o.h(q[0]+x0,q[1],t);kc[i]=(o.soil!==false&&o.top)?o.top(q[0]+x0,q[1],w.hc[i],t):null;}
+    for(let j=0;j<chh;j++){const y=YM-j/(chh-1)*(YM+D);let prev=-1;const dk=1-0.12*cl(-y/D,0,1);
+     for(let i=0;i<cw;i++){const q=w.pc[i];const x=q[0]+x0,z=q[1];const along=(sd===sides[0].sd||sd===sides[2].sd)?x:z;
+      let raw=o.col(x,y,z,t);let c;const dh=w.hc[i]-y;
+      if((kc[i]==='grass'||kc[i]==='forest'||kc[i]==='marsh')&&dh<0.035&&dh>=0){raw=-2;c=dh<0.009?scl(mix(TOPC.grass1,TOPC.grass2,nz(along*40,3)),0.9):scl(P.SOIL,0.75+0.35*nz(along*30,y*30));}
+      else c=patCol(raw,along,y);
+      if((prev!==-1&&prev!==raw)||(prevRow[i]!==-1&&prevRow[i]!==raw))c=scl(c,0.8);
+      c=scl(c,dk);prev=raw;prevRow[i]=raw;const k=(j*cw+i)*4;d[k]=c>>16&255;d[k+1]=c>>8&255;d[k+2]=c&255;d[k+3]=255;}}
+    w.ctx.putImageData(w.img,0,0);w.tex.needsUpdate=true;}}
+  if(edge){let k=0;for(const w of walls){for(let i=0;i<w.n;i++){const [x,z]=w.sd.p(i/w.n);epos[k++]=x+x0;epos[k++]=o.h(x+x0,z,t)+0.002;epos[k++]=z;}}
+   const [x,z]=walls[0].sd.p(0);epos[k++]=x+x0;epos[k++]=o.h(x+x0,z,t)+0.002;epos[k++]=z;edge.geometry.attributes.position.needsUpdate=true;
+   const vp=vl.geometry.attributes.position;[[-W/2,L/2],[W/2,L/2],[W/2,-L/2],[-W/2,-L/2]].forEach(([a,b],i)=>vp.setY(i*2+1,o.h(a+x0,b,t)));vp.needsUpdate=true;}
+  if(trees){const {cm,tm,d}=trees;tc.forEach((p,i)=>{const hs=hAt(p.x,p.z);const k=o.top?o.top(p.x,p.z,hs[0],t):null;
+    const ok=(k==='grass'||k==='forest')&&hs[1]<0.55&&(!o.treeOk||o.treeOk(p.x,p.z,hs[0],t));
+    if(ok){d.position.set(p.x,hs[0]-0.005,p.z);d.scale.set(p.s,p.s*(0.9+0.2*fr(p.r)),p.s);d.rotation.set(0,p.r,0);}else{d.position.set(0,-50,0);d.scale.set(0.001,0.001,0.001);}
+    d.updateMatrix();cm.setMatrixAt(i,d.matrix);tm.setMatrixAt(i,d.matrix);});cm.instanceMatrix.needsUpdate=true;tm.instanceMatrix.needsUpdate=true;if(cm.instanceColor)cm.instanceColor.needsUpdate=true;}
+  first=false;
+ }
+ g.userData.update=update;g.userData.hAt=(x,z)=>hAt(x,z)[0];
+ update(0);
+ return g;
+}
+/* 水体 */
+function Water(x0,x1,z0,z1,y0,y1,color,op){
+ const m=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),stdMat({color:lin(color||C.water),transparent:true,opacity:op||.55,roughness:.08,metalness:.1,depthWrite:false}));
+ m.renderOrder=3;
+ m.setLevel=(a,b,xa,xb)=>{if(xa!==undefined){x0=xa;x1=xb;}y0=a;y1=b;const h=Math.max(0.001,y1-y0);m.scale.set(Math.max(.001,x1-x0),h,z1-z0);m.position.set((x0+x1)/2,y0+h/2,(z0+z1)/2);m.visible=y1>y0+0.002&&x1>x0+0.002;};
+ m.setLevel(y0,y1);return m;
+}
+/* 文字标签 */
+function Label(text,pos,opt){
+ opt=opt||{};const fs=46,pad=15;const cv=document.createElement('canvas');const ctx=cv.getContext('2d');
+ const font=`600 ${fs}px "PingFang SC","Microsoft YaHei",sans-serif`;ctx.font=font;const lines=String(text).split('\n');
+ const w=Math.max(...lines.map(l=>ctx.measureText(l).width))+pad*2,h=lines.length*fs*1.25+pad*1.1;
+ cv.width=Math.ceil(w)+6;cv.height=Math.ceil(h)+6;ctx.font=font;
+ const col=opt.color||'#1f2a33';
+ ctx.translate(3,3);ctx.shadowColor='rgba(0,0,0,.25)';ctx.shadowBlur=5;
+ ctx.fillStyle=opt.bg||'rgba(255,255,255,.93)';const r=13;ctx.beginPath();ctx.moveTo(r,0);ctx.arcTo(w,0,w,h,r);ctx.arcTo(w,h,0,h,r);ctx.arcTo(0,h,0,0,r);ctx.arcTo(0,0,w,0,r);ctx.fill();
+ ctx.shadowBlur=0;ctx.strokeStyle=col;ctx.lineWidth=3;ctx.globalAlpha=.45;ctx.stroke();ctx.globalAlpha=1;
+ ctx.fillStyle=col;ctx.textBaseline='middle';lines.forEach((l,i)=>ctx.fillText(l,pad,pad*0.55+fs*1.25*(i+.5)));
+ const tex=new THREE.CanvasTexture(cv);tex.encoding=THREE.sRGBEncoding;tex.minFilter=THREE.LinearFilter;
+ const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false,transparent:true,toneMapped:false}));
+ const s=(opt.size||0.14)/fs*1.25;sp.scale.set(cv.width*s*0.8,cv.height*s*0.8,1);sp.position.set(pos[0],pos[1],pos[2]);sp.renderOrder=20;
+ labelsG.add(sp);return sp;
+}
+/* 粗箭头 */
+function Arrow(from,to,color,r){
+ r=r||0.035;const a=new THREE.Vector3(from[0],from[1],from[2]),b=new THREE.Vector3(to[0],to[1],to[2]);const dir=b.clone().sub(a);const len=dir.length();dir.normalize();
+ const g=new THREE.Group();const mat=stdMat({color:lin(color||0x2f6f9f),roughness:.5,emissive:lin(color||0x2f6f9f),emissiveIntensity:.25});
+ const hl=Math.min(len*0.4,r*4);
+ const cyl=new THREE.Mesh(new THREE.CylinderGeometry(r,r,len-hl,12),mat);cyl.position.y=(len-hl)/2;
+ const cone=new THREE.Mesh(new THREE.ConeGeometry(r*2.3,hl,16),mat);cone.position.y=len-hl/2;
+ g.add(cyl,cone);g.position.copy(a);g.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);return g;
+}
+/* 颗粒：圆的（磨圆）或棱角状 */
+function Grains(n,color,angular){
+ const geo=angular?new THREE.IcosahedronGeometry(1,0):new THREE.SphereGeometry(1,12,9);
+ const m=new THREE.InstancedMesh(geo,stdMat({color:0xffffff,flatShading:!!angular,roughness:.85}),n);m.castShadow=true;
+ const d=new THREE.Object3D();const c=new THREE.Color();
+ m.put=(i,x,y,z,r,sy,rx,ry)=>{d.position.set(x,y,z);d.scale.set(r,r*(sy||1),r*(angular?0.8+0.4*((i*0.37)%1):1));d.rotation.set(rx||0,ry||0,0);d.updateMatrix();m.setMatrixAt(i,d.matrix);};
+ m.col=(i,hex)=>{c.setHex(hex).convertSRGBToLinear();m.setColorAt(i,c);};
+ for(let i=0;i<n;i++)m.col(i,color||0x888888);
+ m.done=()=>{m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true;};
+ return m;
+}
+function Line(pts,color,dashed,op){
+ const geo=new THREE.BufferGeometry().setFromPoints(pts.map(p=>new THREE.Vector3(p[0],p[1],p[2])));
+ const mat=dashed?new THREE.LineDashedMaterial({color,dashSize:.08,gapSize:.06,transparent:true,opacity:op||1}):new THREE.LineBasicMaterial({color,transparent:true,opacity:op||1});
+ const l=new THREE.Line(geo,mat);if(dashed)l.computeLineDistances();return l;
+}
+/* 竖向条带材质（用于岩柱、岬角等独立岩体）：按高度 y 上色 */
+function bandColors(geo,fn){const p=geo.attributes.position;const cols=new Float32Array(p.count*3);const c=new THREE.Color();
+ for(let i=0;i<p.count;i++){c.setHex(fn(p.getX(i),p.getY(i),p.getZ(i))).convertSRGBToLinear();cols[i*3]=c.r;cols[i*3+1]=c.g;cols[i*3+2]=c.b;}
+ geo.setAttribute('color',new THREE.BufferAttribute(cols,3));return geo;}
+function stageText(stages,t){let s=stages[0][1];for(const [a,b] of stages)if(t>=a-1e-6)s=b;return s;}
+
+/* ---------- 自带旋转控制（不依赖 OrbitControls） ---------- */
+function Orbit(cam,el){
+ const tgt=new THREE.Vector3();let r=6,th=0.5,ph=1.0,vth=0,vph=0;const pts=new Map();let pinch=0,mid=null;
+ function apply(){ph=cl(ph,0.06,PI/2+0.45);r=cl(r,1.6,16);cam.position.set(tgt.x+r*Math.sin(ph)*Math.sin(th),tgt.y+r*Math.cos(ph),tgt.z+r*Math.sin(ph)*Math.cos(th));cam.lookAt(tgt);}
+ function pan(dx,dy){const s=r*0.0016;const rx=Math.cos(th),rz=-Math.sin(th);const up=new THREE.Vector3(0,1,0).applyQuaternion(cam.quaternion);
+  tgt.x-=rx*dx*s;tgt.z-=rz*dx*s;tgt.addScaledVector(up,dy*s);}
+ el.addEventListener('contextmenu',e=>e.preventDefault());
+ el.addEventListener('pointerdown',e=>{el.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY,b:e.button});if(pts.size===2){const a=[...pts.values()];pinch=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);mid={x:(a[0].x+a[1].x)/2,y:(a[0].y+a[1].y)/2};}});
+ el.addEventListener('pointermove',e=>{const p=pts.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
+  if(pts.size===1){if(p.b===2||e.shiftKey)pan(dx,dy);else{vth=-dx*0.0065;vph=-dy*0.0065;th+=vth;ph+=vph;}}
+  else if(pts.size===2){const a=[...pts.values()];const d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);if(pinch>0)r*=pinch/d;pinch=d;const m={x:(a[0].x+a[1].x)/2,y:(a[0].y+a[1].y)/2};if(mid)pan(m.x-mid.x,m.y-mid.y);mid=m;}
+  apply();});
+ const up=e=>{pts.delete(e.pointerId);pinch=0;mid=null;};el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+ el.addEventListener('wheel',e=>{e.preventDefault();r*=1+Math.sign(e.deltaY)*0.08;apply();},{passive:false});
+ return {target:tgt,update(){if(!pts.size&&(Math.abs(vth)>1e-4||Math.abs(vph)>1e-4)){th+=vth;ph+=vph;vth*=0.9;vph*=0.9;apply();}},
+  set(pos,t){tgt.set(t[0],t[1],t[2]);const o=new THREE.Vector3(pos[0]-t[0],pos[1]-t[1],pos[2]-t[2]);r=o.length();th=Math.atan2(o.x,o.z);ph=Math.acos(cl(o.y/r,-1,1));vth=vph=0;apply();}};
+}
+</script>
+
+<script>
+/* ======================= 模型库 ======================= */
+const MODELS=[];
+function M(o){MODELS.push(o);}
+const ZF=(L)=>L/2+0.04;
+
+/* ---------- 内力 · 板块运动 ---------- */
+M({id:'ridge',cat:'内',sub:'板块运动',name:'大洋中脊（海底扩张）',dur:12,cam:[2.6,2.0,5.2],
+ pr:'在生长边界，软流层物质沿洋中脊上涌，冷凝成新的洋壳；新洋壳不断生成，把较老的洋壳推向两侧，海底不断扩张。洋壳形成时记录了当时的地磁方向，地磁反复倒转，于是在中脊两侧形成对称的“磁条带”。',
+ ob:['中脊两侧的条带左右对称','离中脊越远，洋壳年龄越老、岩石圈越厚、海水越深','中脊处有裂谷，岩浆活动强烈'],
+ kd:'对应考点：板块的生长边界（大西洋中脊、东非裂谷的延伸）；“离中脊越远岩石越老”。',
+ lg:[[P.OCN,'正向磁化洋壳'],[P.OCR,'反向磁化洋壳'],[P.LITH,'岩石圈地幔'],[P.AST,'软流层'],[P.MAG,'岩浆']],
+ st:[[0,'软流层物质沿洋中脊上涌'],[.25,'岩浆在中央裂谷冷凝，形成新洋壳'],[.55,'新洋壳不断生成，老洋壳被推向两侧'],[.85,'两侧磁条带对称，离中脊越远越老']],
+ build(S){
+  const hf=(x,z)=>-0.36+0.3*G(x,0,1.15)-0.13*G(x,0,0.13)+rough(x,z,0.05);
+  const par=(x,t)=>{const p=Math.floor((Math.abs(x)-t*1.6)/0.28);return ((p%2)+2)%2;};
+  const b=Block({W:4.6,L:2.4,D:1.4,ymax:0.1,h:(x,z,t)=>hf(x,z),
+   col:(x,y,z,t)=>{const h=hf(x,z);const lb=h-0.32-0.5*Math.sqrt(Math.abs(x)/2.3);
+    if(sq(x/0.34)+sq((y+0.9)/0.22)<1)return P.MAG;if(Math.abs(x)<0.045&&y>-0.9)return P.MAG;
+    if(y>h-0.1)return par(x,t)?P.OCR:P.OCN;if(y>h-0.32)return P.GB;if(y>lb)return P.LITH;return P.AST;},
+   top:(x,z,y,t)=>par(x,t)?P.OCR:P.OCN});
+  S.add(b);S.add(Water(-2.29,2.29,-1.19,1.19,-0.4,0.18));
+  const zf=1.24;
+  S.add(Arrow([-0.35,-1.12,zf],[-1.6,-1.12,zf],0x2f6f9f),Arrow([0.35,-1.12,zf],[1.6,-1.12,zf],0x2f6f9f),Arrow([0,-1.38,zf],[0,-1.0,zf],0xd8432c,0.03));
+  Label('洋中脊',[0,0.45,0]);Label('中央裂谷',[0,0.08,1.3],{size:.12});
+  Label('新洋壳',[0.3,-0.55,1.4],{size:.12});Label('老洋壳',[-1.9,-0.22,1.4],{size:.12});Label('老洋壳',[1.9,-0.22,1.4],{size:.12});
+  Label('软流层',[-1.9,-1.25,1.35],{size:.12,color:'#a0521d'});Label('海水',[-1.6,0.3,0],{size:.12,color:'#2f6f9f'});
+  return t=>b.userData.update(t);}
+});
+M({id:'rift',cat:'内',sub:'板块运动',name:'大陆裂谷',dur:12,cam:[2.4,2.3,5.2],
+ pr:'大陆内部受张力作用，岩层沿正断层发生断裂，中间岩块相对下沉形成地堑（裂谷），两侧相对抬升。地下软流层上涌，常伴随火山活动；裂谷继续张裂，可积水成湖，最终可能被海水侵入，演化为新的海洋。',
+ ob:['两侧箭头向外：受张力（拉张）','中间岩块沿断层下沉，岩层错开','下沉谷地积水成湖（如东非裂谷带的湖泊）'],
+ kd:'对应考点：东非大裂谷、红海——板块生长边界的初期；地堑（谷地）与地垒（山地）。',
+ lg:[[P.SS,'砂岩'],[P.SH,'页岩'],[P.LS,'石灰岩'],[P.GRD,'基底岩石'],[P.AST,'软流层'],[P.MAG,'岩浆']],
+ st:[[0,'大陆内部受到拉张作用'],[.2,'岩层沿正断层断裂，中间岩块下沉'],[.5,'形成地堑式谷地，软流层上涌'],[.72,'岩浆上升形成火山，谷底积水成湖']],
+ build(S){
+  const dval=t=>0.5*sm(0.12,0.72,t);
+  const zone=(x,y)=>{const a=Math.abs(x);if(a<0.55+0.35*y)return 2;if(a<1.05+0.35*y)return 1;return 0;};
+  const off=(x,y,t)=>{const d=dval(t);const zz=zone(x,y);return zz===2?-d:zz===1?-0.45*d:0.06*d;};
+  const top0=0.3;
+  const volc=(x,z,t)=>0.34*sm(0.68,0.95,t)*G(x,0.25,0.17)*G(z,-0.3,0.3);
+  const hf=(x,z,t)=>top0+off(x,top0-0.2,t)+volc(x,z,t)+rough(x,z,0.025);
+  const b=Block({W:4.6,L:2.4,D:1.3,ymax:0.75,h:hf,trees:70,
+   col:(x,y,z,t)=>{const d=dval(t);const vol=sm(0.62,0.9,t);
+    if(y< -1.1+0.45*d*G(x,0,0.8))return P.AST;
+    if(vol>0&&Math.abs(x-0.25)<0.05&&Math.abs(z+0.3)<0.5&&y>-1.1&&y<-1.1+(hf(0.25,-0.3,t)+1.1)*Math.min(1,vol*1.5))return P.MAG;
+    const o=off(x,y,t);const yy=y-o;if(yy< -0.45)return P.GRD;
+    if(y>top0+o+0.03)return P.VOL;
+    return STRATA[((Math.floor((yy+0.45)/0.15))%6+6)%6];},
+   top:(x,z,y,t)=>volc(x,z,t)>0.06?'cinder':'grass'});
+  S.add(b);
+  const lake=Water(-0.48,0.48,-1.19,0.6,0,0,0x2c6f86,.62);S.add(lake);
+  const zf=1.25;S.add(Arrow([-1.4,0.0,zf],[-2.25,0.0,zf],0x2f6f9f),Arrow([1.4,0.0,zf],[2.25,0.0,zf],0x2f6f9f));
+  Label('张裂',[-1.85,0.25,zf],{size:.12,color:'#2f6f9f'});Label('张裂',[1.85,0.25,zf],{size:.12,color:'#2f6f9f'});
+  const lb1=Label('地堑（裂谷）',[0,0.6,1.3],{size:.13});const lb2=Label('正断层',[0.85,-0.35,1.32],{size:.11,color:'#7a2a1a'});
+  const lb3=Label('湖泊',[-0.15,0.2,0.2],{size:.12,color:'#2f6f9f'});const lb4=Label('火山',[0.25,0.95,-0.3],{size:.12,color:'#b5452f'});
+  return t=>{b.userData.update(t);const d=dval(t);const lv=sm(0.72,0.95,t);
+   lake.setLevel(top0-d-0.02,top0-d+0.15*lv);lb3.visible=lv>0.3;lb4.visible=t>0.75;lb1.visible=t>0.35;lb2.visible=t>0.25;};}
+});
+M({id:'subduct',cat:'内',sub:'板块运动',name:'俯冲作用（消亡边界）',dur:12,cam:[1.6,2.0,5.6],
+ pr:'在消亡边界，密度较大的大洋板块沿汇聚边界俯冲到大陆板块之下，形成深海沟；俯冲板块在地下深处脱水，使上方地幔部分熔融，岩浆上升，在大陆一侧形成火山弧（岛弧或海岸山脉）。太平洋东西两岸是典型实例。',
+ ob:['大洋板块“插入”大陆板块下方','俯冲处形成海沟','火山弧与海沟平行分布'],
+ kd:'对应考点：板块消亡边界——海沟、岛弧、海岸山脉（如安第斯山脉、日本岛弧、马里亚纳海沟）。',
+ lg:[[P.OCN,'大洋板块'],[P.CC,'大陆板块'],[P.MAN,'地幔'],[P.MAG,'岩浆']],
+ st:[[0,'大洋板块向大陆板块移动'],[.25,'大洋板块密度大，俯冲到大陆板块之下'],[.5,'俯冲处形成深海沟'],[.7,'俯冲板块深处产生岩浆，上升形成火山弧']],
+ build(S){
+  const x0=-0.4;
+  const slab=x=>x<x0?-0.25:-0.25-(x-x0)*0.55-0.18*sq(x-x0);
+  const vh=t=>0.42*sm(0.68,1,t);
+  const hf=(x,z,t)=>{let h=-0.25-0.3*G(x,x0,0.22);const c=-0.25+0.55*sm(x0,x0+0.8,x)+(x>x0+0.3?rough(x,z,0.08):0);h=Math.max(h,c);
+   return h+vh(t)*G(x,1.25,0.2)*G(z,0,0.9);};
+  const b=Block({W:5,L:2.4,D:1.8,ymax:0.85,h:hf,trees:60,
+   col:(x,y,z,t)=>{const s=slab(x);const r=Math.max(0,sm(0.6,1,t));
+    if(Math.abs(x-1.25)<0.05&&y>slab(1.25)&&y<slab(1.25)+(hf(1.25,0,t)-slab(1.25))*r)return P.MAG;
+    if(sq((x-1.25)/0.3)+sq((y-slab(1.25)-0.12)/0.1)<1&&t>0.55)return P.MAG;
+    if(y<=s&&y>s-0.3){const along=(x<x0?x:x0+(x-x0)*1.3)-t*1.4;return (Math.floor(along/0.3)%2+2)%2?P.OCN:P.OCR;}
+    if(x>x0-0.2&&y>s&&y>-0.95)return y>-0.25?STRATA[((Math.floor((y+1)/0.12))%3+3)%3]:P.CC;
+    return P.MAN;},
+   top:(x,z,y,t)=>x<x0+0.1?P.OCN:(vh(t)*G(x,1.25,0.2)*G(z,0,0.9)>0.12?'cinder':(y>0.3?'rock':'grass'))});
+  S.add(b);S.add(Water(-2.49,x0+0.42,-1.19,1.19,-0.56,0.06));
+  const zf=1.24;S.add(Arrow([-2.2,-0.4,zf],[-1.1,-0.4,zf],0x2f6f9f),Arrow([2.3,-0.6,zf],[1.6,-0.6,zf],0x8a5a2b));
+  Label('大洋板块',[-1.7,-0.1,1.3],{size:.13});Label('大陆板块',[1.9,-0.25,1.3],{size:.13});
+  Label('海沟',[x0,-0.35,1.35],{size:.12});Label('俯冲带',[0.55,-1.05,1.35],{size:.11,color:'#7a2a1a'});
+  const lv=Label('火山弧',[1.25,1.0,0],{size:.12,color:'#b5452f'});Label('海洋',[-1.8,0.25,0],{size:.12,color:'#2f6f9f'});
+  return t=>{b.userData.update(t);lv.visible=t>0.75;};}
+});
+
+/* ---------- 内力 · 地壳运动 ---------- */
+M({id:'thrust',cat:'内',sub:'地壳运动',name:'水平挤压：地层缩短抬升',dur:12,cam:[1.4,1.8,5.6],
+ pr:'地层受到水平挤压，整体在水平方向缩短；岩层沿一系列逆断层错动，上盘沿断层面向上逆冲，岩块叠置使地面在垂直方向升高。之后地面遭受外力剥蚀，形成新的地形地貌。',
+ ob:['两侧箭头相向：受挤压','红褐色线为逆断层，上盘（断层面上方岩块）相对上升','后期顶部被剥蚀削低'],
+ kd:'对应考点：水平运动与垂直运动的联系——挤压使地壳缩短、增厚、抬升（如喜马拉雅山的形成）。',
+ lg:[[P.SS,'砂岩'],[P.SH,'页岩'],[P.LS,'石灰岩'],[P.FAULT,'逆断层']],
+ st:[[0,'水平岩层'],[.12,'受水平挤压，岩层沿逆断层错动'],[.4,'上盘不断逆冲，岩块叠置，地面升高'],[.72,'隆起部分遭受剥蚀，形成新的地貌']],
+ build(S){
+  const xs=[-1.2,0.0,1.2];const u=t=>0.22*sm(0.1,0.7,t);
+  const k=(x,y)=>{let n=0;for(const xi of xs)if(x<xi+1.0*(y-0.1))n++;return n;};
+  const E=t=>0.85-0.35*sm(0.72,1,t);
+  const hf=(x,z,t)=>{const n=k(x,0.1+0.6*u(t));return Math.min(0.1+n*u(t),E(t)+0.03*wob(x*3,z*3))+rough(x,z,0.02);};
+  const b=Block({W:4.6,L:2.2,D:1.0,ymax:1.0,h:hf,trees:50,
+   col:(x,y,z,t)=>{const n=k(x,y);if(t>0.1)for(const xi of xs){if(Math.abs(x-(xi+1.0*(y-0.1)))<0.016)return P.FAULT;}
+    const y0=y-n*u(t);return STRATA[((Math.floor((y0+1)/0.14))%6+6)%6];},top:()=>'grass'});
+  S.add(b);
+  S.add(Arrow([-3.1,-0.3,0],[-2.45,-0.3,0],0x8a5a2b),Arrow([3.1,-0.3,0],[2.45,-0.3,0],0x8a5a2b));
+  Label('挤压',[-2.8,0,0],{size:.12});Label('挤压',[2.8,0,0],{size:.12});
+  const l1=Label('逆断层',[0.35,-0.45,1.2],{size:.12,color:'#7a2a1a'});const l2=Label('上盘上升',[-0.7,0.95,1.15],{size:.12});
+  return t=>{b.userData.update(t);l1.visible=t>0.12;l2.visible=t>0.35&&t<0.75;};}
+});
+M({id:'isostasy',cat:'内',sub:'地壳运动',name:'冰川地壳均衡',dur:14,cam:[1.2,1.8,6.0],
+ pr:'冰盖生长时，不断增加的重量把地壳压入下方的地幔，地幔物质从坳陷区向两侧缓慢流动，使坳陷区附近的地壳抬升；冰盖消融后过程相反，原坳陷区逐渐回升，周边隆起区逐渐下沉。整个过程非常缓慢，可延续上万年。',
+ ob:['冰盖越厚，地壳下沉越多','冰盖消融后，地壳回升“慢半拍”','地幔物质的流动方向随之反转'],
+ kd:'对应考点：地壳的垂直运动；斯堪的纳维亚半岛、加拿大哈得孙湾地区至今仍在缓慢抬升。',
+ lg:[[P.ICE,'冰盖'],[P.GRD,'地壳'],[P.MAN,'地幔']],
+ st:[[0,'冰期开始，冰盖逐渐生长'],[.2,'冰盖加重，地壳被压入地幔，地幔物质向两侧流动'],[.5,'冰盖开始消融'],[.7,'冰盖消失后，坳陷区缓慢回升，周边隆起区下沉'],[.95,'地壳恢复均衡']],
+ build(S){
+  const I=t=>sm(0,0.42,t)*(1-sm(0.5,0.7,t));
+  const Dp=t=>sm(0.08,0.5,t)*(1-sm(0.62,0.98,t));
+  const ice=(x,t)=>0.8*I(t)*Math.sqrt(Math.max(0,1-sq(x/1.6)));
+  const w=(x,t)=>-0.35*Dp(t)*G(x,0,1.5)+0.09*Dp(t)*G(Math.abs(x),2.2,0.45);
+  const hf=(x,z,t)=>w(x,t)+ice(x,t)+rough(x,z,0.03);
+  const b=Block({W:5,L:2,D:1.6,ymax:1.0,h:hf,trees:50,
+   col:(x,y,z,t)=>{const ct=w(x,t);if(y>ct+0.02)return P.ICE;if(y>ct-0.55)return y>ct-0.18?P.GRD:P.GR;return P.MAN;},
+   top:(x,z,y,t)=>ice(x,t)>0.02?'ice':'grass'});
+  S.add(b);
+  const zf=1.03;
+  const outA=[Arrow([-0.4,-1.2,zf],[-1.6,-1.2,zf],0xffffff,0.03),Arrow([0.4,-1.2,zf],[1.6,-1.2,zf],0xffffff,0.03)];
+  const inA=[Arrow([-1.6,-1.2,zf],[-0.4,-1.2,zf],0xffffff,0.03),Arrow([1.6,-1.2,zf],[0.4,-1.2,zf],0xffffff,0.03)];
+  outA.concat(inA).forEach(a=>S.add(a));
+  const lI=Label('冰盖',[0,1.0,0],{size:.13,color:'#2f6f9f'});Label('地壳',[-2.1,-0.25,1.1],{size:.12});Label('地幔',[-2.1,-1.25,1.1],{size:.12,color:'#a0521d'});
+  const lD=Label('坳陷',[0,-0.75,1.1],{size:.12});const lU=Label('隆起',[2.2,0.3,1.1],{size:.12});const lF=Label('地幔物质流动',[0,-1.45,1.1],{size:.11,color:'#7a3b10'});
+  return t=>{b.userData.update(t);const grow=t<0.55;outA.forEach(a=>a.visible=grow&&t>0.1);inA.forEach(a=>a.visible=!grow&&t<0.95);
+   lI.visible=I(t)>0.2;lD.visible=Dp(t)>0.3;lU.visible=Dp(t)>0.3;lF.visible=t>0.1&&t<0.95;};}
+});
+
+/* ---------- 内力 · 岩浆活动 ---------- */
+M({id:'magma',cat:'内',sub:'岩浆活动',name:'岩浆侵入与喷出',dur:14,cam:[2.6,2.0,5.0],
+ pr:'地下深处的岩浆在岩浆房中聚集，沿岩层裂隙上升：切穿岩层的板状侵入体叫岩脉，顺着层面侵入的叫岩床，使上覆岩层拱起的穹窿状侵入体叫岩盖；岩浆在地下冷凝形成侵入岩（如花岗岩），喷出地表冷凝形成喷出岩（如玄武岩），并形成火山。',
+ ob:['岩脉“切穿”岩层，岩床“顺着”岩层','岩盖使上覆岩层向上拱起','喷出地表才形成火山和喷出岩'],
+ kd:'对应考点：岩浆岩（侵入岩/喷出岩）的形成；侵入岩比被它切穿的岩层“新”。',
+ lg:[[P.MAG,'岩浆'],[P.SS,'砂岩'],[P.SH,'页岩'],[P.LS,'石灰岩'],[P.VOL,'火山岩（喷出岩）']],
+ st:[[0,'地下深处的岩浆房'],[.12,'岩浆沿裂隙上升，切穿岩层形成岩脉'],[.3,'岩浆顺层面侵入形成岩床'],[.48,'岩浆聚集使上覆岩层拱起，形成岩盖'],[.66,'岩浆喷出地表，形成火山']],
+ build(S){
+  const lac=t=>0.28*sm(0.48,0.62,t);
+  const dome=(x,z,t)=>lac(t)*Math.max(0,1-(sq(x-0.3)+sq(z-1.3))/0.25);
+  const vol=t=>0.6*sm(0.68,0.95,t);
+  const cone=(x,z,t)=>{const r=Math.hypot(x-1.2,z-1.3);const H=vol(t);return H>0?Math.max(0,H*(1-r/(H*1.8+0.01))):0;};
+  const hf=(x,z,t)=>dome(x,z,t)*0.6+cone(x,z,t)+rough(x,z,0.02);
+  const b=Block({W:4.4,L:2.6,D:1.5,ymax:0.8,h:hf,trees:60,treeOk:(x,z)=>Math.hypot(x-1.2,z-1.3)>1.0,
+   col:(x,y,z,t)=>{
+    if(sq(x/1.1)+sq((y+1.25)/0.22)<1)return P.MAG;
+    const p1=sm(0.12,0.3,t);if(Math.abs(x+0.9)<0.05&&y>-1.1&&y<-1.1+0.65*p1)return P.MAG;
+    const p2=sm(0.3,0.45,t);if(y>-0.47&&y<-0.4&&x<-0.85&&x>-0.85-1.2*p2)return P.MAG;
+    const p3=sm(0.42,0.5,t);if(Math.abs(x-0.3)<0.05&&Math.abs(z-1.3)<0.3&&y>-1.1&&y<-1.1+0.75*p3)return P.MAG;
+    const d=dome(x,z,t);if(d>0&&y>-0.36&&y<-0.36+d)return P.MAG;
+    const p4=sm(0.62,0.72,t);if(Math.abs(x-1.2)<0.05&&Math.abs(z-1.3)<0.3&&y>-1.1&&y<-1.1+(1.1+vol(t))*p4)return P.MAG;
+    if(y>0.02&&cone(x,z,t)>0)return (Math.floor(y/0.08)%2)?P.VOL:P.VOL2;
+    const yy=y-(y>-0.36?d*0.6:0);return STRATA[((Math.floor((yy+1.5)/0.15))%6+6)%6];},
+   top:(x,z,y,t)=>{const c=cone(x,z,t);if(c>0.03)return Math.hypot(x-1.2,z-1.3)<0.12?'lava':'cinder';return 'grass';}});
+  S.add(b);
+  const zf=1.34;
+  Label('岩浆房',[-0.3,-1.25,zf],{size:.12,color:'#fff',bg:'rgba(160,40,20,.88)'});
+  const l=[Label('岩脉',[-1.1,-0.75,zf],{size:.12}),Label('岩床',[-1.6,-0.3,zf],{size:.12}),Label('岩盖',[0.3,-0.05,zf],{size:.12}),Label('火山',[1.2,0.9,1.3],{size:.12,color:'#b5452f'}),
+   Label('侵入岩',[-2.5,-0.55,0.3],{size:.11}),Label('喷出岩',[2.1,0.5,1.2],{size:.11})];
+  return t=>{b.userData.update(t);l[0].visible=t>0.2;l[1].visible=t>0.36;l[2].visible=t>0.55;l[3].visible=t>0.75;l[4].visible=t>0.5;l[5].visible=t>0.85;};}
+});
+M({id:'cinder',cat:'内',sub:'岩浆活动',name:'火山渣锥',dur:14,cam:[3.4,2.4,4.6],
+ pr:'火山渣锥（碎屑锥）主要由火山喷出的碎屑物（火山渣、火山灰等）堆积而成，坡度较陡、顶部有火山口。它的大小和形态受碎屑物粗细、喷发规模以及喷发时的风速、风向影响——碎屑物在下风向落得更多，火山锥会向下风向“偏”。',
+ ob:['剖面上可见一层层碎屑堆积层，与锥面平行','下风向一侧坡更长、堆积更多','锥顶为火山口'],
+ kd:'对应考点：火山地貌的形成；风向对火山灰分布的影响（下风向堆积多）。',
+ lg:[[P.CIN,'火山渣（不同喷发期）'],[P.CIN2,''],[P.SS,'原地面岩层']],
+ st:[[0,'火山开始喷发，碎屑物抛向空中'],[.2,'碎屑物落回地面，围绕火山口堆积'],[.5,'多次喷发，堆积层层叠加，锥体增高'],[.8,'受风向影响，下风向一侧堆积更多']],
+ build(S){
+  const c=-0.25,cz=1.5;const H=t=>0.95*sm(0.03,0.95,t);
+  const cone=(x,z,tt)=>{const h=H(tt);if(h<=0)return 0;const dx=x-c,dz=z-cz;const r=Math.hypot(dx,dz);const cs=r>1e-6?dx/r:0;
+   const R=h/0.58*(1+0.38*cs);let v=Math.max(0,h*(1-r/R));const cr=0.16*h/0.58;if(r<cr)v=Math.max(0,v-0.25*h*(1-r/cr));return v;};
+  const steps=[];for(let i=1;i<=10;i++)steps.push(i/10);
+  const pal=[P.CIN,P.CIN2,P.VOL,P.VOL2];
+  const b=Block({W:4.2,L:3.0,D:0.6,ymax:1.1,h:(x,z,t)=>cone(x,z,t)+rough(x,z,0.015),trees:60,treeOk:(x,z,y,t)=>cone(x,z,t)<0.005&&Math.hypot(x-c,z-cz)>1.9,
+   col:(x,y,z,t)=>{if(y<=0)return STRATA[((Math.floor((y+0.6)/0.15))%6+6)%6];
+    if(y>=cone(x,z,t))return pal[0];for(let i=0;i<steps.length;i++){const tt=Math.min(t,steps[i]);if(cone(x,z,tt)>y)return pal[i%4];}return pal[0];},
+   top:(x,z,y,t)=>cone(x,z,t)>0.01?'cinder':'grass'});
+  S.add(b);
+  const N=70;const gr=Grains(N,0x2a201c,true);S.add(gr);const R=rng(7);const pp=[];for(let i=0;i<N;i++)pp.push({o:R(),a:R()*PI*2,v:0.3+R()*0.5,s:0.015+R()*0.025});
+  S.add(Arrow([-2.2,1.6,0],[-1.2,1.6,0],0x2f6f9f));Label('风向',[-1.7,1.82,0],{size:.12,color:'#2f6f9f'});
+  Label('火山口',[c,1.3,cz],{size:.12});const ld=Label('下风向堆积多',[1.0,0.45,0.9],{size:.11});Label('剖面：层层碎屑堆积',[-0.9,0.3,1.65],{size:.11});
+  return (t,time)=>{b.userData.update(t);const h=H(t);const act=t>0.02&&t<0.99;
+   for(let i=0;i<N;i++){const p=pp[i];const f=((time*0.5+p.o)%1);const vx=Math.cos(p.a)*p.v*0.8+0.7,vz=Math.sin(p.a)*p.v*0.8-0.4;
+    const x=c+vx*f*1.2,z=cz+vz*f*1.2,y=h+0.05+2.6*f-3.2*f*f;
+    if(act&&y>-0.05)gr.put(i,x,Math.max(y,0),z,p.s,1,f*9,i);else gr.put(i,0,-9,0,0.001);}gr.done();ld.visible=t>0.7;};}
+});
+M({id:'assim',cat:'内',sub:'岩浆活动',name:'同化作用与混染作用',dur:12,cam:[0.8,1.2,5.0],
+ pr:'岩浆上升过程中会熔化围岩和捕获到的岩块（捕虏体）。从岩浆的角度看，岩浆“吸收”了围岩成分，叫同化作用；从围岩的角度看，围岩物质混入岩浆，叫混染作用。同一种岩浆同化了成分不同的围岩，可以形成成分不同的岩浆。',
+ ob:['捕虏体（掉进岩浆的岩块）边缘逐渐熔化、变小','岩浆颜色（成分）逐渐改变','岩浆房边界向围岩扩展'],
+ kd:'拓展理解：岩浆岩成分的多样性；为什么同一地区可出现不同成分的岩浆岩。',
+ lg:[[P.MAG,'岩浆'],[P.SS,'围岩'],[P.LS,''],[P.SH,'']],
+ st:[[0,'岩浆房上升，接触围岩'],[.2,'围岩岩块崩落进入岩浆，成为捕虏体'],[.45,'捕虏体边缘熔化（同化/混染）'],[.75,'捕虏体变小，岩浆成分改变']],
+ build(S){
+  const xen=[[-0.55,-0.65,0.16,0.3],[0.15,-0.55,0.13,1.1],[0.6,-0.85,0.15,2.0],[-0.15,-1.0,0.12,0.6],[0.9,-0.55,0.1,2.6]];
+  const rx=t=>1.05+0.18*t,ry=t=>0.55+0.1*t;
+  const inCh=(x,y,t)=>sq(x/rx(t))+sq((y+0.8)/ry(t))+0.12*(wob(x*4,y*4)-0.5)<1;
+  const MAG2=L('#d06a2c','magma2');PAT[MAG2]='magma';
+  const b=Block({W:4,L:2,D:1.6,ymax:0.3,h:(x,z)=>0.1+rough(x,z,0.03),trees:40,
+   col:(x,y,z,t)=>{const rock=STRATA[((Math.floor((y+1.6)/0.17))%6+6)%6];
+    if(!inCh(x,y,t))return rock;
+    for(const [cx,cy,s0,a] of xen){const s=s0*(1-0.8*sm(0.25,1,t))*sm(0.08,0.2,t);if(s<=0.001)continue;
+     const dx=x-cx,dy=y-cy;const u=dx*Math.cos(a)+dy*Math.sin(a),v=-dx*Math.sin(a)+dy*Math.cos(a);const d=Math.max(Math.abs(u),Math.abs(v));
+     if(d<s)return STRATA[(Math.round(cx*10)%6+6)%6];if(d<s+0.05)return MAG2;}
+    return t>0.6?MAG2:P.MAG;},
+   top:()=>'grass'});
+  S.add(b);
+  const zf=1.05;Label('围岩',[-1.6,-0.1,zf],{size:.12});Label('岩浆房',[0.2,-1.2,zf],{size:.12,color:'#fff',bg:'rgba(160,40,20,.88)'});
+  const l1=Label('捕虏体',[-0.55,-0.35,zf],{size:.11});const l2=Label('同化作用（岩浆角度）\n混染作用（围岩角度）',[1.2,0.5,zf],{size:.11});
+  return t=>{b.userData.update(t);l1.visible=t>0.2;l2.visible=t>0.45;};}
+});
+
+/* ---------- 内力 · 变质作用 ---------- */
+M({id:'meta',cat:'内',sub:'变质作用',name:'接触变质（变质晕）',dur:12,cam:[1.2,1.6,5.4],
+ pr:'岩浆侵入时带来高温，使周围岩石在固态下发生成分、结构的改变，形成变质岩：石灰岩变成大理岩，砂岩变成石英岩，页岩变成板岩（角岩）。离岩体越近温度越高、变质越强，环绕岩体形成一圈“变质晕”。',
+ ob:['变质只发生在岩浆岩体周围一定范围内','同一岩层，靠近岩体的部分变质，远处不变','不同原岩变成不同的变质岩'],
+ kd:'对应考点：岩石圈物质循环——变质作用；判断岩层形成先后（岩浆岩晚于被它“烤”变质的岩层）。',
+ lg:[[P.LS,'石灰岩'],[P.MAR,'大理岩'],[P.SS,'砂岩'],[P.QZ,'石英岩'],[P.SH,'页岩'],[P.SL,'板岩'],[P.GR,'花岗岩']],
+ st:[[0,'水平的沉积岩层'],[.15,'岩浆向上侵入'],[.45,'岩体周围高温，岩石发生变质'],[.75,'环绕岩体形成变质晕']],
+ build(S){
+  const top=t=>lerp(-1.45,-0.25,sm(0.12,0.5,t));
+  const surf=(x,t)=>top(t)-0.55*sq(x/1.0);
+  const aur=t=>0.38*sm(0.4,0.85,t);
+  const b=Block({W:4.4,L:2.4,D:1.4,ymax:0.2,h:(x,z)=>0.1+rough(x,z,0.03),trees:50,
+   col:(x,y,z,t)=>{const s=surf(x,t);if(y<s&&Math.abs(x)<1.5)return P.GR;
+    const dist=Math.max(0,y-s)*0.9+Math.max(0,Math.abs(x)-1.2);const m=dist<aur(t);
+    if(y>-0.35)return m?P.MAR:P.LS;if(y>-0.8)return m?P.QZ:P.SS;return m?P.SL:P.SH;},
+   top:()=>'grass'});
+  S.add(b);
+  const zf=1.25;Label('石灰岩',[-1.8,-0.12,zf],{size:.11});Label('砂岩',[-1.8,-0.58,zf],{size:.11});Label('页岩',[-1.8,-1.1,zf],{size:.11});
+  const l=[Label('花岗岩',[0,-0.75,zf],{size:.12}),Label('大理岩',[0.35,-0.05,zf],{size:.11}),Label('变质晕',[1.15,-0.3,zf],{size:.12,color:'#7a2a1a'})];
+  return t=>{b.userData.update(t);l[0].visible=t>0.3;l[1].visible=t>0.6;l[2].visible=t>0.7;};}
+});
+/* ---------- 地质构造 · 褶皱 ---------- */
+function foldLayer(y,f){return STRATA[((Math.floor((y-f+1.3)/0.15))%6+6)%6];}
+M({id:'fold',cat:'构',sub:'褶皱',name:'背斜与向斜',dur:12,cam:[1.6,2.0,5.6],
+ pr:'岩层受水平挤压发生弯曲变形叫褶皱。岩层向上拱起的是背斜，岩层向下弯曲的是向斜。判断背斜、向斜最可靠的依据是岩层的新老关系：背斜核部（中心）岩层老、两翼新；向斜核部岩层新、两翼老。在没有受到侵蚀时，背斜常成为山岭，向斜常成为谷地。',
+ ob:['左侧岩层向上拱起：背斜；右侧向下弯曲：向斜','看正面剖面：背斜中心是较老的深层岩层','未受侵蚀时：背斜成山、向斜成谷'],
+ kd:'对应考点：褶皱的判读（形态+新老关系）；背斜储油、向斜储水；隧道选在背斜处。',
+ lg:[[P.DO,'较新岩层'],[P.SI,''],[P.RS,''],[P.LS,''],[P.SH,''],[P.SS,'较老岩层']],
+ st:[[0,'水平岩层，自下而上由老到新'],[.1,'受水平挤压，岩层开始弯曲'],[.5,'形成背斜（向上拱起）和向斜（向下弯曲）'],[.8,'未受侵蚀时：背斜成山，向斜成谷']],
+ build(S){
+  const A=t=>0.42*sm(0.08,0.75,t);const f=(x,t)=>A(t)*Math.cos(2*PI*(x+1.1)/4.4);
+  const b=Block({W:4.4,L:2.4,D:1.2,ymax:0.95,h:(x,z,t)=>0.35+f(x,t)+rough(x,z,0.025),trees:70,
+   col:(x,y,z,t)=>foldLayer(y,f(x,t)),top:()=>'grass'});
+  S.add(b);
+  S.add(Arrow([-3.0,-0.3,0],[-2.35,-0.3,0],0x8a5a2b),Arrow([3.0,-0.3,0],[2.35,-0.3,0],0x8a5a2b));
+  Label('挤压',[-2.7,0,0],{size:.12});Label('挤压',[2.7,0,0],{size:.12});
+  const l=[Label('背斜\n（核部老、两翼新）',[-1.1,1.15,1.25],{size:.12,color:'#7a2a1a'}),Label('向斜\n（核部新、两翼老）',[1.1,0.5,1.25],{size:.12,color:'#2f5f8f'}),
+   Label('山岭',[-1.1,1.15,-0.6],{size:.11}),Label('谷地',[1.1,0.3,-0.6],{size:.11})];
+  return t=>{b.userData.update(t);l[0].visible=l[1].visible=t>0.45;l[2].visible=l[3].visible=t>0.8;};}
+});
+M({id:'invert',cat:'构',sub:'褶皱',name:'背斜成谷、向斜成山',dur:14,cam:[1.6,2.0,5.6],
+ pr:'背斜顶部受张力作用，岩石破碎、裂隙发育，容易被外力侵蚀，长期侵蚀后反而成为谷地；向斜槽部受挤压，岩性坚实、不易被侵蚀，反而保留下来成为山岭。这种地形与构造“相反”的现象叫地形倒置。',
+ ob:['背斜顶部出现很多张裂隙（黑色细线）','外力侵蚀时，背斜顶部下降得最快','最后：背斜处成了谷地，向斜处成了山岭'],
+ kd:'对应考点：“背斜成谷、向斜成山”的原因分析——内力形成构造，外力塑造地貌。',
+ lg:[[P.DO,'较新岩层'],[P.SS,'较老岩层'],[P.CRACK,'张裂隙']],
+ st:[[0,'褶皱形成后：背斜成山，向斜成谷'],[.15,'背斜顶部受张力，裂隙发育，岩石破碎'],[.35,'外力侵蚀：背斜顶部被快速侵蚀'],[.7,'向斜槽部岩性坚实，不易被侵蚀'],[.88,'地形倒置：背斜成谷，向斜成山']],
+ build(S){
+  const A=0.42;const f=x=>A*Math.cos(2*PI*(x+1.1)/4.4);
+  const hfin=x=>-0.08-0.24*(1-G(x,1.1,0.6))-0.32*G(x,-1.1,0.5);
+  const hf=(x,z,t)=>{const e=sm(0.25,0.95,t);const E=lerp(1.2,hfin(x),e);return Math.min(0.35+f(x),E)+rough(x,z,0.025);};
+  const b=Block({W:4.4,L:2.4,D:1.2,ymax:0.95,h:hf,trees:70,
+   col:(x,y,z,t)=>{if(t>0.12&&Math.abs(x+1.1)<0.6&&y>0.35+f(x)-0.55){const q=fr((x+1.1)/0.11+0.3*nz(y*8,x*8));if(q<0.05*sm(0.12,0.3,t))return P.CRACK;}return foldLayer(y,f(x));},
+   top:(x,z,y,t)=>'grass'});
+  S.add(b);
+  const l=[Label('背斜：顶部张裂、易侵蚀',[-1.1,1.0,1.25],{size:.11,color:'#7a2a1a'}),Label('向斜：槽部紧实、抗侵蚀',[1.1,0.45,1.25],{size:.11,color:'#2f5f8f'}),
+   Label('背斜谷',[-1.1,0.15,-0.4],{size:.13,color:'#7a2a1a'}),Label('向斜山',[1.1,0.3,-0.4],{size:.13,color:'#2f5f8f'})];
+  return t=>{b.userData.update(t);l[0].visible=t>0.12&&t<0.7;l[1].visible=t>0.55&&t<0.85;l[2].visible=l[3].visible=t>0.85;};}
+});
+M({id:'plunge',cat:'构',sub:'褶皱',name:'倾伏褶皱（平面图上的“U形”出露）',dur:12,cam:[3.4,3.2,4.2],
+ pr:'水平岩层受挤压发生弯曲形成背斜，同时褶皱轴向一端倾斜（倾伏）。地表经侵蚀削平后，岩层出露呈“U/V”形闭合弯曲；背斜中心岩层老、两翼新，闭合弯曲的尖端指向倾伏方向。',
+ ob:['先看褶皱形成：岩层整体弯曲','再看侵蚀削平：顶面出露出弯曲的岩层界线','前端（倾伏端）出露的岩层更新'],
+ kd:'对应考点：地质平面图判断背斜/向斜——看新老关系，不能只看弯曲方向。',
+ lg:[[P.DO,'较新岩层'],[P.SI,''],[P.RS,''],[P.LS,''],[P.SH,''],[P.SS,'较老岩层']],
+ st:[[0,'水平岩层'],[.08,'受挤压，岩层弯曲形成背斜，并向前端倾伏'],[.5,'地表遭受侵蚀，逐渐被削平'],[.85,'削平后顶面出现“U形”闭合的出露界线']],
+ build(S){
+  const amp=t=>0.75*sm(0.05,0.45,t);
+  const f=(x,z,t)=>amp(t)*G(x,0,0.75)*(0.5-0.38*z/1.3);
+  const E=t=>t<0.5?9:0.28+0.9*(1-sm(0.5,0.92,t));
+  const hf=(x,z,t)=>Math.min(0.28+f(x,z,t),E(t))+rough(x,z,0.012);
+  const b=Block({W:4,L:2.6,D:1.1,ymax:1.1,h:hf,
+   col:(x,y,z,t)=>foldLayer(y,f(x,z,t)),top:(x,z,y,t)=>t<0.5?'grass':foldLayer(y-0.01,f(x,z,t))});
+  S.add(b);
+  const ax=Line([[0,0.33,-1.3],[0,0.33,1.3]],0xb5452f,true);S.add(ax);
+  S.add(Arrow([-2.6,-0.3,0],[-2.05,-0.3,0],0x8a5a2b),Arrow([2.6,-0.3,0],[2.05,-0.3,0],0x8a5a2b));
+  const pa=Arrow([0,0.5,-0.6],[0,0.5,0.9],0xb5452f,0.03);S.add(pa);
+  Label('挤压',[-2.4,0.0,0],{size:.12});Label('挤压',[2.4,0.0,0],{size:.12});
+  const l1=Label('倾伏方向',[0.45,0.62,0.6],{size:.12,color:'#b5452f'});const l2=Label('背斜轴',[0,0.5,-1.2],{size:.11,color:'#b5452f'});
+  const l3=Label('核部老、两翼新',[-1.1,0.55,0.9],{size:.12});
+  return t=>{b.userData.update(t);ax.visible=pa.visible=l1.visible=l2.visible=t>0.85;l3.visible=t>0.9;};}
+});
+
+/* ---------- 地质构造 · 断层 ---------- */
+function faultModel(kind){
+ return function(S){
+  const dip=0.577,xt=0.25,top0=0.3;
+  const xf=y=>xt-(y-top0)*dip;          // 断层面：向 +x 倾斜，+x 一侧为上盘
+  const dd=t=>0.34*sm(0.1,0.8,t);
+  const sgn=kind==='normal'?-1:1;        // 正断层上盘下降，逆断层上盘上升
+  const disp=t=>({dx:-sgn*0.5*dd(t),dy:sgn*0.866*dd(t)});
+  const hw=(x,y)=>x>xf(y);
+  const hf=(x,z,t)=>{const {dy}=disp(t);let h=top0+rough(x,z,0.025);
+   if(x>xf(top0))h+=dy;
+   if(kind==='reverse'){const ero=sm(0.75,1,t)*0.12*G(x,xt+0.15,0.35);h-=ero;}
+   return h;};
+  const b=Block({W:4.4,L:2.4,D:1.1,ymax:0.7,h:hf,trees:60,treeOk:(x)=>Math.abs(x-xt)>0.35,
+   col:(x,y,z,t)=>{if(Math.abs(x-xf(y))<0.015)return P.FAULT;const {dx,dy}=disp(t);let X=x,Y=y;if(hw(x,y)){X=x-dx;Y=y-dy;}
+    return STRATA[((Math.floor((Y+1.4)/0.14))%6+6)%6];},top:()=>'grass'});
+  S.add(b);
+  const zf=1.25;
+  if(kind==='normal'){S.add(Arrow([-1.6,-0.6,zf],[-2.4,-0.6,zf],0x2f6f9f),Arrow([1.9,-0.6,zf],[2.7,-0.6,zf],0x2f6f9f));Label('张力',[-2.0,-0.38,zf],{size:.12,color:'#2f6f9f'});Label('张力',[2.3,-0.38,zf],{size:.12,color:'#2f6f9f'});}
+  else{S.add(Arrow([-2.7,-0.6,zf],[-1.9,-0.6,zf],0x8a5a2b),Arrow([3.0,-0.6,zf],[2.25,-0.6,zf],0x8a5a2b));Label('挤压',[-2.3,-0.38,zf],{size:.12});Label('挤压',[2.6,-0.38,zf],{size:.12});}
+  const mv=Arrow(kind==='normal'?[xf(-0.3)+0.25,-0.1,zf+0.02]:[xf(-0.6)+0.25,-0.75,zf+0.02],kind==='normal'?[xf(-0.6)+0.25,-0.62,zf+0.02]:[xf(-0.3)+0.25,-0.23,zf+0.02],0xb5452f,0.022);S.add(mv);
+  const lh=Label(kind==='normal'?'上盘（相对下降）':'上盘（相对上升）',[1.5,0.75,zf],{size:.12});Label('下盘',[-1.4,0.6,zf],{size:.12});
+  Label('断层面',[xf(-0.75)-0.35,-0.75,zf],{size:.11,color:'#7a2a1a'});
+  const ls=Label(kind==='normal'?'断层崖':'断层崖（逆冲）',[xt+0.1,0.75,-0.8],{size:.11});
+  return t=>{b.userData.update(t);ls.visible=t>0.4;mv.visible=t>0.1&&t<0.9;};
+ };
+}
+M({id:'normal',cat:'构',sub:'断层',name:'正断层',dur:10,cam:[1.2,1.8,5.4],
+ pr:'岩体受力破裂，并沿破裂面发生明显位移，叫断层。断层面以上的岩块叫上盘，以下的叫下盘。上盘相对下降、下盘相对上升的是正断层，一般由张力（拉伸）作用形成。断层两侧岩层错开、不连续，常形成陡峭的断层崖。',
+ ob:['先找断层面，再分上盘（断层面上方）和下盘','同一岩层在断层两侧错开了','上盘相对下降 → 正断层（受张力）'],
+ kd:'对应考点：断层的判读（岩层是否连续、错动方向）；断层处岩石破碎，易成河谷、泉水出露；工程建设应避开断层。',
+ lg:[[P.SS,'砂岩'],[P.SH,'页岩'],[P.LS,'石灰岩'],[P.RS,'红色砂岩'],[P.FAULT,'断层面']],
+ st:[[0,'连续的水平岩层'],[.1,'岩层受张力作用破裂'],[.4,'上盘沿断层面向下滑动'],[.8,'同一岩层错开，地表形成断层崖']],build:faultModel('normal')});
+M({id:'reverse',cat:'构',sub:'断层',name:'逆断层',dur:10,cam:[1.2,1.8,5.4],
+ pr:'上盘相对上升、下盘相对下降的断层叫逆断层，一般由水平挤压作用形成。上盘沿断层面向上逆冲，覆盖在下盘之上，使地壳缩短、抬升。',
+ ob:['断层面上方的岩块（上盘）相对上升','两侧箭头相向：受挤压','同一岩层在上盘的位置更高'],
+ kd:'对应考点：正断层与逆断层的区分——只看上盘相对下盘的运动方向。',
+ lg:[[P.SS,'砂岩'],[P.SH,'页岩'],[P.LS,'石灰岩'],[P.RS,'红色砂岩'],[P.FAULT,'断层面']],
+ st:[[0,'连续的水平岩层'],[.1,'岩层受水平挤压破裂'],[.4,'上盘沿断层面向上逆冲'],[.8,'抬升部分遭受侵蚀']],build:faultModel('reverse')});
+M({id:'strike',cat:'构',sub:'断层',name:'平移断层',dur:10,cam:[2.4,3.2,4.2],
+ pr:'断层两盘沿断层面走向作水平方向相对移动的断层叫平移断层（走滑断层）。断层面近于直立，岩层在剖面上看不出升降，但在地表上，横穿断层的河流、道路、岩脉等会被错开。',
+ ob:['从上往下看：河流和深色岩脉被错开','两盘水平错动，没有明显的升降','断层线附近岩石破碎'],
+ kd:'对应考点：河流沿断层发育或被断层错断；美国圣安德烈斯断层是著名的平移断层。',
+ lg:[[P.SS,'砂岩'],[P.SH,'页岩'],[P.BA,'岩脉'],[P.FAULT,'断层带']],
+ st:[[0,'河流和岩脉横穿未来的断层线'],[.1,'岩体沿近直立的断层面破裂'],[.4,'两盘沿水平方向相对错动'],[.8,'河流、岩脉被错开']],
+ build(S){
+  const off=t=>0.6*sm(0.1,0.85,t);const zs=(x,z,t)=>x>0?z-off(t):z;
+  const river=(x,z,t)=>{const zz=zs(x,z,t);return Math.abs(zz-0.35-0.06*Math.sin(x*2.6))<0.065;};
+  const dike=(x,z,t)=>Math.abs(zs(x,z,t)+0.45+0.12*x)<0.06;
+  const hf=(x,z,t)=>0.3+rough(x,z,0.03)-(river(x,z,t)?0.05:0)-(Math.abs(x)<0.03?0.02:0);
+  const b=Block({W:4.4,L:2.6,D:1.0,ymax:0.5,h:hf,trees:70,treeOk:(x,z,y,t)=>Math.abs(x)>0.15&&!dike(x,z,t)&&Math.abs(zs(x,z,t)-0.35)>0.15,
+   col:(x,y,z,t)=>{if(Math.abs(x)<0.018)return P.FAULT;if(dike(x,z,t))return P.BA;return STRATA[((Math.floor((y+1.2)/0.14))%6+6)%6];},
+   top:(x,z,y,t)=>Math.abs(x)<0.025?'soil':river(x,z,t)?'water':dike(x,z,t)?P.BA:'grass'});
+  S.add(b);
+  const a1=Arrow([-0.5,0.65,-0.6],[-0.5,0.65,0.4],0xb5452f,0.03),a2=Arrow([0.5,0.65,0.6],[0.5,0.65,-0.4],0xb5452f,0.03);S.add(a1,a2);
+  Label('断层线',[0,0.55,-1.2],{size:.12,color:'#7a2a1a'});const lr=Label('河流被错开',[0.9,0.5,0.4],{size:.11,color:'#2f6f9f'});const ld=Label('岩脉被错开',[1.3,0.5,-1.0],{size:.11});
+  return t=>{b.userData.update(t);a1.visible=a2.visible=t>0.1&&t<0.9;lr.visible=ld.visible=t>0.7;};}
+});
+M({id:'horst',cat:'构',sub:'断层',name:'地垒与地堑',dur:12,cam:[1.4,2.2,5.6],
+ pr:'在两条大致平行的断层之间，中间岩块相对下降、两侧相对上升，形成地堑，常发育成谷地或湖泊（如渭河平原、东非大裂谷、贝加尔湖）；中间岩块相对上升、两侧相对下降，形成地垒，常形成块状山地（如华山、泰山、庐山）。',
+ ob:['看岩块：哪一块相对下降，哪一块相对上升','下降的岩块形成谷地，常积水成湖','上升的岩块形成陡峭的块状山'],
+ kd:'对应考点：断块山（华山、泰山）与断陷谷地/湖泊（渭河平原、贝加尔湖）的成因。',
+ lg:[[P.SS,'砂岩'],[P.SH,'页岩'],[P.LS,'石灰岩'],[P.FAULT,'断层']],
+ st:[[0,'连续的岩层'],[.12,'岩层沿几条断层破裂'],[.4,'岩块差异升降'],[.8,'下降岩块成谷地（地堑），上升岩块成山地（地垒）']],
+ build(S){
+  const fx=[-1.2,0.0,1.1],dir=[1,-1,1];
+  const fxy=(i,y)=>fx[i]+dir[i]*(0.3-y)*0.27;
+  const zone=(x,y)=>{let n=0;for(let i=0;i<3;i++)if(x>fxy(i,y))n++;return n;};
+  const offs=[0,-1,0.9,-0.2];const d=t=>0.34*sm(0.12,0.8,t);
+  const hf=(x,z,t)=>0.3+offs[zone(x,0.3)]*d(t)+rough(x,z,0.03);
+  const b=Block({W:4.6,L:2.4,D:1.1,ymax:0.75,h:hf,trees:70,treeOk:x=>!fx.some(v=>Math.abs(x-v)<0.2),
+   col:(x,y,z,t)=>{for(let i=0;i<3;i++)if(Math.abs(x-fxy(i,y))<0.015)return P.FAULT;const Y=y-offs[zone(x,y)]*d(t);return STRATA[((Math.floor((Y+1.3)/0.14))%6+6)%6];},
+   top:()=>'grass'});
+  S.add(b);const lake=Water(-1.15,-0.05,-1.19,0.5,0,0,0x2c6f86,.62);S.add(lake);
+  const l1=Label('地堑（谷地、湖泊）',[-0.6,0.5,1.3],{size:.12,color:'#2f5f8f'}),l2=Label('地垒（块状山）',[0.55,1.0,1.3],{size:.12,color:'#7a2a1a'});
+  return t=>{b.userData.update(t);const lv=sm(0.6,0.95,t);lake.setLevel(0.3-d(t)-0.03,0.3-d(t)+0.12*lv);l1.visible=l2.visible=t>0.6;};}
+});
+/* ---------- 外力 · 风化作用 ---------- */
+M({id:'physw',cat:'外',sub:'风化作用',name:'物理风化（热胀冷缩、冻融）',dur:16,cam:[3.0,1.9,4.6],
+ pr:'岩石在原地因温度变化、水的冻融等作用而崩解破碎，但成分不变，叫物理风化。白天岩石表层升温膨胀，夜晚降温收缩，内外胀缩不一致，岩石沿节理裂开；水渗入裂隙，结冰时体积膨胀，像楔子一样把裂隙撑大（冻融风化）。崩落的岩块在崖脚堆积成倒石堆（岩屑堆）。',
+ ob:['昼夜交替（光线明暗变化），岩石反复胀缩','节理裂隙逐渐变宽，岩块松动崩落','崖脚的岩屑堆越来越大，岩块有棱有角'],
+ kd:'对应考点：物理风化在昼夜温差大的地区（干旱区、高寒区）最显著；风化是外力作用的开始。',
+ lg:[[P.GR,'花岗岩'],[P.CRACK,'节理裂隙'],[P.ICE,'裂隙中的冰']],
+ st:[[0,'完整的花岗岩崖壁，内部有节理'],[.1,'白天升温膨胀，夜晚降温收缩'],[.3,'水渗入裂隙，结冰膨胀，裂隙加宽'],[.55,'岩块松动，从崖壁崩落'],[.8,'崖脚形成棱角状的岩屑堆（倒石堆）']],
+ build(S){
+  const cyc=t=>Math.sin(t*PI*16);const cliffX=t=>0.45-0.3*sm(0.45,1,t);
+  const talus=(x,z,t)=>{const a=0.42*sm(0.4,1,t);return a*Math.max(0,1-(x-cliffX(t))/1.25)*(0.8+0.4*wob(z*2,1))*sm(-0.1,0.05,x-cliffX(t));};
+  const cliff=(x,z,t)=>0.95*sm(cliffX(t)+0.06,cliffX(t)-0.04,x)+rough(x,z,0.05)*(x<cliffX(t)?1:0.3);
+  const hf=(x,z,t)=>Math.max(cliff(x,z,t),talus(x,z,t))+0.02;
+  const jw=t=>0.006+0.03*sm(0.15,0.75,t);
+  const b=Block({W:4.4,L:2.4,D:0.5,ymax:1.15,h:hf,trees:40,treeOk:(x,z,y,t)=>x>cliffX(t)+1.3||x<-0.5,
+   col:(x,y,z,t)=>{const c=cliff(x,z,t);if(y>c-0.01&&y<=talus(x,z,t)+0.02)return P.TILL;
+    const qx=fr((x+0.07*nz(y*6,z*6))/0.32),qy=fr((y+0.04*nz(x*6,z*6))/0.27);const w=jw(t);
+    if(y>0.02&&(qx<w/0.32||qy<w/0.27*0.7)){return (cyc(t)<0&&t>0.2)?P.ICE:P.CRACK;}return P.GR;},
+   top:(x,z,y,t)=>{if(talus(x,z,t)>cliff(x,z,t)+0.01)return 'scree';if(y>0.5)return (x<-0.4&&y>0.85)?'grass':'rock';return y<0.1?'grass':'rock';}});
+  S.add(b);
+  const N=26;const rk=Grains(N,0x9a8f86,true);S.add(rk);const R=rng(31);const pp=[];for(let i=0;i<N;i++)pp.push({z:-1+R()*2,t0:0.42+R()*0.52,s:0.03+R()*0.05,d:0.2+R()*0.9});
+  const ls=Label('白天：升温膨胀',[-1.2,1.45,0],{size:.12,color:'#b5452f'}),ln=Label('夜晚：降温收缩 / 结冰膨胀',[-1.2,1.45,0],{size:.12,color:'#2f5f8f'});
+  const lt=Label('岩屑堆（倒石堆）',[1.2,0.55,1.25],{size:.12});Label('节理',[-1.6,0.45,1.25],{size:.11});
+  return (t,time)=>{b.userData.update(t);const day=cyc(t)>=0;if(ENV.sun){ENV.sun.intensity=t>0.02&&t<0.98?(day?1.25:0.35):1.1;ENV.hemi.intensity=day?0.55:0.3;}
+   ls.visible=day&&t>0.02&&t<0.98;ln.visible=!day&&t>0.02&&t<0.98;lt.visible=t>0.6;
+   for(let i=0;i<N;i++){const p=pp[i];const f=cl((t-p.t0)/0.05,0,1);if(t<p.t0){rk.put(i,0,-9,0,0.001);continue;}
+    const cx=cliffX(p.t0);const x=cx+0.05+p.d*f,z=p.z;const yTop=0.85*(1-f)+(talus(x,z,t)+0.03)*f;rk.put(i,x,Math.max(yTop,talus(x,z,t))+p.s*0.6,z,p.s,1,i,i*2);}rk.done();};}
+});
+M({id:'chemw',cat:'外',sub:'风化作用',name:'化学风化（石灰岩溶蚀）',dur:16,cam:[2.8,2.6,4.4],
+ pr:'岩石在水、氧气、二氧化碳等作用下发生化学变化，成分改变，叫化学风化。含二氧化碳的雨水和地下水沿石灰岩的节理、裂隙流动，把碳酸钙溶解带走（CaCO₃+CO₂+H₂O→Ca(HCO₃)₂）：地表形成溶沟、石芽和落水洞，地下形成溶洞。湿热地区化学风化最强。',
+ ob:['雨水沿节理下渗，节理处先被溶蚀','地表：溶沟变深，留下石芽；中间出现落水洞','剖面：地下沿层面溶蚀出溶洞'],
+ kd:'对应考点：喀斯特地貌（溶沟、石芽、溶洞、地下河）；化学风化与气候（湿热区最强）。',
+ lg:[[P.LS,'石灰岩'],[P.CAVE,'溶洞'],[P.SOIL,'溶沟中的土']],
+ st:[[0,'石灰岩高地，岩层中有纵横节理'],[.1,'含CO₂的雨水沿节理下渗，溶解碳酸钙'],[.35,'节理被溶蚀加宽加深，形成溶沟、石芽'],[.6,'地下水沿层面溶蚀，形成溶洞'],[.8,'溶洞顶部塌陷，地表出现落水洞']],
+ build(S){
+  const jd=(x,z)=>{const wx=x+0.22*(nz(x*3+11,z*3)-0.5),wz=z+0.22*(nz(x*3,z*3+29)-0.5);
+   const u=wx*0.966+wz*0.259,v=-wx*0.259+wz*0.966;const sa=0.46+0.08*nz(v*2,5),sb=0.62;
+   const a=(0.5-Math.abs(fr(u/sa)-0.5))*sa,b=(0.5-Math.abs(fr((v+0.3*Math.floor(u/sa))/sb)-0.5))*sb;return Math.min(a,b*1.4);};
+  const groove=(x,z,t)=>0.32*sm(0.08,0.85,t)*Math.max(0,1-jd(x,z)/(0.045+0.035*nz(x*5,z*5)));
+  const sink=(x,z,t)=>0.55*sm(0.72,0.98,t)*Math.exp(-(sq(x-0.3)+sq(z+0.2))/0.12);
+  const hf=(x,z,t)=>0.35-groove(x,z,t)-sink(x,z,t)+rough(x,z,0.02);
+  const cave=(x,y,z,t)=>{const s=sm(0.5,0.85,t);if(s<=0)return false;const cy=-0.45+0.04*Math.sin(x*3+z*2);const r=0.12*s*(0.6+0.6*nz(x*4+20,z*4))+(y>cy?0.03*s*Math.max(0,Math.sin(x*40)):0);return Math.abs(y-cy)<r&&Math.abs(x)<2.0;};
+  const b=Block({W:4.4,L:2.4,D:1.1,ymax:0.5,h:hf,trees:35,treeOk:(x,z,y,t)=>groove(x,z,t)>0.08,
+   col:(x,y,z,t)=>{if(cave(x,y,z,t))return P.CAVE;const g=groove(x,z,t);if(g>0.01&&y>0.35-g-0.02&&jd(x,z)<0.03)return P.SOIL;
+    if(t>0.05&&jd(x,z)<0.006*(1+3*sm(0.1,0.6,t))&&y>-0.6)return P.CRACK;return (Math.floor((y+1.1)/0.22)%2)?P.LS:P.DO;},
+   top:(x,z,y,t)=>{if(groove(x,z,t)>0.1)return 'grass';if(sink(x,z,t)>0.05)return 'soil';return 'limestone';}});
+  S.add(b);
+  const N=90;const rain=Grains(N,0x9fc6e0);S.add(rain);const R=rng(5);const pp=[];for(let i=0;i<N;i++)pp.push({x:(R()-0.5)*4.2,z:(R()-0.5)*2.3,o:R()});
+  Label('CaCO₃ + CO₂ + H₂O → Ca(HCO₃)₂',[0,1.25,0],{size:.12,color:'#2f5f8f'});
+  const l=[Label('溶沟',[-1.45,0.55,1.2],{size:.11}),Label('石芽',[-0.9,0.65,1.2],{size:.11}),Label('溶洞',[-1.4,-0.3,1.25],{size:.12}),Label('落水洞',[0.3,0.55,-0.2],{size:.12})];
+  return (t,time)=>{b.userData.update(t);l[0].visible=l[1].visible=t>0.35;l[2].visible=t>0.65;l[3].visible=t>0.82;
+   for(let i=0;i<N;i++){const p=pp[i];const f=(time*0.9+p.o)%1;if(t>0.02&&t<0.98)rain.put(i,p.x,1.3-1.0*f,p.z,0.008,4);else rain.put(i,0,-9,0,0.001);}rain.done();};}
+});
+M({id:'biow',cat:'外',sub:'风化作用',name:'生物风化（根劈作用）',dur:14,cam:[2.6,2.0,4.0],
+ pr:'生物的生命活动使岩石破坏叫生物风化。植物在岩石裂隙中扎根，根系不断长粗，像楔子一样把裂隙撑大，使岩石崩裂（根劈作用，属于生物的物理风化）；地衣、苔藓分泌有机酸，溶蚀岩石表面（生物的化学风化）。',
+ ob:['树根伸进岩石裂隙','树木长大，根系变粗，裂隙被撑宽','岩石表面地衣、苔藓斑块增多'],
+ kd:'对应考点：风化作用的三种类型（物理、化学、生物）；生物风化在植被茂盛地区显著，促进土壤形成。',
+ lg:[[P.SS,'砂岩'],[P.ROOT,'树根'],[P.SOIL,'裂隙中的土']],
+ st:[[0,'岩石中有一条细小裂隙，种子落入其中'],[.15,'幼苗在裂隙中扎根生长'],[.45,'根系变粗，把裂隙撑宽（根劈作用）'],[.75,'地衣、苔藓分泌有机酸，溶蚀岩石表面'],[.9,'岩石沿裂隙崩裂']],
+ build(S){
+  const w=t=>0.012+0.16*sm(0.15,0.95,t);
+  const hf=(x,z,t)=>{const a=Math.abs(x+0.06*Math.sin(z*2));const cw=w(t);let h=0.5+rough(x,z,0.03)-0.1*sm(1.1,1.7,Math.abs(x));if(a<cw/2)h-=0.18;else if(a<cw/2+0.04)h-=0.18*(1-(a-cw/2)/0.04);return h;};
+  const b=Block({W:3.6,L:2.2,D:0.6,ymax:0.6,h:hf,
+   col:(x,y,z,t)=>{const a=Math.abs(x+0.06*Math.sin(z*2));const cw=w(t)*(0.4+0.6*(y+0.6)/1.1);if(a<cw/2){const rl=Math.abs(Math.sin(y*25+x*30));return rl<0.35&&y>-0.45*sm(0.1,0.9,t)?P.ROOT:P.SOIL;}
+    return (Math.floor((y+0.6)/0.18)%2)?P.SS:P.SI;},
+   top:(x,z,y,t)=>{const a=Math.abs(x+0.06*Math.sin(z*2));if(a<w(t)/2+0.03)return 'soil';if(nz(x*14+5,z*14)>0.78-0.3*sm(0.6,1,t))return 'moss';return 'rock';}});
+  S.add(b);
+  const tree=new THREE.Group();const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.05,0.7,8),stdMat({color:lin(0x5d4430)}));trunk.position.y=0.35;trunk.castShadow=true;tree.add(trunk);
+  [[0,0.85,0,0.32],[0.18,0.72,0.08,0.24],[-0.17,0.75,-0.05,0.25],[0.02,1.02,0.05,0.22]].forEach(([x,y,z,r])=>{const c=new THREE.Mesh(new THREE.IcosahedronGeometry(r,1),stdMat({color:lin(0x4f7330),flatShading:true}));c.position.set(x,y,z);c.castShadow=true;tree.add(c);});
+  S.add(tree);
+  const l=[Label('根系撑开裂隙（根劈）',[0.45,0.2,1.15],{size:.11,color:'#5b3a22'}),Label('地衣、苔藓',[-1.1,0.75,0.4],{size:.11})];
+  return t=>{b.userData.update(t);const s=0.15+0.85*sm(0.1,0.9,t);tree.scale.set(s,s,s);tree.position.set(0,0.36,0.2);l[0].visible=t>0.4;l[1].visible=t>0.7;};}
+});
+M({id:'saltw',cat:'外',sub:'风化作用',name:'盐风化（蜂窝石）',dur:14,cam:[2.2,3.2,3.8],
+ pr:'含盐的水渗入岩石表层孔隙，水分蒸发后盐分结晶膨胀，挤压孔隙壁使岩石破裂；如此反复，岩石表面形成大小不等的盐风化穴，像蜂窝一样，叫蜂窝石。长期盐风化会使岩石崩解成岩屑。多见于干旱区和海岸。',
+ ob:['湿润（盐水渗入）与干燥（盐结晶）交替出现','风化穴逐渐加深、扩大、连通','岩屑从岩面剥落'],
+ kd:'对应考点：风化作用（物理风化）；干旱、海岸地区的风化地貌。',
+ lg:[[P.SS,'砂岩']],
+ st:[[0,'盐水渗入岩石表层孔隙'],[.1,'水分蒸发，盐分结晶膨胀，孔隙壁破裂'],[.4,'反复干湿交替，风化穴不断扩大'],[.75,'风化穴连成蜂窝状，岩屑剥落']],
+ build(S){
+  const R=rng(11);const pits=[];for(let i=0;i<50;i++)pits.push({x:-1.6+R()*3.2,z:-1.05+R()*2.1,r:0.08+R()*0.14,d:0.06+R()*0.12,ph:R()*0.5});
+  const GX=121,GZ=81;const PH=new Float32Array(GX*GZ);let pT=-1;
+  const pd0=(x,z,t)=>{let s=0;for(const p of pits){const g=sm(p.ph*0.6,p.ph*0.6+0.5,t);if(g<=0)continue;const r2=(sq(x-p.x)+sq(z-p.z))/sq(p.r*(0.6+0.6*g));if(r2<3)s+=p.d*g*Math.exp(-r2);}return s;};
+  const pd=(x,z,t)=>{if(t!==pT){pT=t;for(let j=0;j<GZ;j++)for(let i=0;i<GX;i++)PH[j*GX+i]=pd0(-1.8+3.6*i/(GX-1),-1.2+2.4*j/(GZ-1),t);}
+   const i=cl(Math.round((x+1.8)/3.6*(GX-1)),0,GX-1),j=cl(Math.round((z+1.2)/2.4*(GZ-1)),0,GZ-1);return PH[j*GX+i];};
+  const wet=t=>Math.sin(t*PI*12)>0;
+  const b=Block({W:3.6,L:2.4,D:0.5,ymax:0.4,nx:130,h:(x,z,t)=>0.3-pd(x,z,t)+rough(x,z,0.01),
+   col:(x,y,z,t)=>(Math.floor((y+0.5)/0.1)%2)?P.SS:P.SI,
+   top:(x,z,y,t)=>{const d=pd(x,z,t);if(d>0.03){if(wet(t))return hx('#8c6b47');return spk(x*40,z*40)>0.55?hx('#f4f1ea'):hx('#b38f63');}return wet(t)?hx('#b1905f'):P.SS;}});
+  S.add(b);
+  const N=30;const gr=Grains(N,0xc49a6a,true);S.add(gr);const pp=[];for(let i=0;i<N;i++)pp.push({x:-1.6+R()*3.2,z:-1+R()*2,o:R()});
+  const lw=Label('盐水渗入（湿）',[0,0.75,0],{size:.12,color:'#2f6f9f'});const ld=Label('蒸发结晶（干）',[0,0.75,0],{size:.12,color:'#8a5a2b'});
+  const lh=Label('盐风化穴（蜂窝石）',[0.8,0.55,1.2],{size:.12});
+  return (t,time)=>{b.userData.update(t);const w=wet(t);lw.visible=w&&t<0.99;ld.visible=!w&&t<0.99;lh.visible=t>0.4;
+   for(let i=0;i<N;i++){const p=pp[i];const f=(time*0.4+p.o)%1;if(t>0.35&&t<0.99)gr.put(i,p.x,0.3+0.25*(1-f)-0.05,p.z,0.012+0.01*(i%3),1,i,i);else gr.put(i,0,-9,0,0.001);}gr.done();};}
+});
+
+/* ---------- 外力 · 侵蚀作用 ---------- */
+M({id:'vvalley',cat:'外',sub:'侵蚀作用',kind:'流水',name:'V形谷（下切与溯源侵蚀）',dur:14,cam:[3.0,2.6,4.4],
+ pr:'在河流上游，地势落差大、流速快，河流以向下侵蚀（下切）和向源头方向侵蚀（溯源侵蚀）为主，河谷不断加深、向源头延长，谷坡在重力和坡面流水作用下后退，形成横剖面呈“V”字形的峡谷。',
+ ob:['河谷从前方（下游）向后方（源头）伸长：溯源侵蚀','河床不断变低：下切侵蚀','正面剖面上，河谷横断面呈“V”形'],
+ kd:'对应考点：河流侵蚀的三个方向（下蚀、溯源侵蚀、侧蚀）；上游多V形谷、瀑布（如长江三峡、黄河壶口瀑布后退）。',
+ lg:[[P.SS,'砂岩'],[P.SH,'页岩'],[P.LS,'石灰岩']],
+ st:[[0,'抬升的高原面，水流汇集'],[.12,'河流下切侵蚀，河谷加深'],[.35,'溯源侵蚀：河谷向源头（后方）伸长'],[.7,'谷坡后退，形成深切的V形谷']],
+ build(S){
+  const head=t=>lerp(1.0,-1.0,sm(0.05,0.85,t));const Dm=t=>0.85*sm(0,0.9,t);
+  const mx=z=>0.25*Math.sin(z*1.8+0.5);
+  const dep=(z,t)=>Dm(t)*sm(head(t),head(t)+0.5,z)*(0.55+0.45*(z+1.2)/2.4);
+  const hf=(x,z,t)=>{const d=dep(z,t);const a=Math.abs(x-mx(z));const v=d*Math.max(0,1-a/(0.06+d*1.15));return 0.75-v+rough(x,z,0.05);};
+  const river=(x,z,t)=>dep(z,t)>0.06&&Math.abs(x-mx(z))<0.045;
+  const b=Block({W:4.2,L:2.4,D:0.6,ymax:0.95,h:hf,trees:90,treeOk:(x,z,y,t)=>!river(x,z,t),
+   col:(x,y,z,t)=>STRATA[((Math.floor((y+0.6)/0.15))%6+6)%6],top:(x,z,y,t)=>river(x,z,t)?'water':'grass'});
+  S.add(b);
+  const lv=Label('V形谷',[0.25,0.55,1.3],{size:.13}),ld=Label('下切侵蚀',[0.9,0.3,1.3],{size:.11,color:'#2f6f9f'}),lh=Label('溯源侵蚀（向源头延伸）',[0,1.0,0],{size:.11,color:'#b5452f'});
+  const ah=Arrow([0,0.9,0.3],[0,0.9,-0.5],0xb5452f,0.025);S.add(ah);const ad=Arrow([0.25,0.5,1.3],[0.25,0.15,1.3],0x2f6f9f,0.025);S.add(ad);
+  return t=>{b.userData.update(t);const hz=head(t);lh.position.set(mx(hz),1.0,hz+0.3);ah.position.set(mx(hz),0.9,hz+0.6);ah.visible=lh.visible=t>0.12&&t<0.9;lv.visible=t>0.6;ad.visible=ld.visible=t>0.1;};}
+});
+M({id:'terrace',cat:'外',sub:'侵蚀作用',kind:'流水',name:'河流阶地',dur:16,cam:[1.4,2.2,5.6],
+ pr:'河流在下切侵蚀河谷的同时也会侧向侵蚀，并在河谷中堆积形成河漫滩（泛滥平原）。当地壳抬升或侵蚀基准面下降时，河流再次下切，原来的河漫滩高出洪水位，成为阶梯状分布的河流阶地。阶地是侵蚀和沉积交替进行的结果。',
+ ob:['每一级阶地顶面都有河流沉积的砾石层（二元结构）','阶地位置越高，形成越早（T3 早于 T1）','河流下切 → 侧蚀展宽、堆积 → 再下切'],
+ kd:'对应考点：河流阶地的形成与判读——地壳间歇性抬升；阶地上砾石层说明曾为河床/河漫滩。',
+ lg:[[P.GRV,'河流沉积（砾石层）'],[P.SS,'砂岩'],[P.SH,'页岩'],[P.LS,'石灰岩']],
+ st:[[0,'河流在宽谷中流动，形成河漫滩'],[.1,'地壳抬升，河流下切侵蚀'],[.25,'河流侧蚀展宽，堆积形成新的河漫滩'],[.5,'再次抬升、下切……'],[.8,'多次交替，形成多级阶地']],
+ build(S){
+  const Ls=[0.65,0.4,0.15,-0.1],Ws=[1.9,1.3,0.8,0.42],cs=[0,0.1,0.18,0.24];const Pp=1.0,al=0.06;
+  const ph=t=>{const p=[1];for(let k=1;k<4;k++)p.push(cl((t-0.05-(k-1)*0.3)/0.28,0,1));return p;};
+  const prof=(x,t)=>{const p=ph(t);let f=Pp;
+   for(let k=0;k<4;k++){if(p[k]<=0)continue;const inc=Math.min(1,p[k]/0.4),wid=p[k]<0.4?0.18:lerp(0.18,Ws[k],(p[k]-0.4)/0.6);
+    const prev=k?Ls[k-1]:Ls[0];const lev=lerp(prev,Ls[k],inc)+(p[k]>0.7||k===0?al*(k===0?1:sm(0.7,1,p[k])):0);
+    const v=lev+1.3*Math.max(0,Math.abs(x-cs[k])-wid);f=Math.min(f,v);}return f;};
+  const b=Block({W:4.6,L:2.4,D:0.6,ymax:1.1,nx:130,h:(x,z,t)=>prof(x,t)+rough(x,z,0.012),trees:70,
+   col:(x,y,z,t)=>{const p=ph(t);for(let k=0;k<4;k++){if(p[k]<=0.7&&k)continue;if(Math.abs(x-cs[k])<Ws[k]&&y>Ls[k]&&y<Ls[k]+al+0.002)return P.GRV;}
+    return STRATA[((Math.floor((y+0.6)/0.16))%6+6)%6];},
+   top:(x,z,y,t)=>'grass'});
+  S.add(b);
+  const rv=Water(0,0,-1.19,1.19,0,0,0x2f6f8f,.7);S.add(rv);
+  const tl=[Label('T3',[-1.6,0.92,1.25],{size:.13}),Label('T2',[-1.05,0.64,1.25],{size:.13}),Label('T1',[-0.5,0.39,1.25],{size:.13}),Label('河漫滩',[0.55,0.12,1.25],{size:.12})];
+  const lu=Label('地壳抬升',[2.0,1.3,0],{size:.12,color:'#b5452f'});
+  return t=>{b.userData.update(t);const p=ph(t);let k=0;for(let i=0;i<4;i++)if(p[i]>0)k=i;
+   const lev=Math.min(prof(cs[k],t),prof(cs[k]+0.05,t));rv.setLevel(lev-0.06,lev+0.04,cs[k]-0.16,cs[k]+0.16);
+   tl[0].visible=p[1]>0.2;tl[1].visible=p[2]>0.2;tl[2].visible=p[3]>0.2;tl[3].visible=p[3]>0.6;lu.visible=(p[1]>0&&p[1]<0.4)||(p[2]>0&&p[2]<0.4)||(p[3]>0&&p[3]<0.4);};}
+});
+M({id:'oxbow',cat:'外',sub:'侵蚀作用',kind:'流水',name:'曲流与牛轭湖（裁弯取直）',dur:14,cam:[0.2,4.6,3.0],
+ pr:'在平原上，河流凹岸侵蚀、凸岸堆积，河道越来越弯曲，形成曲流。弯曲加剧后，相邻河湾之间的“曲流颈”越来越窄；洪水时河水冲开曲流颈，河道“裁弯取直”，被废弃的弯曲河道两端淤塞，就形成了形如牛轭的湖泊——牛轭湖。',
+ ob:['河湾不断向外扩展（凹岸侵蚀），凸岸出现沙滩（边滩）','曲流颈越来越窄，最终被冲开','废弃河道成为牛轭湖，与河流分离'],
+ kd:'对应考点：河流侵蚀与堆积地貌——凹岸侵蚀、凸岸堆积；曲流与牛轭湖（长江荆江河段）。',
+ lg:[[hx('#3f88b5'),'河流'],[hx('#2f7d8c'),'牛轭湖'],[hx('#e3cc95'),'边滩（凸岸堆积）']],
+ st:[[0,'平原上的河流略有弯曲'],[.15,'凹岸侵蚀、凸岸堆积，河道越来越弯'],[.55,'曲流颈越来越窄'],[.65,'洪水冲开曲流颈，裁弯取直'],[.8,'废弃河道两端淤塞，形成牛轭湖']],
+ build(S){
+  const W=4.4,Lz=3;const wch=0.085;
+  function path(om){const N=260,lam=1;const pts=[];let x=0,z=0;for(let i=0;i<=N;i++){const s=i/N*2*lam;const th=om*Math.sin(2*PI*s/lam);pts.push([x,z]);x+=Math.cos(th)*2*lam/N;z+=Math.sin(th)*2*lam/N;}
+   const ex=pts[N][0],ez=pts[N][1];const ang=Math.atan2(ez,ex);const len=Math.hypot(ex,ez);const sc=3.7/len;
+   return pts.map(([a,b])=>{const ca=Math.cos(-ang),sa=Math.sin(-ang);return [(a*ca-b*sa)*sc-1.85,(a*sa+b*ca)*sc];});}
+  const frames=[];let cut=null;
+  for(let f=0;f<=80;f++){const tt=f/80;const om=lerp(0.5,2.4,sm(0,0.62,tt));
+   if(!cut){const Pt=path(om);let best=9,bi=0,bj=0;for(let i=20;i<Pt.length;i+=2)for(let j=i+40;j<Pt.length;j+=2){const d=Math.hypot(Pt[i][0]-Pt[j][0],Pt[i][1]-Pt[j][1]);if(d<best){best=d;bi=i;bj=j;}}
+    if(best<wch*2.6){cut={f,P:Pt,i:bi,j:bj};}frames.push({P:Pt});}else frames.push(null);}
+  const bg=document.createElement('canvas');let bgDone=false;
+  const b=Block({W,L:Lz,D:0.3,ymax:0.1,h:()=>0,col:(x,y)=>y>-0.05?P.SOIL:P.SILT,static:true,trees:0,
+   topDraw:(ctx,cw,ch,t)=>{const sx=cw/W,sz=ch/Lz;const tx=x=>(x+W/2)*sx,tz=z=>(z+Lz/2)*sz;
+    if(!bgDone){bg.width=cw;bg.height=ch;const bc=bg.getContext('2d');const im=bc.createImageData(cw,ch);for(let j=0;j<ch;j++)for(let i=0;i<cw;i++){const c=topCol('grass',-W/2+i/cw*W,-Lz/2+j/ch*Lz,0,0);const k=(j*cw+i)*4;im.data[k]=c>>16&255;im.data[k+1]=c>>8&255;im.data[k+2]=c&255;im.data[k+3]=255;}bc.putImageData(im,0,0);bgDone=true;}
+    ctx.drawImage(bg,0,0);
+    const fi=Math.round(t*80);let lake=null,curP;
+    if(cut&&fi>=cut.f){const Pt=cut.P;const k=sm(cut.f/80,cut.f/80+0.15,t);curP=Pt.slice(0,cut.i+1).concat(Pt.slice(cut.j));lake=Pt.slice(cut.i+Math.round(6+10*k),cut.j-Math.round(6+10*k)+1);}
+    else{curP=frames[Math.min(fi,frames.length-1)].P;}
+    const stroke=(pts,w,col)=>{ctx.strokeStyle=col;ctx.lineWidth=w*sx;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(tx(p[0]),tz(p[1])):ctx.moveTo(tx(p[0]),tz(p[1])));ctx.stroke();};
+    if(lake&&lake.length>2){stroke(lake,wch*2.8,'#7c8a52');stroke(lake,wch*1.8,'#2f7d8c');}
+    stroke(curP,wch*3.4,'#d9c08a');stroke(curP,wch*2.6,'#e3cc95');stroke(curP,wch*2,'#3a7fae');stroke(curP,wch*1.2,'#2f6f9c');}});
+  S.add(b);
+  const lo=Label('牛轭湖',[0,0.4,0],{size:.14,color:'#2f7d8c'});Label('河流',[-1.9,0.3,-0.6],{size:.13,color:'#2f6f9f'});
+  const lc=Label('裁弯取直',[0,0.4,0],{size:.12,color:'#b5452f'});
+  if(cut){const Pt=cut.P;const mid=Pt.slice(cut.i,cut.j);let cx=0,cz=0;mid.forEach(p=>{cx+=p[0];cz+=p[1];});cx/=mid.length;cz/=mid.length;lo.position.set(cx,0.35,cz);
+   lc.position.set((Pt[cut.i][0]+Pt[cut.j][0])/2,0.3,(Pt[cut.i][1]+Pt[cut.j][1])/2);}
+  let last=-1;
+  return t=>{if(Math.abs(t-last)>0.008||t===0||t===1){last=t;b.userData.update(t,true);}const on=cut&&t>=cut.f/80;lo.visible=on&&t>cut.f/80+0.08;lc.visible=on&&t<cut.f/80+0.12;};}
+});
+M({id:'mushroom',cat:'外',sub:'侵蚀作用',kind:'风力',name:'风蚀蘑菇（风蚀柱）',dur:14,cam:[2.8,1.4,4.2],
+ pr:'风力侵蚀包括吹蚀和磨蚀：风携带的沙粒像砂纸一样打磨岩石。沙粒主要在近地面一两米内跳跃，所以岩石下部受到的磨蚀最强；加上下部岩层相对软弱，长期侵蚀后形成上大下小、形似蘑菇的风蚀蘑菇，进一步发展成风蚀柱。',
+ ob:['风沙集中在近地面（看沙粒的高度）','岩柱下部被磨蚀得最细','上部坚硬岩层保留下来，形成“蘑菇头”'],
+ kd:'对应考点：风力侵蚀地貌——风蚀蘑菇、风蚀柱、雅丹；分布在干旱、半干旱地区。',
+ lg:[[P.RS,'坚硬砂岩（上部）'],[P.SI,'较软岩层（下部）']],
+ st:[[0,'干旱区的岩柱，上部岩层坚硬、下部较软'],[.1,'风携带沙粒贴近地面运动'],[.35,'沙粒磨蚀岩柱下部，岩柱下部变细'],[.75,'形成上大下小的风蚀蘑菇']],
+ build(S){
+  const b=Block({W:4.6,L:2.6,D:0.35,ymax:0.2,h:(x,z)=>0.02*Math.sin(x*14+z*3)+rough(x,z,0.02),col:(x,y)=>P.SAND,top:()=>'desert',static:true});S.add(b);
+  const cols=[{x:-0.8,z:-0.2,R:0.42,H:1.15,s:1},{x:0.9,z:0.35,R:0.3,H:0.85,s:1.25},{x:0.4,z:-0.75,R:0.22,H:0.6,s:0.8}];
+  const meshes=cols.map(c=>{const m=new THREE.Mesh(new THREE.BufferGeometry(),stdMat({vertexColors:true,flatShading:false,roughness:.95}));m.castShadow=true;m.receiveShadow=true;m.position.set(c.x,0,c.z);S.add(m);return m;});
+  const band=y=>{const c=y>0.55?(Math.floor(y/0.07)%2?P.RS:hx('#b8694a')):(Math.floor(y/0.06)%2?P.SI:hx('#a99272'));return scl(c,0.9+0.18*nz(y*60,3));};
+  function geo(c,t){const e=sm(0.05,0.95,t)*c.s;const pts=[];const n=40;for(let i=0;i<=n;i++){const y=c.H*i/n;const yy=y/c.H;
+    let r=c.R*(1+0.08*Math.sin(yy*30))*(yy>0.92?Math.sqrt(Math.max(0.05,(1-yy)/0.08)):1);r*=1-0.62*e*G(y,0.24,0.2)-(y<0.55?0.15*e:0);pts.push(new THREE.Vector2(Math.max(0.02,r),y));}
+   pts.push(new THREE.Vector2(0.001,c.H));const g=new THREE.LatheGeometry(pts,40);
+   const p=g.attributes.position;for(let i=0;i<p.count;i++){const x=p.getX(i),z=p.getZ(i),y=p.getY(i);const k=1+0.07*(nz(x*20+50,y*20+z*20)-0.5);p.setX(i,x*k);p.setZ(i,z*k);}
+   g.computeVertexNormals();return bandColors(g,(x,y)=>band(y));}
+  const N=110;const sand=Grains(N,0xcfa96a);S.add(sand);const R=rng(3);const pp=[];for(let i=0;i<N;i++)pp.push({z:(R()-0.5)*2.5,o:R(),h:R()});
+  S.add(Arrow([-2.6,0.9,0.9],[-1.8,0.9,0.9],0x2f6f9f));Label('风向',[-2.2,1.08,0.9],{size:.12,color:'#2f6f9f'});
+  const l1=Label('近地面风沙多，磨蚀最强',[-0.8,0.3,0.6],{size:.11,color:'#b5452f'}),l2=Label('风蚀蘑菇',[-0.8,1.35,-0.2],{size:.13});
+  let last=-1;
+  return (t,time)=>{if(Math.abs(t-last)>0.01||t===0||t===1){last=t;cols.forEach((c,i)=>{meshes[i].geometry.dispose();meshes[i].geometry=geo(c,t);});}
+   for(let i=0;i<N;i++){const p=pp[i];const f=(time*0.45+p.o)%1;const x=-2.3+4.6*f;const y=0.03+0.45*p.h*p.h+0.04*Math.abs(Math.sin(time*6+i));
+    const blocked=cols.some(c=>Math.hypot(x-c.x,p.z-c.z)<c.R*0.9);if(t>0.05&&t<0.98&&!blocked)sand.put(i,x,y,p.z,0.012);else sand.put(i,0,-9,0,0.001);}sand.done();
+   l1.visible=t>0.2;l2.visible=t>0.7;};}
+});
+M({id:'yardang',cat:'外',sub:'侵蚀作用',kind:'风力',name:'雅丹地貌',dur:14,cam:[2.6,2.6,4.6],
+ pr:'干旱地区的湖泊沉积物（泥岩、粉砂岩）干涸后出现裂隙。盛行风沿裂隙不断吹蚀、磨蚀，沟槽越来越深，沟槽之间残留的土丘形如长垄，排列方向与盛行风向一致，形成雅丹地貌（如新疆罗布泊、甘肃敦煌雅丹）。',
+ ob:['沟槽和垄岗的延伸方向与风向一致','垄岗迎风一端高而陡，背风一端低而缓','剖面上可见水平的湖相沉积层'],
+ kd:'对应考点：风力侵蚀地貌；由雅丹延伸方向判断盛行风向。',
+ lg:[[P.LAKE,'湖相泥岩'],[P.SILT,'粉砂层']],
+ st:[[0,'干涸湖床上的湖相沉积层'],[.1,'沉积层干裂，出现与风向一致的裂隙'],[.3,'风沙沿裂隙吹蚀、磨蚀，沟槽加深'],[.75,'残留的长垄与沟槽相间——雅丹地貌']],
+ build(S){
+  const e=t=>sm(0.08,0.95,t);
+  const ridge=(x,z)=>{const q=fr((z+0.08*Math.sin(x*1.3)+0.1*nz(x*2,z*2))/0.42);const s=Math.abs(q-0.5)*2;const along=0.55+0.45*Math.sin(x*1.6+Math.floor((z+3)/0.42)*2.1);return {s,along};};
+  const hf=(x,z,t)=>{const {s,along}=ridge(x,z);const cut=e(t)*(0.75*sm(0.45,0.85,s)+0.5*(1-along)*sm(0.2,0.6,s));const head=0.08*e(t)*sm(-0.3,0.5,Math.sin(x*1.6));return 0.6-cut*0.75+rough(x,z,0.02)-head*0;};
+  const b=Block({W:4.6,L:2.6,D:0.5,ymax:0.75,h:hf,
+   col:(x,y)=>((Math.floor((y+1)/0.06+0.3*nz(x*3,y*3)))%2)?P.LAKE:P.SILT,
+   top:(x,z,y,t)=>y<0.3?'desert':(y<0.55?P.LAKE:'loess')});
+  S.add(b);
+  S.add(Arrow([-2.8,1.0,0],[-1.9,1.0,0],0x2f6f9f));Label('盛行风向',[-2.35,1.2,0],{size:.12,color:'#2f6f9f'});
+  const l=Label('垄岗与沟槽顺着风向延伸',[0.4,0.95,0.2],{size:.12});
+  return t=>{b.userData.update(t);l.visible=t>0.6;};}
+});
+M({id:'seacave',cat:'外',sub:'侵蚀作用',kind:'海浪',name:'海蚀崖、海蚀拱桥与海蚀柱',dur:16,cam:[3.6,1.6,4.0],
+ pr:'海浪不断拍打岩石海岸：先在崖脚掏蚀出海蚀穴，上部岩石失去支撑崩塌，海岸后退形成陡峭的海蚀崖，崖前留下平坦的海蚀平台。突出海中的岬角两侧同时受侵蚀，海蚀洞贯通形成海蚀拱桥；拱桥顶部崩塌后，残留的岩柱孤立海中，成为海蚀柱。',
+ ob:['海浪集中冲蚀岬角底部','洞穴贯通形成拱桥，拱顶塌落后留下海蚀柱','海岸后退，崖前出现海蚀平台'],
+ kd:'对应考点：海浪侵蚀地貌（海蚀崖、海蚀柱、海蚀拱桥、海蚀平台）；由海蚀地貌推断海岸变迁。',
+ lg:[[P.SS,'砂岩'],[P.RS,'红色砂岩']],
+ st:[[0,'突出海中的岬角，海浪拍打崖脚'],[.15,'崖脚被掏蚀出海蚀穴'],[.35,'两侧海蚀穴贯通，形成海蚀拱桥'],[.62,'拱顶崩塌，留下孤立的海蚀柱'],[.8,'海岸继续后退，崖前形成海蚀平台']],
+ build(S){
+  const ret=t=>0.35*sm(0.3,1,t);
+  const hf=(x,z,t)=>{const cz=-0.45-ret(t);if(z<cz)return 0.85+rough(x,z,0.05);const plat=-0.08-0.02*(z-cz);return z<cz+0.04?lerp(0.85,plat,(z-cz)/0.04):Math.max(plat-0.25*sm(0.6,1.4,z-cz),-0.45)+rough(x,z,0.015);};
+  const b=Block({W:4.4,L:2.8,D:0.6,ymax:1.0,h:hf,trees:50,treeOk:(x,z)=>z<-1.0,
+   col:(x,y)=>{const k=Math.floor((y+1)/0.09);return k%3===0?P.RS:(k%3===1?P.SS:P.SI);},
+   top:(x,z,y,t)=>y>0.7?'grass':(y>-0.02?'rock':'sand')});
+  S.add(b);S.add(Water(-2.19,2.19,-0.9,1.39,-0.5,0.0,0x2a6e93,.6));
+  const bandF=(x,y)=>{const k=Math.floor((y+1)/0.09);const c=k%3===0?P.RS:(k%3===1?P.SS:P.SI);return scl(c,0.88+0.2*nz(x*30+y*40,y*30));};
+  const mat=stdMat({vertexColors:true,roughness:.95});
+  const head=new THREE.Mesh(new THREE.BufferGeometry(),mat),stack=new THREE.Mesh(new THREE.BufferGeometry(),mat);head.castShadow=stack.castShadow=true;head.receiveShadow=stack.receiveShadow=true;S.add(head,stack);
+  function ext(shape,x0,x1){const g=new THREE.ExtrudeGeometry(shape,{depth:x1-x0,bevelEnabled:false,curveSegments:24});g.translate(0,0,-x1);g.rotateY(-PI/2);
+   const p=g.attributes.position;for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),z=p.getZ(i);if(y>-0.1){const k=0.025*(nz(x*20+z*20,y*20)-0.5);p.setX(i,x+k);p.setZ(i,z+k*0.6);}}
+   g.computeVertexNormals();return bandColors(g,(x,y)=>bandF(x+0.3*fr(y*3),y));}
+  function build(t){const hole=sm(0.12,0.45,t),col=t>0.62,tip=1.05-0.2*sm(0.62,1,t),base=-0.45-ret(t);
+   const sh=new THREE.Shape();sh.moveTo(base,-0.12);
+   if(!col){sh.lineTo(tip,-0.12);sh.lineTo(tip,0.62);sh.quadraticCurveTo(tip-0.05,0.8,tip-0.25,0.8);sh.lineTo(base,0.85);sh.lineTo(base,-0.12);
+    if(hole>0.02){const a0=0.35,a1=0.72,top=-0.05+0.5*hole;const h=new THREE.Path();h.moveTo(a0,-0.06);h.lineTo(a1,-0.06);h.lineTo(a1,top*0.6);h.quadraticCurveTo((a0+a1)/2,top+0.1*hole,a0,top*0.6);h.lineTo(a0,-0.06);sh.holes.push(h);}
+    head.geometry.dispose();head.geometry=ext(sh,-0.35,0.35);stack.visible=false;}
+   else{const hb=0.28-0.12*sm(0.62,1,t);sh.lineTo(hb,-0.12);sh.lineTo(hb,0.5);sh.quadraticCurveTo(hb-0.1,0.78,hb-0.3,0.82);sh.lineTo(base,0.85);sh.lineTo(base,-0.12);
+    head.geometry.dispose();head.geometry=ext(sh,-0.33,0.33);
+    const s2=new THREE.Shape();const sw=0.12+0.05*(1-sm(0.62,1,t));const scx=0.9;const sh2=0.62-0.12*sm(0.62,1,t);s2.moveTo(scx-sw,-0.12);s2.lineTo(scx+sw,-0.12);s2.lineTo(scx+sw*0.8,sh2);s2.quadraticCurveTo(scx,sh2+0.08,scx-sw*0.8,sh2);s2.lineTo(scx-sw,-0.12);
+    stack.geometry.dispose();stack.geometry=ext(s2,-0.16,0.16);stack.visible=true;}}
+  const N=60;const foam=Grains(N,0xffffff);S.add(foam);const R=rng(9);const pp=[];for(let i=0;i<N;i++)pp.push({x:(R()-0.5)*1.6,z:0.2+R()*1.0,o:R()});
+  const l=[Label('海蚀崖',[-1.6,0.95,-0.5],{size:.12}),Label('海蚀穴',[0.6,0.3,0.6],{size:.11}),Label('海蚀拱桥',[0.5,1.0,0.55],{size:.12}),Label('海蚀柱',[0.9,0.85,0.9],{size:.12}),Label('海蚀平台',[1.6,0.15,0.2],{size:.11})];
+  let last=-1;
+  return (t,time)=>{b.userData.update(t);if(Math.abs(t-last)>0.01||t===0||t===1){last=t;build(t);}
+   for(let i=0;i<N;i++){const p=pp[i];const f=(time*0.6+p.o)%1;foam.put(i,p.x+0.1*Math.sin(time+i),0.01+0.05*Math.sin(f*PI),p.z-0.4*f,0.02*(1-f)+0.005,0.4);}foam.done();
+   l[1].visible=t>0.12&&t<0.3;l[2].visible=t>0.35&&t<0.62;l[3].visible=t>0.65;l[4].visible=t>0.8;};}
+});
+M({id:'wave',cat:'外',sub:'侵蚀作用',kind:'海浪',name:'波浪运动',loop:true,cam:[0.6,1.0,5.6],
+ pr:'波浪从深水向浅水、再向岸边传播时形态会改变。深水区波浪未触及海底，水质点做圆周运动，越往深处圆越小，到约半个波长深处（浪基面）基本静止；进入浅水区后波浪触及海底，水质点运动变成扁平的椭圆，波长缩短、波高增大，最终在岸边破碎，冲刷海岸。',
+ ob:['深水区：圆形轨迹，越深越小','浅水区：轨迹压扁成椭圆','靠岸时波长变短、波浪变陡、破碎'],
+ kd:'拓展理解：海浪侵蚀与堆积（海蚀崖、海滩）；浪基面以下海底基本不受波浪扰动。',
+ lg:[[P.SAND,'海底沉积物']],
+ st:[[0,'波浪由深水区向岸边传播（循环动画）']],
+ build(S){
+  const bf=x=>-1.2+1.32*Math.pow(cl((x+0.9)/3.4,0,1),1.25);
+  const N=500,X0=-2.5,X1=2.5;const k0=2*PI/1.6,om=2.0,a0=0.07;const phi=new Float32Array(N+1),kk=new Float32Array(N+1),aa=new Float32Array(N+1);
+  let acc=0;for(let i=0;i<=N;i++){const x=X0+(X1-X0)*i/N;const d=Math.max(0.03,-bf(x));const kx=k0/Math.sqrt(Math.tanh(k0*d));kk[i]=kx;phi[i]=acc;acc+=kx*(X1-X0)/N;
+   let a=a0*Math.pow(Math.tanh(k0*d),-0.25);if(a>0.4*d)a=0.4*d;aa[i]=a;}
+  const ix=x=>cl(Math.round((x-X0)/(X1-X0)*N),0,N);
+  const sand=Block({W:5,L:1.6,D:1.3,ymax:0.3,h:(x)=>bf(x),static:true,col:()=>P.SAND,top:()=>'sand'});S.add(sand);
+  let T=0;const eta=x=>{const i=ix(x);if(bf(x)>-0.02)return bf(x)+0.005;return Math.max(bf(x)+0.005,aa[i]*Math.cos(phi[i]-om*T));};
+  const wat=Block({W:4.98,L:1.56,D:1.29,ymax:0.3,nx:250,nz:4,h:(x)=>eta(x),mat:{color:0x2f78a8,opacity:.5}});S.add(wat);
+  const cen=[];[-1.9,-0.7,0.6,1.5].forEach(xc=>{[-0.04,-0.25,-0.48,-0.72].forEach(yc=>{if(yc>bf(xc)+0.07)cen.push([xc,yc]);});});
+  const gr=Grains(cen.length,0xffffff);S.add(gr);
+  const orb=cen.map(([xc,yc])=>{const i=ix(xc);const kx=kk[i],d=-bf(xc),a=aa[i];const shh=Math.sinh(kx*d);const A=a*Math.cosh(kx*(yc+d))/shh,B=a*Math.sinh(kx*(yc+d))/shh;
+   const pts=[];for(let j=0;j<=48;j++){const q=j/48*2*PI;pts.push([xc+A*Math.sin(q),yc+B*Math.cos(q),0.81]);}S.add(Line(pts,0xffffff,false,.9));return {xc,yc,A,B,i};});
+  S.add(Line([[-2.5,-0.8,0.81],[0.18,-0.8,0.81]],0x1f4f7a,true));
+  Label('浪基面（约 1/2 波长）',[-1.6,-0.92,0.9],{size:.1,color:'#1f4f7a'});
+  Label('深水区：圆形轨迹',[-1.4,0.45,0.9],{size:.11});Label('浅水区：椭圆轨迹',[1.0,0.45,0.9],{size:.11});Label('破浪带',[2.0,0.3,0.9],{size:.11,color:'#b5452f'});
+  S.add(Arrow([-2.4,0.7,0],[-1.6,0.7,0],0x2f6f9f,0.025));Label('波浪传播',[-2.0,0.86,0],{size:.1,color:'#2f6f9f'});
+  return (t,time)=>{T=time;wat.userData.update(0,true);orb.forEach((o,i)=>{const q=phi[o.i]-om*time;gr.put(i,o.xc+o.A*Math.sin(q),o.yc+o.B*Math.cos(q),0.82,0.025);});gr.done();};}
+});
+M({id:'gerosion',cat:'外',sub:'侵蚀作用',kind:'冰川',name:'冰川拔蚀与磨蚀',dur:14,cam:[1.6,1.9,5.4],
+ pr:'冰川主要通过拔蚀和磨蚀侵蚀冰床。冰川巨大的重量和运动使底床基岩破碎；冰雪融水渗入岩石节理、裂隙，冻结膨胀使裂隙扩大；松动的岩块与冰川冻结在一起，随冰川向前运动被“拔起”带走（拔蚀）。冰中夹带的岩块又像锉刀一样磨蚀底床（磨蚀）。',
+ ob:['基岩中有许多节理（裂隙）','背冰一侧（陡坎下游）的岩块被拔起','被带走的岩块随冰川一起向前移动'],
+ kd:'对应考点：冰川侵蚀地貌（冰斗、角峰、U形谷、羊背石）；羊背石迎冰面缓而光滑（磨蚀），背冰面陡而粗糙（拔蚀）。',
+ lg:[[P.ICE,'冰川'],[P.BED,'基岩'],[P.CRACK,'节理']],
+ st:[[0,'冰川覆盖在有节理的基岩上，向右缓慢运动'],[.15,'融水渗入裂隙冻结，岩块松动'],[.3,'松动岩块与冰冻结，被冰川拔起带走（拔蚀）'],[.65,'冰中岩块刮磨底床（磨蚀），拔蚀处留下凹坑']],
+ build(S){
+  const W=4.6,Lz=2;const steps=[-1.2,0,1.2];
+  const base=x=>0.15-0.12*x+steps.reduce((s,xi)=>s+0.16*(1/(1+Math.exp((x-xi)/0.04))),0)-0.24;
+  const pl=[{x:-1.2,z:0.35,t:0.3},{x:0,z:-0.2,t:0.42},{x:1.2,z:0.25,t:0.55},{x:-1.2,z:-0.45,t:0.62},{x:0,z:0.5,t:0.72}];
+  const hol=(x,z,t)=>pl.reduce((s,p)=>s+(t>p.t?0.09*G(x,p.x+0.08,0.07)*G(z,p.z,0.13):0),0);
+  const b=Block({W,L:Lz,D:0.8,ymax:0.6,h:(x,z,t)=>base(x)-hol(x,z,t)+rough(x,z,0.015),
+   col:(x,y,z,t)=>{const jx=fr(x*4.3),jy=fr(y*5+0.3*Math.floor(x*4.3));if(jx<0.03||jy<0.025)return P.CRACK;return P.BED;},top:()=>'rock'});
+  S.add(b);
+  const sh=new THREE.Shape();const n=80;sh.moveTo(-W/2,base(-W/2));for(let i=1;i<=n;i++){const x=-W/2+W*i/n;sh.lineTo(x,base(x));}
+  for(let i=n;i>=0;i--){const x=-W/2+W*i/n;sh.lineTo(x,0.55-0.11*x);}sh.closePath();
+  const ig=new THREE.ExtrudeGeometry(sh,{depth:Lz*0.98,bevelEnabled:false});ig.translate(0,0,-Lz*0.49);
+  const icem=new THREE.Mesh(ig,stdMat({color:lin(0xcfe6f2),transparent:true,opacity:.55,roughness:.15,depthWrite:false}));icem.renderOrder=3;S.add(icem);
+  const blocks=Grains(pl.length,0x8a8f96,true);S.add(blocks);
+  const N=40;const gr=Grains(N,0x55585c,true);S.add(gr);const R=rng(3);const pp=[];for(let i=0;i<N;i++)pp.push({o:R(),z:-0.9+R()*1.8,h:0.04+R()*0.25,s:0.012+R()*0.02});
+  S.add(Arrow([-1.6,0.95,0],[-0.4,0.95,0],0x2f6f9f));Label('冰川运动方向',[-1.0,1.15,0],{size:.12,color:'#2f6f9f'});
+  const lb=Label('拔蚀',[0.15,0.25,1.1],{size:.12,color:'#b5452f'});const lm=Label('磨蚀',[1.7,0.0,1.1],{size:.12,color:'#8a5a2b'});Label('节理',[-2.0,-0.5,1.05],{size:.11});
+  return (t,time)=>{b.userData.update(t);
+   pl.forEach((p,i)=>{const dt=Math.max(0,t-p.t);const x=p.x+0.1+dt*2.6;const y=base(p.x+0.1)-0.02+Math.min(0.15,dt*0.8);if(x<W/2-0.1)blocks.put(i,x,y,p.z,0.09,0.8,dt*3,i);else blocks.put(i,0,-9,0,0.001);});blocks.done();
+   for(let i=0;i<N;i++){const p=pp[i];const f=(time*0.08+p.o)%1;const x=-W/2+0.05+f*(W-0.1);gr.put(i,x,base(x)+p.h,p.z,p.s,1,i,i);}gr.done();
+   lb.visible=t>0.3;lm.visible=t>0.6;};}
+});
+M({id:'uvalley',cat:'外',sub:'侵蚀作用',kind:'冰川',name:'U形谷（冰川谷）',dur:16,cam:[2.6,2.4,5.0],
+ pr:'冰期时，冰川占据原来的河谷（V形谷）。冰川厚度大、重量大，对谷底和谷壁同时进行强烈的拔蚀和磨蚀，把谷底刨深、把谷壁削陡，使河谷由“V”形改造成谷底宽平、谷壁陡峭的“U”形。冰川消融后，U形谷显露出来，两侧山峰被刨蚀成尖锐的角峰。',
+ ob:['冰川来之前：V形河谷','冰川充满河谷，谷底、谷壁同时被侵蚀','冰川消退后：谷底宽平、谷壁陡直的U形谷'],
+ kd:'对应考点：冰川侵蚀地貌（U形谷、冰斗、角峰）；由谷地形态判断其主要外力作用。',
+ lg:[[P.GRD,'基岩'],[P.ICE,'冰川']],
+ st:[[0,'高山上的V形河谷'],[.15,'冰期到来，冰川充填河谷'],[.4,'冰川拔蚀、磨蚀谷底和谷壁'],[.75,'气候变暖，冰川消融退缩'],[.9,'显露出谷底宽平、谷壁陡峭的U形谷']],
+ build(S){
+  const e=t=>sm(0.2,0.75,t);
+  const mtn=(x,z)=>0.95+0.25*G(x,-1.6,0.35)*(0.7+0.6*nz(z*3,5))+0.28*G(x,1.7,0.3)*(0.7+0.6*nz(z*3,11))+rough(x,z,0.08);
+  const V=(x)=>Math.max(0,1-Math.abs(x)/1.25)*0.8;const U=(x)=>Math.max(0,1-Math.pow(Math.abs(x)/1.15,4))*0.95;
+  const hf=(x,z,t)=>mtn(x,z)-lerp(V(x),U(x),e(t));
+  const iceS=t=>sm(0.1,0.28,t)*(1-sm(0.72,0.88,t));
+  const iceTop=(x,z,t)=>{const s=iceS(t);if(s<=0)return -9;return hf(0,z,t)+0.55*s+0.05*Math.cos(x*2);};
+  const b=Block({W:4.4,L:2.6,D:0.5,ymax:1.4,h:(x,z,t)=>Math.max(hf(x,z,t),Math.abs(x)<1.25?iceTop(x,z,t):-9),trees:60,treeOk:(x,z,y,t)=>y<0.85&&(iceTop(x,z,t)<hf(x,z,t)),
+   col:(x,y,z,t)=>y>hf(x,z,t)?P.ICE:(Math.floor((y+1)/0.2)%2?P.GRD:P.GR),
+   top:(x,z,y,t)=>{if(iceTop(x,z,t)>=hf(x,z,t)&&Math.abs(x)<1.25)return 'ice';if(y>1.05)return 'snow';if(y>0.8)return 'rock';return 'grass';}});
+  S.add(b);
+  const l=[Label('V形谷（河流侵蚀）',[0,0.55,1.4],{size:.12}),Label('冰川',[0,1.0,0],{size:.13,color:'#2f6f9f'}),Label('U形谷',[0,0.35,1.4],{size:.13,color:'#7a2a1a'}),Label('角峰',[-1.6,1.45,0],{size:.11})];
+  return t=>{b.userData.update(t);l[0].visible=t<0.2;l[1].visible=iceS(t)>0.5;l[2].visible=t>0.85;l[3].visible=t>0.85;};}
+});
+/* ---------- 外力 · 搬运作用 ---------- */
+function transportModel(water){
+ return function(S){
+  const W=5,Lz=2;
+  const bed=water?(x,z)=>-0.4+0.32*sq(z/1.0):(x,z)=>0.02*Math.sin(x*9+z*2);
+  const b=Block({W,L:Lz,D:0.4,ymax:0.3,h:(x,z)=>bed(x,z)+rough(x,z,0.01),static:true,col:()=>water?P.GRV:P.SAND,top:()=>water?'gravel':'desert'});S.add(b);
+  const top=water?0.05:2;
+  if(water)S.add(Water(-2.49,2.49,-0.99,0.99,-0.4,top,0x4a7f8c,.45));
+  const R=rng(water?5:9);const big=[],mid=[],fine=[];
+  for(let i=0;i<7;i++)big.push({x:R()*5,z:-0.5+R()*1,r:0.06+R()*0.02});
+  for(let i=0;i<16;i++)mid.push({x:R()*5,z:-0.6+R()*1.2,o:R(),r:0.03});
+  for(let i=0;i<70;i++)fine.push({x:R()*5,z:-0.8+R()*1.6,y:water?-0.15+R()*0.17:0.4+R()*1.2,o:R()*6,r:0.012});
+  const gB=Grains(big.length,0x7a6a5a),gM=Grains(mid.length,0xc08a4a),gF=Grains(fine.length,water?0x8a7550:0xc9b089);S.add(gB,gM,gF);
+  const wrap=x=>((x%5)+5)%5-2.5;
+  const lab=water?['悬移','跃移','推移（滚动、滑动）']:['悬移','跃移','蠕移（滚动、滑动）'];
+  const ly=water?[-0.05,-0.22,-0.32]:[1.2,0.45,0.15];
+  Label(lab[0],[-2.85,ly[0],0.8],{size:.11});Label(lab[1],[-2.85,ly[1],0.8],{size:.11});Label(lab[2],[-2.95,ly[2],0.8],{size:.11});
+  S.add(Arrow([-1.2,water?0.25:1.9,0],[0.4,water?0.25:1.9,0],0x2f6f9f));Label(water?'水流方向':'风向',[-0.4,water?0.45:2.1,0],{size:.12,color:'#2f6f9f'});
+  return (t,time)=>{
+   big.forEach((p,i)=>{const x=wrap(p.x+0.12*time*(water?1:0.8));gB.put(i,x,bed(x,p.z)+p.r,p.z,p.r,0.85,0,time*2/p.r*0.1);});
+   mid.forEach((p,i)=>{const ph=time+p.o;const f=ph%1;const x=wrap(p.x+0.55*ph);const hh=water?0.16:0.4;const y=bed(x,p.z)+p.r+hh*Math.sin(PI*Math.pow(f,0.75));gM.put(i,x,y,p.z,p.r);});
+   fine.forEach((p,i)=>{const x=wrap(p.x+(water?0.9:1.4)*time);let y=p.y+(water?0.04:0.12)*Math.sin(time*1.7+p.o);if(water)y=Math.max(y,bed(x,p.z)+0.03);gF.put(i,x,y,p.z,p.r);});
+   gB.done();gM.done();gF.done();};
+ };
+}
+M({id:'windtr',cat:'外',sub:'搬运作用',kind:'风力',name:'风力搬运',loop:true,cam:[0.4,1.6,5.2],
+ pr:'风力搬运有三种方式：粒径较大的沙粒在风的牵引下沿地面滑动或滚动（蠕移）；粒径较小的沙粒以跳跃方式前进（跃移），是风力搬运最主要的形式；细而轻的颗粒被风吹扬，悬浮在气流中移动（悬移），搬运距离最远。',
+ ob:['大颗粒贴地滚动，速度最慢','中等颗粒一跳一跳地前进，跳得不高','细小颗粒悬浮在高空，走得最远'],
+ kd:'对应考点：风力搬运与沉积的分选性——颗粒大的先沉积，细小的被搬得远（黄土高原的黄土来自西北）。',
+ lg:[[hx('#7a6a5a'),'粗颗粒'],[hx('#c08a4a'),'沙粒'],[hx('#c9b089'),'粉尘']],
+ st:[[0,'风力搬运的三种方式（循环动画）']],build:transportModel(false)});
+M({id:'watertr',cat:'外',sub:'搬运作用',kind:'流水',name:'流水搬运',loop:true,cam:[0.4,1.4,5.0],
+ pr:'流水搬运同样有三种方式：较粗的砾石、沙粒沿河床滑动或滚动（推移）；一定大小的沙粒在水流作用下跳跃前进（跃移）；细粒的泥沙呈悬浮状态随水流运动（悬移）。流速越大，能搬运的颗粒越大、越多。',
+ ob:['粗颗粒在河床上滚动','沙粒跳跃前进','细泥沙悬浮在水中，使河水浑浊'],
+ kd:'对应考点：流速与搬运能力；流速减慢时按颗粒大小依次沉积（冲积扇、三角洲的分选性）。',
+ lg:[[hx('#7a6a5a'),'砾石'],[hx('#c08a4a'),'沙粒'],[hx('#8a7550'),'细泥沙']],
+ st:[[0,'流水搬运的三种方式（循环动画）']],build:transportModel(true)});
+
+/* ---------- 外力 · 堆积作用 ---------- */
+M({id:'fan',cat:'外',sub:'堆积作用',kind:'流水',name:'冲积扇',dur:14,cam:[1.2,2.8,5.0],
+ pr:'山区河流流出山口后，地势突然变得平缓、河道变宽，流速骤减，携带的大量泥沙在山前堆积，形成以山口为顶点、向外展开的扇形堆积体——冲积扇。颗粒有分选：扇顶以砾石等粗颗粒为主，向扇缘颗粒逐渐变细。',
+ ob:['以山口为顶点，向平原呈扇形展开','扇顶粗（砾石）、扇缘细（沙、粉沙）','左侧剖面：沉积物由山口向外由粗变细'],
+ kd:'对应考点：冲积扇的形成条件与分选性；冲积扇是山前重要的农业区和聚落分布区（如河西走廊绿洲）。',
+ lg:[[P.GRV,'砾石'],[P.SAND,'沙'],[P.SILT,'粉沙'],[P.GRD,'基岩']],
+ st:[[0,'山区河流流出山口'],[.15,'地势变缓、流速骤减，泥沙堆积'],[.45,'河道不断摆动，堆积体向外扩展成扇形'],[.8,'扇顶粗、扇缘细，形成冲积扇']],
+ build(S){
+  const ax=-2.2,az=-0.55;const Rr=t=>0.35+2.2*sm(0.05,0.95,t);const Hf=t=>0.45*sm(0.05,0.95,t);
+  const mtn=(x,z)=>z<az?0.25+1.1*sm(az,az-0.6,z)*(0.8+0.4*nz(x*2.5,z*2.5))-0.6*G(x,ax+0.15,0.22)*sm(az-0.9,az,z):0;
+  const fan=(x,z,t)=>{if(z<az-0.05)return 0;const r=Math.hypot(x-ax,(z-az)*1.0);return Math.max(0,Hf(t)*(1-r/Rr(t)));};
+  const plain=(x,z)=>0.02+rough(x,z,0.02);
+  const hf=(x,z,t)=>Math.max(plain(x,z)+fan(x,z,t),mtn(x,z));
+  const grade=r=>r<0.9?P.GRV:(r<1.7?P.SAND:P.SILT);
+  const ch=(x,z,t)=>{if(fan(x,z,t)<0.01)return false;const a=Math.atan2(z-az,x-ax);const r=Math.hypot(x-ax,z-az);const k=Math.floor(t*6);for(let i=0;i<3;i++){const c=0.25+0.45*fr(0.37*(k+i*2.3));if(Math.abs(a-c)*r<0.03+0.01*r)return true;}return false;};
+  const b=Block({W:4.4,L:2.6,D:0.5,ymax:1.4,h:hf,trees:60,treeOk:(x,z,y,t)=>fan(x,z,t)<0.02||Math.hypot(x-ax,z-az)>1.8,
+   col:(x,y,z,t)=>{const m=mtn(x,z);if(m>plain(x,z)+fan(x,z,t)&&y>0)return P.GRD;if(y<0)return P.GRD;const r=Math.hypot(x-ax,z-az);
+    if(y>plain(x,z)-0.01)return grade(r+0.25*(y/(Hf(t)+0.01)));return P.SILT;},
+   top:(x,z,y,t)=>{if(mtn(x,z)>plain(x,z)+fan(x,z,t))return y>1.0?'rock':'grass';if(ch(x,z,t))return 'water';const f=fan(x,z,t);if(f>0.01){const r=Math.hypot(x-ax,z-az);return r<0.9?'gravel':(r<1.7?'sand':'silt');}return 'grass';}});
+  S.add(b);
+  const l=[Label('山口（扇顶）',[ax+0.3,0.7,az],{size:.11}),Label('扇顶：砾石（粗）',[ax+0.7,0.55,0.2],{size:.11}),Label('扇缘：沙、粉沙（细）',[0.3,0.25,0.9],{size:.11}),Label('剖面：由粗变细',[-2.3,0.1,0.6],{size:.11,color:'#7a2a1a'})];
+  return t=>{b.userData.update(t);l[1].visible=t>0.4;l[2].visible=t>0.6;l[3].visible=t>0.6;};}
+});
+M({id:'delta',cat:'外',sub:'堆积作用',kind:'流水',name:'河口三角洲',dur:14,cam:[0.8,3.0,4.6],
+ pr:'河流入海（湖）时，河口处水面展宽、流速减慢，又受到海水顶托，携带的泥沙在河口大量堆积，形成平面形态近似三角形的冲积平原——三角洲。河流在三角洲上分成许多汊道，三角洲不断向海洋方向推进，海岸线外移。',
+ ob:['河流把泥沙源源不断地带到河口','三角洲向海洋方向延伸，海岸线外移','三角洲上河道分汊，地势低平'],
+ kd:'对应考点：三角洲的形成条件（泥沙多、海水作用弱、河口坡度缓）；长江三角洲、珠江三角洲、尼罗河三角洲。',
+ lg:[[P.SAND,'三角洲沙'],[P.MUD,'淤泥'],[P.SILT,'粉沙']],
+ st:[[0,'河流携带大量泥沙流入海洋'],[.15,'河口流速降低，泥沙开始堆积'],[.45,'泥沙不断堆积，三角洲向海推进，河道分汊'],[.8,'形成低平的三角洲平原']],
+ build(S){
+  const D=t=>1.6*sm(0.05,0.95,t);
+  const shore=(x,t)=>0.0+D(t)*Math.exp(-sq(x/1.15))*(1+0.18*Math.sin(x*4.5+1));
+  const hf=(x,z,t)=>{const s=shore(x,t)-0.3;if(z<s)return 0.06-0.04*sm(-1.3,s,z)+rough(x,z,0.012)+0.05*sm(-0.3,-1.3,z);const d=z-s;return Math.max(0.06-d*0.55,-0.45)+rough(x,z,0.01);};
+  const chan=(x,z,t)=>{const s=shore(x,t)-0.3;if(z>s+0.02)return false;if(z<-0.3)return Math.abs(x-0.1*Math.sin(z*2))<0.07;const f=(z+0.3)/Math.max(0.1,s+0.3);
+   for(const k of [-0.9,-0.35,0.25,0.8]){const cx=0.1*Math.sin(-0.6)+k*f*D(t)*0.55+0.05*Math.sin(z*6+k*3);if(Math.abs(x-cx)<0.04)return true;}return false;};
+  const b=Block({W:4.4,L:2.8,D:0.6,ymax:0.3,h:hf,trees:50,treeOk:(x,z)=>z<-0.9,
+   col:(x,y,z,t)=>{if(y<-0.45)return P.SH;const s=shore(x,t)-0.3;const k=Math.floor((y+0.5)/0.05);return z<s-0.2?(k%2?P.SAND:P.SILT):(k%2?P.MUD:P.SILT);},
+   top:(x,z,y,t)=>{if(chan(x,z,t))return 'water';if(y>0.04)return z<-0.9?'grass':'marsh';if(y>-0.02)return 'sand';return 'mud';}});
+  S.add(b);S.add(Water(-2.19,2.19,-1.39,1.39,-0.46,0.035,0x2c6f8f,.6));
+  const l=[Label('河流',[0.15,0.35,-1.2],{size:.12,color:'#2f6f9f'}),Label('三角洲（向海推进）',[0,0.35,0.6],{size:.12}),Label('海洋',[1.6,0.25,1.1],{size:.12,color:'#2f6f9f'})];
+  return t=>{b.userData.update(t);l[1].visible=t>0.4;l[1].position.z=shore(0,t)-0.6;};}
+});
+M({id:'dune',cat:'外',sub:'堆积作用',kind:'风力',name:'新月形沙丘',dur:14,cam:[3.4,2.6,3.8],
+ pr:'风力减弱或遇到障碍时，沙粒堆积形成沙丘。在风向稳定、沙源不太丰富的地区，形成平面呈新月形的沙丘：迎风坡缓而凸，背风坡陡而凹，两个尖角（沙丘翼）指向下风向。沙粒不断从迎风坡吹向背风坡，沙丘整体向下风向移动。',
+ ob:['迎风坡缓、背风坡陡','两个尖角指向下风向','沙丘整体顺风移动；剖面上可见倾向下风向的斜层理'],
+ kd:'对应考点：由沙丘形态判断风向（缓坡为迎风坡，尖角指向下风向）；风沙防治。',
+ lg:[[P.SAND,'风成沙']],
+ st:[[0,'沙漠中盛行稳定的风'],[.15,'沙粒在迎风坡跃移上行，越过沙丘顶'],[.4,'沙粒在背风坡滑落堆积，形成陡坡'],[.7,'沙丘整体向下风向移动']],
+ build(S){
+  const dunes=[{x:-1.2,z:0.9,s:1.0},{x:0.6,z:-0.3,s:0.8},{x:-0.6,z:-0.9,s:0.55},{x:1.6,z:0.75,s:0.6}];
+  const one=(x,z,d,t)=>{const s=d.s;const cx=d.x+0.9*t/s*0.6;const u=x-cx,v=z-d.z;const Wd=0.62*s;if(Math.abs(v)>=Wd)return 0;const q=v/Wd;
+   const uc=-0.15*s+0.5*s*q*q;const H=0.34*s*(1-q*q);const uw=uc-0.95*s*Math.sqrt(1-q*q)-0.05;if(u<uw)return 0;
+   if(u<=uc)return H*Math.pow((u-uw)/(uc-uw),1.3);return Math.max(0,H-(u-uc)*1.4);};
+  const hf=(x,z,t)=>{let h=0;for(const d of dunes)h=Math.max(h,one(x,z,d,t));return h+0.012*Math.sin(x*28+z*6+nz(x*3,z*3)*4);};
+  PAT[scl(P.SAND,0.86)|0]='sand';
+  const b=Block({W:4.4,L:2.6,D:0.35,ymax:0.5,h:hf,
+   col:(x,y,z,t)=>{if(y<0)return P.SAND;const q=fr((x-y*1.2)/0.05);return q<0.18?scl(P.SAND,0.86)|0:P.SAND;},
+   top:()=>'desert'});
+  S.add(b);
+  const N=60;const gr=Grains(N,0xcfa96a);S.add(gr);const R=rng(12);const pp=[];for(let i=0;i<N;i++)pp.push({o:R(),d:dunes[i%2],v:(R()-0.5)*0.9});
+  S.add(Arrow([-2.6,1.0,0],[-1.8,1.0,0],0x2f6f9f));Label('风向',[-2.2,1.18,0],{size:.12,color:'#2f6f9f'});
+  const l=[Label('迎风坡（缓）',[-1.75,0.45,0.9],{size:.11}),Label('背风坡（陡）',[-0.6,0.5,0.9],{size:.11}),Label('沙丘翼尖指向下风向',[0.1,0.3,1.5],{size:.11})];
+  return (t,time)=>{b.userData.update(t);
+   for(let i=0;i<N;i++){const p=pp[i];const d=p.d;const f=(time*0.5+p.o)%1;const cx=d.x+0.9*t/d.s*0.6;const x=cx-0.9*d.s+1.1*d.s*f;const z=d.z+p.v*d.s*0.5;gr.put(i,x,hf(x,z,t)+0.02+0.05*Math.sin(f*PI*6)**2,z,0.012);}gr.done();
+   l[0].position.x=dunes[0].x+0.9*t*0.6-0.5;l[1].position.x=dunes[0].x+0.9*t*0.6+0.35;};}
+});
+M({id:'moraine',cat:'外',sub:'堆积作用',kind:'冰川',name:'冰碛物与终碛垄',dur:16,cam:[3.0,2.6,4.6],
+ pr:'冰川在运动速率降低或消融时，携带的各种碎屑物就会沉积下来，形成冰碛物。冰碛物的特点是：大小混杂（巨大的漂砾和细小的泥沙混在一起），没有磨圆（岩块有棱有角），无分选、无层理。冰川末端在某一时期保持稳定时，碎屑在末端堆积成弧形的终碛垄；冰川退缩过程中每个稳定期都会形成一道终碛垄。',
+ ob:['看碛垄上的石块：大的大、小的小，混杂在一起','石块都有棱有角，没有被磨圆','冰川退缩时留下一道道弧形的终碛垄'],
+ kd:'对应考点：冰川堆积物“大小混杂、无磨圆、无分选、无层理”，与流水沉积物（分选好、磨圆好、有层理）区别。',
+ lg:[[P.ICE,'冰川'],[P.TILL,'冰碛物（大小混杂、有棱角）'],[P.BED,'基岩']],
+ st:[[0,'冰川末端保持稳定，碎屑堆积成终碛垄'],[.25,'气候变暖，冰川末端退缩'],[.4,'新的稳定期，形成第二道终碛垄'],[.6,'继续退缩……'],[.72,'第三道终碛垄'],[.9,'冰川大幅退缩，留下多道终碛垄']],
+ build(S){
+  const X=t=>t<.25?1.7:t<.4?lerp(1.7,0.6,sm(.25,.4,t)):t<.6?0.6:t<.72?lerp(0.6,-0.5,sm(.6,.72,t)):t<.9?-0.5:lerp(-0.5,-1.6,sm(.9,1,t));
+  const mor=[{x:1.7,a:0,b:.25},{x:0.6,a:.4,b:.6},{x:-0.5,a:.72,b:.9}];
+  const xt=(xx,z)=>xx-0.35*sq(z/1.3);
+  const gnd=(x,z)=>0.05-0.06*x+rough(x,z,0.04);
+  const mh=(x,z,t)=>mor.reduce((s,m)=>s+0.24*sm(m.a,m.b,t)*G(x,xt(m.x,z)+0.1,0.13)*(0.8+0.4*wob(x*5,z*5)),0);
+  const ice=(x,z,t)=>{const e=xt(X(t),z);if(x>e)return 0;return 0.75*Math.sqrt(Math.min(1,(e-x)/1.6));};
+  const hf=(x,z,t)=>gnd(x,z)+mh(x,z,t)+ice(x,z,t);
+  const b=Block({W:5,L:2.6,D:0.5,ymax:1.0,nx:120,h:hf,trees:60,treeOk:(x,z,y,t)=>ice(x,z,t)<=0&&mh(x,z,t)<0.03&&x>X(t)+0.4,
+   col:(x,y,z,t)=>{const g=gnd(x,z);if(y<g-0.15)return P.BED;if(y<g)return P.SOIL;const m=g+mh(x,z,t);if(y<m)return P.TILL;return P.ICE;},
+   top:(x,z,y,t)=>{if(ice(x,z,t)>0.01)return 'ice';if(mh(x,z,t)>0.03)return 'till';return 'grass';}});
+  S.add(b);
+  const NB=130;const bo=Grains(NB,0x8a857c,true);S.add(bo);const R=rng(21);const bb=[];
+  for(let i=0;i<NB;i++){const m=mor[i%3];const z=-1.25+R()*2.5;const sz=R()<0.15?0.06+R()*0.07:0.012+R()*0.03;bb.push({m,z,dx:(R()-0.5)*0.22,s:sz,rx:R()*6,ry:R()*6,c:[0x8a857c,0x6f6a63,0xa29a8c,0x7d7468][i%4]});bo.col(i,bb[i].c);}
+  const N=40;const gr=Grains(N,0x6f6c66,true);S.add(gr);const pp=[];for(let i=0;i<N;i++)pp.push({o:R(),z:-1+R()*2,h:R(),s:0.015+R()*0.025});
+  const ml=mor.map(m=>Label('终碛垄',[m.x+0.1,0.5,1.35],{size:.11}));
+  const lk=Label('冰碛物：大小混杂、没有磨圆',[0.6,0.85,0.4],{size:.12,color:'#7a2a1a'});
+  Label('冰川',[-1.6,1.1,0],{size:.13,color:'#2f6f9f'});S.add(Arrow([-2.2,1.0,-0.6],[-1.2,0.9,-0.6],0x2f6f9f,0.025));
+  const lr=Label('末端退缩',[0,1.0,0],{size:.11,color:'#b5452f'});
+  return (t,time)=>{b.userData.update(t);const xe=X(t);
+   bb.forEach((p,i)=>{const k=sm(p.m.a,p.m.b,t);const x=xt(p.m.x,p.z)+0.1+p.dx;if(k>0.3&&ice(x,p.z,t)<=0)bo.put(i,x,hf(x,p.z,t)+p.s*0.35,p.z,p.s,0.75,p.rx,p.ry);else bo.put(i,0,-9,0,0.001);});bo.done();
+   for(let i=0;i<N;i++){const p=pp[i];const f=(time*0.15+p.o)%1;const e=xt(xe,p.z);const x=lerp(-2.4,e,f);
+    if(x<e-0.02&&e>-2.4)gr.put(i,x,gnd(x,p.z)+ice(x,p.z,t)*p.h*0.8+0.02,p.z,p.s,1,i,i);else gr.put(i,0,-9,0,0.001);}gr.done();
+   mor.forEach((m,i)=>ml[i].visible=t>m.a+0.08);lk.visible=t>0.45;lr.visible=(t>.25&&t<.4)||(t>.6&&t<.72)||t>.9;lr.position.set(xe+0.2,1.0,0);};}
+});
+M({id:'tillcmp',cat:'外',sub:'堆积作用',kind:'冰川',name:'冰碛物与流水沉积物对比',dur:10,cam:[0,1.5,3.6],
+ pr:'冰川像传送带一样把大小石块“一起”搬运，冰融化时一起堆下，所以冰碛物大小混杂、没有磨圆、没有分选和层理。流水搬运时颗粒互相碰撞、摩擦，棱角被磨圆；流速减慢时按颗粒大小先后沉积，所以流水沉积物磨圆度好、分选好、具有层理。',
+ ob:['左：冰碛物——大小混杂、棱角分明、杂乱堆积','右：流水沉积物——磨圆、按大小分层（下粗上细）','这是判断沉积物成因最常考的依据'],
+ kd:'对应考点：由沉积物特征判断外力作用类型——冰川堆积 vs 流水堆积 vs 风力堆积（风积物分选好、颗粒细）。',
+ lg:[[P.TILL,'冰碛物'],[P.GRV,'流水沉积物']],
+ st:[[0,'冰川融化：碎屑同时堆下'],[.3,'流水沉积：流速减慢，颗粒按大小先后沉积'],[.8,'对比两种沉积物的特征']],
+ build(S){
+  const mkBox=(cx)=>{const e=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.3,1.0,1.0)),new THREE.LineBasicMaterial({color:0x445566}));e.position.set(cx,0.5,0);S.add(e);
+   const gl=new THREE.Mesh(new THREE.BoxGeometry(1.3,1.0,1.0),stdMat({color:lin(0xdfe9ef),transparent:true,opacity:.1,depthWrite:false}));gl.position.set(cx,0.5,0);S.add(gl);
+   const fl=new THREE.Mesh(new THREE.BoxGeometry(1.5,0.04,1.2),stdMat({color:lin(0x8b7d6b)}));fl.position.set(cx,-0.02,0);fl.receiveShadow=true;S.add(fl);};
+  mkBox(-0.9);mkBox(0.9);
+  const R=rng(44);const A=[];for(let i=0;i<150;i++){const big=R()<0.12;A.push({x:-0.9+(R()-0.5)*1.15,z:(R()-0.5)*0.85,y:0.05+R()*0.65,s:big?0.07+R()*0.09:0.012+R()*0.035,rx:R()*6,ry:R()*6,c:[0x8a857c,0x6f6a63,0xa29a8c,0x7d7468,0x9b8f80][i%5]});}
+  const ga=Grains(A.length,0x888888,true);A.forEach((p,i)=>ga.col(i,p.c));S.add(ga);
+  const Bs=[];const layers=[[0.075,0.05,9],[0.045,0.19,13],[0.026,0.3,18],[0.014,0.39,26]];
+  layers.forEach(([r,y0,n],li)=>{for(let i=0;i<n;i++)for(let j=0;j<Math.round(n*0.75);j++){Bs.push({x:0.9-0.6+1.2*(i+0.5)/n+(R()-0.5)*r*0.3,z:-0.42+0.84*(j+0.5)/Math.round(n*0.75),y:y0+(R()-0.5)*r*0.3,s:r,li,c:[0xa58f6c,0xb8a07a,0xc9b48c,0xd8c69e][li]});}});
+  const gb=Grains(Bs.length,0x999999,false);Bs.forEach((p,i)=>gb.col(i,p.c));S.add(gb);
+  Label('冰碛物\n大小混杂 · 无磨圆\n无分选 · 无层理',[-0.9,1.35,0],{size:.11,color:'#7a2a1a'});
+  Label('流水沉积物\n磨圆好 · 分选好\n有层理（下粗上细）',[0.9,1.35,0],{size:.11,color:'#2f5f8f'});
+  return t=>{const fa=sm(0,0.25,t);A.forEach((p,i)=>ga.put(i,p.x,lerp(1.6,p.y,fa),p.z,p.s,0.75,p.rx,p.ry));ga.done();
+   Bs.forEach((p,i)=>{const t0=0.3+p.li*0.13;const f=sm(t0,t0+0.12,t);gb.put(i,p.x,f>0?lerp(1.2,p.y,f):-9,p.z,p.s,0.85);});gb.done();};}
+});
+M({id:'barrier',cat:'外',sub:'堆积作用',kind:'海浪',name:'障壁岛的迁移',dur:14,cam:[1.2,1.8,5.4],
+ pr:'障壁岛是与海岸大致平行、由沙堆积成的狭长岛屿，岛后是潟湖。海平面上升时，波浪和风暴把靠海一侧的沙不断越过岛顶推向潟湖一侧（越流沉积），于是障壁岛整体向陆地方向迁移——这就是海平面上升时障壁岛并没有被淹没消失的原因。',
+ ob:['海平面在缓慢上升','沙粒从海侧越过岛顶落到潟湖一侧','障壁岛整体向陆地移动，潟湖随之后退'],
+ kd:'拓展理解：海岸堆积地貌（沙坝、潟湖）；全球变暖海平面上升对海岸的影响。',
+ lg:[[P.SAND,'障壁岛沙体'],[P.MUD,'潟湖泥'],[P.GRD,'下伏岩层']],
+ st:[[0,'障壁岛与岛后潟湖'],[.15,'海平面上升，波浪把沙推过岛顶'],[.45,'越流沉积在潟湖一侧堆积'],[.7,'障壁岛整体向陆地迁移而没有被淹没']],
+ build(S){
+  const bse=x=>-0.6+0.2*(x+2.5);
+  const SL=t=>-0.05+0.32*t;const xb=t=>-1.2+1.4*t;
+  const isl=(x,t)=>{const d=(x-xb(t))/0.5;if(Math.abs(d)>=1)return -9;return SL(t)+0.16*(1-d*d)-(d<0?0.08*d*d:0);};
+  const hf=(x,z,t)=>{let h=bse(x)+rough(x,z,0.01);if(x>xb(t))h+=0.05;return Math.max(h,isl(x,t)+rough(x,z,0.012));};
+  const b=Block({W:5,L:2,D:0.8,ymax:0.6,h:hf,trees:30,treeOk:(x,z,y,t)=>y>SL(t)+0.08&&x>1.0,
+   col:(x,y,z,t)=>{const bs=bse(x);if(y<bs)return P.GRD;if(y<isl(x,t))return P.SAND;if(x>xb(t)&&y<bs+0.05)return P.MUD;return P.SAND;},
+   top:(x,z,y,t)=>isl(x,t)>bse(x)?'sand':(y>SL(t)+0.02?'grass':'mud')});
+  S.add(b);
+  const w=Water(-2.49,2.49,-0.99,0.99,-0.6,0,0x2c6f8f,.55);S.add(w);
+  const N=24;const gr=Grains(N,0xd9b55a);S.add(gr);const R=rng(4);const pp=[];for(let i=0;i<N;i++)pp.push({o:R(),z:-0.9+R()*1.8});
+  const li=Label('障壁岛',[0,0.6,0],{size:.13});const lg=Label('潟湖',[0,0.4,0],{size:.12,color:'#2f6f9f'});Label('海洋',[-2.0,0.45,0],{size:.12,color:'#2f6f9f'});Label('陆地',[2.1,0.6,0],{size:.12});
+  const ar=Arrow([0,0,0],[0.6,0,0],0xb5452f,0.03);S.add(ar);const la=Label('向陆迁移',[0,0,0],{size:.11,color:'#b5452f'});
+  S.add(Arrow([-2.3,-0.2,1.05],[-2.3,0.2,1.05],0x2f6f9f,0.025));Label('海平面上升',[-2.0,0.32,1.1],{size:.1,color:'#2f6f9f'});
+  return (t,time)=>{b.userData.update(t);w.setLevel(-0.6,SL(t));const x=xb(t);
+   li.position.set(x,SL(t)+0.45,0);const shore=(SL(t)+0.6)/0.2-2.5;lg.position.set((x+shore)/2+0.2,SL(t)+0.15,0);
+   ar.position.set(x+0.2,SL(t)+0.62,0.6);la.position.set(x+0.45,SL(t)+0.8,0.6);
+   for(let i=0;i<N;i++){const p=pp[i];const f=(time*0.5+p.o)%1;const xx=x-0.5+0.95*f;gr.put(i,xx,Math.max(isl(xx,t),bse(xx)+0.05,SL(t)-0.05)+0.03,p.z,0.02);}gr.done();};}
+});
+
+/* ---------- 外力 · 固结成岩 ---------- */
+function seqModel(trans){
+ return function(S){
+  const N=44,dh=0.012;const bse=x=>-0.45+0.2*(x+2.2);
+  const SLk=k=>trans?lerp(-0.3,0.35,k/N):lerp(0.35,-0.3,k/N);const xs=k=>-2.2+(SLk(k)+0.45)/0.2;
+  const fac=(x,k)=>{const d=xs(k)-x;return d<0.55?P.SAND:d<1.3?P.MUD:P.LS;};
+  const NX=220;const cum=[];for(let i=0;i<=NX;i++){const x=-2.2+4.4*i/NX;const a=[0];for(let k=0;k<N;k++)a.push(a[k]+(x<xs(k)?dh:0));cum.push(a);}
+  const ii=x=>cl(Math.round((x+2.2)/4.4*NX),0,NX);
+  const kn=t=>Math.floor(cl(t,0,1)*N);
+  const hf=(x,z,t)=>bse(x)+cum[ii(x)][kn(t)]+rough(x,z,0.006);
+  const b=Block({W:4.4,L:2.2,D:0.6,ymax:0.6,h:hf,trees:30,treeOk:(x,z,y,t)=>y>SLk(kn(t))+0.05,
+   col:(x,y,z,t)=>{const bs=bse(x);if(y<bs)return P.GRD;
+    const a=cum[ii(x)];const K=kn(t);const r=y-bs;for(let k=0;k<K;k++)if(a[k+1]>r&&a[k+1]>a[k])return fac(x,k);return fac(x,Math.max(0,K-1));},
+   top:(x,z,y,t)=>{const K=kn(t);if(y>SLk(K)+0.005)return 'grass';const f=fac(x,K);return f===P.SAND?'sand':(f===P.MUD?'mud':P.LS);}});
+  S.add(b);
+  const w=Water(-2.19,2.19,-1.09,1.09,-0.6,0,0x2c6f8f,.45);S.add(w);
+  S.add(Arrow([1.9,trans?-0.1:0.3,1.2],[1.9,trans?0.3:-0.1,1.2],0x2f6f9f,0.03));Label(trans?'海平面上升':'海平面下降',[1.6,0.48,1.2],{size:.11,color:'#2f6f9f'});
+  const lv=Label(trans?'自下而上：砂岩→泥岩→石灰岩':'自下而上：石灰岩→泥岩→砂岩',[-1.0,0.75,1.2],{size:.11,color:'#b5452f'});
+  const cx=-0.9;const col=Line([[cx,-0.3,1.12],[cx,0.42,1.12]],0xb5452f,true);S.add(col);
+  return t=>{b.userData.update(t);w.setLevel(-0.6,SLk(kn(t)));lv.visible=col.visible=t>0.9;};
+ };
+}
+M({id:'transg',cat:'外',sub:'固结成岩',name:'海进沉积序列',dur:14,cam:[1.0,1.6,5.4],
+ pr:'沉积物按离岸远近分带：近岸水浅、能量高，沉积砂；稍远处沉积泥；更深更远处水体清澈，沉积碳酸钙（灰泥）。海平面上升（海进）时，三个沉积带一起向岸边移动，叠加在一起，经压实、固结成岩后，形成自下而上为砂岩、泥岩、石灰岩的垂向沉积序列。',
+ ob:['三个沉积带随海平面上升向陆地方向移动','同一地点，下面是砂岩，上面变为泥岩、石灰岩','“越往上越细/越深水”是海进的标志'],
+ kd:'对应考点：沉积岩层的新老关系与古地理环境推断；海侵（海进）序列与海退序列的判断。',
+ lg:[[P.SAND,'砂 → 砂岩'],[P.MUD,'泥 → 泥岩'],[P.LS,'灰泥 → 石灰岩'],[P.GRD,'基底']],
+ st:[[0,'近岸沉积砂、稍远沉积泥、深水沉积灰泥'],[.2,'海平面上升，沉积带向陆地方向移动'],[.6,'新的沉积层不断叠加在老的沉积层之上'],[.9,'固结成岩后：自下而上砂岩→泥岩→石灰岩']],build:seqModel(true)});
+M({id:'regress',cat:'外',sub:'固结成岩',name:'海退沉积序列',dur:14,cam:[1.0,1.6,5.4],
+ pr:'海平面下降（海退）时，三个沉积带一起远离岸边向海洋方向移动。同一地点先处于深水区沉积灰泥，后变为泥、最后变为砂，经压实、固结成岩后形成自下而上为石灰岩、泥岩、砂岩的垂向沉积序列，记录了海退过程中沉积物的变化。',
+ ob:['沉积带随海平面下降向海洋方向移动','同一地点：下面是石灰岩，上面变为泥岩、砂岩','“越往上越粗/越浅水”是海退的标志'],
+ kd:'对应考点：由岩层序列推断海陆变迁（海退 → 陆地扩大）。',
+ lg:[[P.SAND,'砂 → 砂岩'],[P.MUD,'泥 → 泥岩'],[P.LS,'灰泥 → 石灰岩'],[P.GRD,'基底']],
+ st:[[0,'海平面较高，大部分地区处于深水区'],[.2,'海平面下降，沉积带向海洋方向移动'],[.6,'浅水沉积物叠加在深水沉积物之上'],[.9,'固结成岩后：自下而上石灰岩→泥岩→砂岩']],build:seqModel(false)});
+M({id:'lithify',cat:'外',sub:'固结成岩',name:'压实与胶结（固结成岩）',dur:14,cam:[1.6,1.4,3.2],
+ pr:'松散沉积物层层堆积，下部沉积物受上覆沉积物的重压，颗粒靠紧、孔隙变小，孔隙水被挤出（压实作用）；孔隙水中溶解的物质（如碳酸钙、二氧化硅）在颗粒之间沉淀，把颗粒粘结在一起（胶结作用）。压实和胶结使松散沉积物变成坚硬的沉积岩。',
+ ob:['沉积物一层层堆积，下层老、上层新（层理）','压实：颗粒间距变小，整体变薄，孔隙水被挤出','胶结：颗粒间的空隙被胶结物填充'],
+ kd:'对应考点：沉积岩的形成过程（风化、侵蚀、搬运、堆积、固结成岩）；层理构造与化石。',
+ lg:[[P.SAND,'砂粒'],[P.MUD,'泥质颗粒'],[hx('#d9c39a'),'胶结物']],
+ st:[[0,'松散沉积物一层层堆积'],[.5,'压实作用：颗粒靠紧，孔隙水被挤出'],[.8,'胶结作用：胶结物把颗粒粘结在一起'],[.97,'形成坚硬的沉积岩']],
+ build(S){
+  const n=7,layers=5,sp=0.15,r=0.065;const cols=[P.SAND,P.MUD,P.SAND,hx('#c9a26b'),P.MUD];
+  const R=rng(8);const Pp=[];for(let l=0;l<layers;l++)for(let i=0;i<n;i++)for(let j=0;j<n;j++)Pp.push({l,x:-0.45+i*sp+(R()-0.5)*0.03,z:-0.45+j*sp+(R()-0.5)*0.03,y:r+l*sp*0.95+(R()-0.5)*0.02,d:R()*0.1});
+  const gr=Grains(Pp.length);Pp.forEach((p,i)=>gr.col(i,scl(cols[p.l],0.85+0.3*R())));S.add(gr);
+  const box=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.1,1.2,1.1)),new THREE.LineBasicMaterial({color:0x445566}));box.position.y=0.6;S.add(box);
+  const glass=new THREE.Mesh(new THREE.BoxGeometry(1.1,1.2,1.1),stdMat({color:lin(0xdfe9ef),transparent:true,opacity:.1,depthWrite:false}));glass.position.y=0.6;S.add(glass);
+  const fl=new THREE.Mesh(new THREE.BoxGeometry(1.4,0.04,1.4),stdMat({color:lin(0x8b7d6b)}));fl.position.y=-0.02;fl.receiveShadow=true;S.add(fl);
+  const water=new THREE.Mesh(new THREE.BoxGeometry(1.08,1,1.08),stdMat({color:lin(C.water),transparent:true,opacity:.28,roughness:.1,depthWrite:false}));water.renderOrder=3;S.add(water);
+  const cem=new THREE.Mesh(new THREE.BoxGeometry(1.08,1,1.08),stdMat({color:lin(0xd9c39a),transparent:true,opacity:0,depthWrite:false}));cem.renderOrder=4;S.add(cem);
+  const drops=Grains(14,0x3f8fc4);S.add(drops);
+  const ld=Label('压实作用',[1.0,0.9,0.4],{size:.11});const lc=Label('胶结作用',[1.0,0.7,0.4],{size:.11});const lw=Label('孔隙水被挤出',[0,1.45,0],{size:.11,color:'#2f6f9f'});
+  return (t,time)=>{const c=1-0.3*sm(0.5,0.8,t);let topY=0;
+   Pp.forEach((p,i)=>{const t0=p.l*0.09+p.d,t1=t0+0.08;const f=sm(t0,t1,t);if(f<=0){gr.put(i,0,-9,0,0.001);return;}
+    const yy=p.y*c;const y=lerp(1.9,yy,f);gr.put(i,p.x,y,p.z,r*(1-0.06*sm(0.5,0.8,t)),1-0.15*sm(0.5,0.8,t));if(f>=1)topY=Math.max(topY,yy+r);});gr.done();
+   const wh=Math.max(0.01,topY);water.scale.y=wh;water.position.y=wh/2;water.material.opacity=0.28*(1-0.6*sm(0.5,0.85,t));
+   cem.scale.y=wh;cem.position.y=wh/2;cem.material.opacity=0.55*sm(0.8,0.97,t);
+   for(let i=0;i<14;i++){const f=(time*0.6+i/14)%1;if(t>0.5&&t<0.82)drops.put(i,-0.4+(i%5)*0.2,topY+f*0.4,-0.3+((i*3)%5)*0.15,0.025);else drops.put(i,0,-9,0,0.001);}drops.done();
+   ld.visible=t>0.5;lc.visible=t>0.8;lw.visible=t>0.5&&t<0.82;};}
+});
+
+</script>
+<script>
+/* ======================= 页面逻辑 ======================= */
+const SUBS={内:['板块运动','地壳运动','岩浆活动','变质作用'],构:['褶皱','断层'],外:['风化作用','侵蚀作用','搬运作用','堆积作用','固结成岩']};
+const CATN={内:'内力作用',构:'地质构造',外:'外力作用'},CATC={内:'var(--in)',构:'var(--st)',外:'var(--ex)'};
+const KORD=['流水','风力','海浪','冰川'];
+let cat='内';
+function swatch(c){const cv=document.createElement('canvas');cv.width=32;cv.height=28;const x=cv.getContext('2d');const im=x.createImageData(32,28);
+ for(let j=0;j<28;j++)for(let i=0;i<32;i++){const k=patCol(c,i*0.006+0.3,0.2-j*0.006);const q=(j*32+i)*4;im.data[q]=k>>16&255;im.data[q+1]=k>>8&255;im.data[q+2]=k&255;im.data[q+3]=255;}
+ x.putImageData(im,0,0);return cv.toDataURL();}
+function renderNav(){
+ const box=document.getElementById('grps');box.innerHTML='';
+ SUBS[cat].forEach(sub=>{let ms=MODELS.filter(m=>m.cat===cat&&m.sub===sub);if(!ms.length)return;
+  ms=ms.slice().sort((a,b)=>(a.kind?KORD.indexOf(a.kind):-1)-(b.kind?KORD.indexOf(b.kind):-1));
+  const g=document.createElement('div');g.className='grp';g.innerHTML=`<h3 style="color:${CATC[cat]}">${sub}</h3><div class="list"></div>`;
+  ms.forEach(m=>{const b=document.createElement('button');b.className='mbtn'+(current&&current.m===m?' on':'');b.innerHTML=(m.kind?`<small>${m.kind}</small>`:'')+m.name;b.onclick=()=>select(m);g.querySelector('.list').appendChild(b);});
+  box.appendChild(g);});
+ document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.c===cat));
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{cat=b.dataset.c;renderNav();if(!scene)return;const first=MODELS.find(m=>m.cat===cat);if(first&&(!current||current.m.cat!==cat))select(first);});
+
+function disposeTree(o){o.traverse(c=>{if(c.geometry)c.geometry.dispose();if(c.material){const ms=Array.isArray(c.material)?c.material:[c.material];ms.forEach(m=>{if(m.map)m.map.dispose();m.dispose();});}});}
+function select(m){
+ if(world){scene.remove(world);disposeTree(world);}
+ world=new THREE.Group();labelsG=new THREE.Group();world.add(labelsG);scene.add(world);
+ if(ENV.sun){ENV.sun.intensity=1.1;ENV.hemi.intensity=0.55;}
+ const S={add:(...a)=>a.forEach(o=>world.add(o))};
+ const up=m.build(S);current={m,up};
+ labelsG.visible=state.labels;
+ document.getElementById('crumb').textContent=CATN[m.cat]+' · '+m.sub+(m.kind?' · '+m.kind:'');
+ document.getElementById('ttl').textContent=m.name;
+ document.getElementById('pr').innerHTML='<p>'+m.pr+'</p>';
+ document.getElementById('ob').innerHTML=m.ob.map(s=>'<li>'+s+'</li>').join('');
+ document.getElementById('kd').textContent=m.kd;
+ document.getElementById('lg').innerHTML=(m.lg||[]).map(([c,s])=>`<span><i style="background-image:url(${swatch(c)})"></i>${s}</span>`).join('');
+ const loop=!!m.loop;document.getElementById('prog').style.visibility=loop?'hidden':'visible';document.getElementById('pct').style.visibility=loop?'hidden':'visible';
+ document.getElementById('replay').style.display=loop?'none':'';
+ resetView();state.t=0;state.playing=true;setPlayBtn();FORCE=true;applyT();FORCE=false;renderNav();
+ try{history.replaceState(null,'','#'+m.id);}catch(e){}
+}
+function resetView(){const m=current.m;controls.set(m.cam||[3,2.4,4.6],[0,m.tgt||0,0]);}
+function applyT(){const m=current.m;current.up(state.t,state.time);
+ document.getElementById('stg').textContent=stageText(m.st,state.t);
+ if(!m.loop){document.getElementById('prog').value=Math.round(state.t*1000);document.getElementById('pct').textContent=Math.round(state.t*100)+'%';}}
+function setPlayBtn(){document.getElementById('play').textContent=state.playing?'❚❚ 暂停':'▶ 播放';}
+function skyTex(){const cv=document.createElement('canvas');cv.width=4;cv.height=256;const x=cv.getContext('2d');const g=x.createLinearGradient(0,0,0,256);
+ g.addColorStop(0,'#8fb7d6');g.addColorStop(0.55,'#cfe0ea');g.addColorStop(1,'#eef0ea');x.fillStyle=g;x.fillRect(0,0,4,256);const t=new THREE.CanvasTexture(cv);t.encoding=THREE.sRGBEncoding;return t;}
+
+async function init(){
+ const ok=await loadThree();
+ document.getElementById('loading').style.display='none';
+ if(!ok){document.getElementById('err').style.display='flex';return;}
+ const cv=document.getElementById('cv');
+ renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+ renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;
+ renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+ scene=new THREE.Scene();scene.background=skyTex();
+ camera=new THREE.PerspectiveCamera(38,1,0.05,100);
+ controls=Orbit(camera,cv);
+ const hemi=new THREE.HemisphereLight(0xeaf3ff,0x7a6a55,0.55);scene.add(hemi);
+ const sun=new THREE.DirectionalLight(0xfff3e0,1.1);sun.position.set(4,7,5);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+ const sc=sun.shadow.camera;sc.left=-4.5;sc.right=4.5;sc.top=4.5;sc.bottom=-4.5;sc.near=0.5;sc.far=25;sun.shadow.bias=-0.0006;sun.shadow.normalBias=0.02;scene.add(sun);
+ const fill=new THREE.DirectionalLight(0xcfe0ff,0.28);fill.position.set(-5,3,-2);scene.add(fill);
+ ENV={sun,hemi};
+ const ground=new THREE.Mesh(new THREE.PlaneGeometry(30,30),new THREE.ShadowMaterial({opacity:.22}));ground.rotation.x=-PI/2;ground.position.y=-1.9;ground.receiveShadow=true;scene.add(ground);
+ function resize(){const st=document.getElementById('stage');const w=st.clientWidth,h=st.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+ window.addEventListener('resize',resize);resize();
+ document.getElementById('play').onclick=()=>{if(!current.m.loop&&state.t>=1)state.t=0;state.playing=!state.playing;setPlayBtn();};
+ document.getElementById('replay').onclick=()=>{state.t=0;state.playing=true;setPlayBtn();FORCE=true;applyT();FORCE=false;};
+ document.getElementById('prog').oninput=e=>{state.t=e.target.value/1000;state.playing=false;setPlayBtn();FORCE=true;applyT();FORCE=false;};
+ document.getElementById('view').onclick=resetView;
+ document.getElementById('lab').onclick=e=>{state.labels=!state.labels;labelsG.visible=state.labels;e.target.textContent='标签：'+(state.labels?'开':'关');};
+ const hash=location.hash.slice(1);const start=MODELS.find(m=>m.id===hash)||MODELS[0];cat=start.cat;select(start);
+ let last=performance.now(),acc=0;
+ function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(state.playing){state.time+=dt;const m=current.m;
+   if(m.loop){applyT();}
+   else{acc+=dt;state.t=Math.min(1,state.t+dt/(m.dur||12));if(acc>1/30||state.t>=1){acc=0;applyT();}if(state.t>=1){state.playing=false;setPlayBtn();}}}
+  controls.update();renderer.render(scene,camera);requestAnimationFrame(loop);}
+ requestAnimationFrame(loop);
+}
+document.getElementById('fs').onclick=()=>{const d=document.getElementById('stage');try{if(!document.fullscreenElement){(d.requestFullscreen||d.webkitRequestFullscreen).call(d);}else{document.exitFullscreen();}}catch(e){}};
+document.addEventListener('fullscreenchange',()=>setTimeout(()=>window.dispatchEvent(new Event('resize')),50));
+renderNav();init();
+</script>
+<script src="lib/workbench-bar.js"></script>
+</body>
+</html>

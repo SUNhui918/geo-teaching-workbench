@@ -1955,5 +1955,6 @@ $('open').onclick=()=>{const url=URL.createObjectURL(new Blob([pageHTML(cur)],{t
 $('fs').onclick=()=>{const el=view==='demo'?$('fr'):document.documentElement;if(!document.fullscreenElement)(el.requestFullscreen||el.webkitRequestFullscreen).call(el);else document.exitFullscreen();};
 show(QUESTIONS.find(q=>q.id===location.hash.slice(1))||QUESTIONS[0]);
 </script>
+<script src="lib/workbench-bar.js"></script>
 </body>
 </html>
