@@ -5,7 +5,7 @@
  *  - 跨域资源（天地图瓦片、Esri 影像等）：放行，由浏览器联网处理（地图本需联网）
  *  - 导航请求离线时回退到已缓存的 index.html，保证应用可离线启动
  */
-const CACHE = 'geo-workbench-v3';
+const CACHE = 'geo-workbench-v4';
 const CORE = [
   './',
   './index.html',
