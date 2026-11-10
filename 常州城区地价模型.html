@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- 横山桥高级中学 孙慧制作 -->
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -203,7 +202,7 @@ function drawMap(){
       :`<path class="pt" d="M${x},${-y-.55} L${x+.5},${-y+.4} L${x-.5},${-y+.4}Z" fill="${col}" stroke="#fff" stroke-width=".15"><title>${tip}</title></path>`}).join("")};
   s+=pts(D.Z,$("chkZ").checked,"c","#222",4)+pts(D.S,$("chkS").checked,"s","#7b1fa2",4)+pts(D.G,$("chkG").checked,"t","#5d4037",4);
   // school + selection
-  s+=`<g transform="translate(13.5 -5)"><text x="0" y="-1.4" font-size=".9" text-anchor="middle" fill="#c2185b" font-weight="bold" stroke="#fff" stroke-width=".25" paint-order="stroke">★我们学校</text></g>`;
+  s+=`<g transform="translate(13.5 -5)"><text x="0" y="-1.4" font-size=".9" text-anchor="middle" fill="#c2185b" font-weight="bold" stroke="#fff" stroke-width=".25" paint-order="stroke">★横山桥</text></g>`;
   s+=`<g transform="translate(${sel[0]} ${-sel[1]})"><circle r=".9" fill="none" stroke="#c2185b" stroke-width=".3"/><circle r=".18" fill="#c2185b"/></g>`;
   s+=`<line x1="0" y1="0" x2="${sel[0]}" y2="${-sel[1]}" stroke="#c2185b" stroke-width=".12" stroke-dasharray=".5 .3"/>`;
   s+=`<g transform="translate(16.5 -17.5)"><path d="M0,-1.6 L.6,0 L0,-.4 L-.6,0Z" fill="#333"/><text y="1" font-size=".9" text-anchor="middle">N</text></g>`;
@@ -299,7 +298,7 @@ document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{
   $("tbl").innerHTML="<table>"+R.map((r,i)=>"<tr>"+r.map(c=>i?`<td>${c}</td>`:`<th>${c}</th>`).join("")+"</tr>").join("")+"</table><div class='note'>单位：元/㎡（土地面积）。工矿仓储一栏中“二、三、四”对应工业二、三、四级。</div>";
 })();
 const QS=[
- ["感知","点击文化宫、新北中心、武进中心和“我们学校”（横山桥）四个位置，记录模型地价。地价随着离老城中心的距离如何变化？",
+ ["感知","点击文化宫、新北中心、武进中心和“横山桥”四个位置，记录模型地价。地价随着离老城中心的距离如何变化？",
   "总体上，离文化宫越远，地价越低：老城一带住宅地面地价约 3 万元/㎡（武青北路样点 40492、南大街样点 28472），横山桥一带约 1.1 万元/㎡（样点 10828）。这体现了“距市中心越近、通达度越高、地价越高”的一般规律。"],
  ["发现","切到“② 真实数据”看散点图。距文化宫 8–11 km 处为什么又出现一批高地价点？这说明常州的城市结构有什么特点？",
   "这些点集中在武进湖塘—延政大道一带和新北河海、三井一带。它们是城市副中心（武进区、新北区的行政、商业中心），本身也有较高的通达度和配套，因此地价在远离老城后又出现次高峰。说明常州是“一主两副”式的多中心结构，地价从多个中心向外递减，而不是只有一个峰值。"],
@@ -307,7 +306,7 @@ const QS=[
   "地铁沿线、尤其是 1 号线南北向沿线下降最多，远离地铁的乡镇几乎不变。地铁提高了沿线的交通通达度，使原本较远的地方也能方便到达市中心，所以地价沿线升高，在地图上表现为沿交通线延伸的“高地价走廊”。这对应教材中“交通通达度越好，地价越高”的结论。"],
  ["质疑","看“基准地价”折线：常州的住宅地价在同一级别上普遍高于商服地价，工业标定地价几乎都在 640–740 元/㎡ 之间。这与教材中“商业付租能力最强”的说法矛盾吗？",
   "不完全矛盾。教材的竞租模型是理想条件下的规律：在城市中心最核心的地段，商业的付租能力仍然最强（晋陵中路商服样点首层地价很高，商业还有更高的“路线价”）。但从整体看，近年来常州商业用地供应较多，又受到电商冲击，商铺和写字楼需求不旺，而住宅需求较强，所以出现了住宅基准地价高于商服的现象。工业地价空间差异小，是因为政府为招商引资对工业用地价格有统一的指导和限制，工业对中心区位的依赖也较小。这说明真实地价还受市场供求和政府政策的影响。"],
- ["迁移","勾选“假设 2 号线延伸到横山桥”。我们学校附近的地价会怎样变化？这可能会怎样改变横山桥的功能区？（思维实验，规划中并无此线）",
+ ["迁移","勾选“假设 2 号线延伸到横山桥”。横山桥附近的地价会怎样变化？这可能会怎样改变横山桥的功能区？（思维实验，规划中并无此线）",
   "模型显示横山桥站附近住宅地价会提高约 30%（约 10600→13900 元/㎡）。通达度提高后，原来以工业和镇区为主的地方，可能吸引更多住宅开发和商业配套（如站点周边形成小型商业中心），部分工业用地可能外迁或“退二进三”。同时也要注意：地价上涨会推高房价，需要统筹规划。"],
  ["应用","如果你是常州的一位规划师，结合本节课的发现，说说应该如何布局新的住宅区和工业区？",
   "开放题。参考：住宅区宜靠近地铁站点和副中心，并配套学校、医院等设施；工业区宜布局在地价较低、对外交通方便（高速、港口如春江港区）且位于下风向、远离居住区的地方；通过建设轨道交通引导城市沿交通走廊有序发展，避免无序蔓延。"]
@@ -315,7 +314,6 @@ const QS=[
 $("qs").innerHTML="<h3 style='font-size:18px'>问题链：常州的地价是怎样分布的？</h3>"+QS.map((q,i)=>`<div class="q"><b>Q${i+1} · ${q[0]}</b><p>${q[1]}</p><button class="btn" onclick="this.nextElementSibling.classList.toggle('show')">参考答案</button><div class="ans">${q[2]}</div></div>`).join("");
 drawHeat();drawMap();update();
 </script>
-<div style='position:fixed;right:12px;bottom:10px;z-index:2147483647;font:12px/1.4 sans-serif;color:#1b2b52;background:rgba(255,255,255,.82);padding:4px 10px;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.3);pointer-events:none;letter-spacing:.5px;'>横山桥高级中学 孙慧制作</div>
 <script src="lib/workbench-bar.js"></script>
 </body>
 </html>
