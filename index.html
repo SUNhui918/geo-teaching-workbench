@@ -158,7 +158,7 @@
             position:absolute;top:50%;transform:translateY(-50%);
             pointer-events:none;opacity:.85;
         }
-        .hero-deco.left{left:3%;animation:heroFloat 6s ease-in-out infinite;}
+        .hero-deco.left{display:none;} /* 左侧位置让给醒目的「使用反馈」按钮 */
         .hero-deco.right{display:none;}
         .hero-deco svg{width:80px;height:80px;}
         @keyframes heroFloat{
@@ -574,9 +574,10 @@
 .wb-license-statement{font-size:.94rem;line-height:1.95;color:var(--text);letter-spacing:.3px;}
 .wb-license-statement p{margin:0;}
 /* 使用反馈（问卷星内嵌弹窗） */
-.nav-feedback-btn{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;border:1px solid #2bb8a3;border-radius:var(--radius-btn);background:rgba(43,184,163,.10);color:#1d7a5b;font:inherit;font-size:.82rem;font-weight:700;cursor:pointer;transition:var(--transition);position:relative;white-space:nowrap;}
-.nav-feedback-btn:hover{background:#2bb8a3;color:#fff;}
-.fb-dot{position:absolute;top:-4px;right:-4px;width:8px;height:8px;border-radius:50%;background:#ff4d4f;box-shadow:0 0 0 2px var(--bg-card);}
+.hero-feedback-btn{position:absolute;left:3%;top:50%;transform:translateY(-50%);z-index:3;display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border:0;border-radius:999px;background:linear-gradient(135deg,#2bc4a8,#159b83);color:#fff;font:inherit;font-size:.92rem;font-weight:700;letter-spacing:.3px;cursor:pointer;white-space:nowrap;box-shadow:0 6px 18px rgba(43,184,163,.38),inset 0 1px 0 rgba(255,255,255,.25);transition:transform .2s,box-shadow .2s;}
+.hero-feedback-btn:hover{transform:translateY(-50%) scale(1.05);box-shadow:0 8px 24px rgba(43,184,163,.55);}
+.hero-feedback-btn .fb-ico{font-size:1.05rem;line-height:1;}
+.fb-dot{position:absolute;top:-3px;right:-3px;width:10px;height:10px;border-radius:50%;background:#ff4d4f;box-shadow:0 0 0 2px #fff;}
 .wb-feedback-entry{margin-top:16px;padding:9px 20px;border:1px solid #2bb8a3;border-radius:999px;background:rgba(43,184,163,.08);color:#1d7a5b;font:inherit;font-size:.9rem;font-weight:700;cursor:pointer;transition:var(--transition);}
 .wb-feedback-entry:hover{background:#2bb8a3;color:#fff;}
 #feedbackModal{position:fixed;inset:0;z-index:100000;background:rgba(12,26,34,.62);align-items:center;justify-content:center;padding:20px;}
@@ -588,10 +589,16 @@
 .fb-foot{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 16px;background:#f7faf9;border-top:1px solid #e6eeeb;font:12px/1.5 -apple-system,'Microsoft YaHei',sans-serif;color:#6b7b77;}
 .fb-foot a{color:#1d7a5b;text-decoration:none;font-weight:700;white-space:nowrap;}
 .fb-foot a:hover{text-decoration:underline;}
+@media(max-width:1100px){
+  .hero-feedback-btn{padding:9px 13px;font-size:.84rem;}
+}
+@media(max-width:760px){
+  .hero-feedback-btn{position:static;transform:none;margin:0 auto;display:flex;width:max-content;}
+  .hero-feedback-btn:hover{transform:scale(1.04);}
+}
 @media(max-width:768px){
   #feedbackModal{padding:0;}
   .fb-dialog{width:100%;height:100%;border-radius:0;}
-  .nav-feedback-btn{padding:0 9px;font-size:.76rem;}
   .fb-foot{font-size:11px;padding:8px 12px;}
 }
 </style>
@@ -622,6 +629,7 @@
                 <text x="90" y="54" text-anchor="middle" font-size="7" fill="#a0673a">E</text>
             </svg>
         </div>
+        <button class="hero-feedback-btn" id="heroFeedbackBtn" title="填写使用反馈（约1分钟）"><span class="fb-ico">📝</span>使用反馈<span class="fb-dot" id="fbDot"></span></button>
         <div class="hero-content">
             <div class="hero-title-row">
                 <!-- 戴探险帽的小地球 IP -->
@@ -688,7 +696,6 @@
     <div class="nav-bar">
         <div class="nav-row nav-row-2">
             <div class="nav-tabs" id="navTabs"></div>
-            <button class="nav-feedback-btn" id="feedbackNavBtn" title="填写使用反馈（约1分钟）">📝 使用反馈<span class="fb-dot" id="fbDot"></span></button>
             <button class="nav-icon-btn" id="installBtn" title="安装应用到桌面/手机">📲</button>
         </div>
     </div>
@@ -1051,8 +1058,8 @@
     document.body.style.overflow = '';
   };
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') window.closeFeedback(); });
-  var nav = document.getElementById('feedbackNavBtn');
-  if (nav) nav.addEventListener('click', window.openFeedback);
+  var heroBtn = document.getElementById('heroFeedbackBtn');
+  if (heroBtn) heroBtn.addEventListener('click', window.openFeedback);
 })();
 </script>
 
