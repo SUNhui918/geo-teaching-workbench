@@ -573,9 +573,27 @@
 .wb-license-icon{width:40px;height:40px;margin:0 auto 10px;display:block;}
 .wb-license-statement{font-size:.94rem;line-height:1.95;color:var(--text);letter-spacing:.3px;}
 .wb-license-statement p{margin:0;}
-.wb-license-qr{margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:8px;}
-.wb-license-qr img{width:132px;height:132px;object-fit:contain;border-radius:10px;border:1px solid var(--border);background:#fff;padding:6px;}
-.wb-license-qr span{font-size:.82rem;color:var(--text-muted);}
+/* 使用反馈（问卷星内嵌弹窗） */
+.nav-feedback-btn{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 12px;border:1px solid #2bb8a3;border-radius:var(--radius-btn);background:rgba(43,184,163,.10);color:#1d7a5b;font:inherit;font-size:.82rem;font-weight:700;cursor:pointer;transition:var(--transition);position:relative;white-space:nowrap;}
+.nav-feedback-btn:hover{background:#2bb8a3;color:#fff;}
+.fb-dot{position:absolute;top:-4px;right:-4px;width:8px;height:8px;border-radius:50%;background:#ff4d4f;box-shadow:0 0 0 2px var(--bg-card);}
+.wb-feedback-entry{margin-top:16px;padding:9px 20px;border:1px solid #2bb8a3;border-radius:999px;background:rgba(43,184,163,.08);color:#1d7a5b;font:inherit;font-size:.9rem;font-weight:700;cursor:pointer;transition:var(--transition);}
+.wb-feedback-entry:hover{background:#2bb8a3;color:#fff;}
+#feedbackModal{position:fixed;inset:0;z-index:100000;background:rgba(12,26,34,.62);align-items:center;justify-content:center;padding:20px;}
+.fb-dialog{width:min(760px,100%);height:min(86vh,820px);display:flex;flex-direction:column;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.32);}
+.fb-head{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#f7faf9;border-bottom:1px solid #e6eeeb;font:600 15px/1.4 -apple-system,'Microsoft YaHei',sans-serif;color:#25403a;}
+.fb-close{width:32px;height:32px;border:0;border-radius:8px;background:transparent;color:#5b6b67;font-size:22px;line-height:1;cursor:pointer;}
+.fb-close:hover{background:#e6eeeb;}
+.fb-frame{flex:1;width:100%;border:0;background:#fff;}
+.fb-foot{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 16px;background:#f7faf9;border-top:1px solid #e6eeeb;font:12px/1.5 -apple-system,'Microsoft YaHei',sans-serif;color:#6b7b77;}
+.fb-foot a{color:#1d7a5b;text-decoration:none;font-weight:700;white-space:nowrap;}
+.fb-foot a:hover{text-decoration:underline;}
+@media(max-width:768px){
+  #feedbackModal{padding:0;}
+  .fb-dialog{width:100%;height:100%;border-radius:0;}
+  .nav-feedback-btn{padding:0 9px;font-size:.76rem;}
+  .fb-foot{font-size:11px;padding:8px 12px;}
+}
 </style>
 </head>
 <body>
@@ -670,6 +688,7 @@
     <div class="nav-bar">
         <div class="nav-row nav-row-2">
             <div class="nav-tabs" id="navTabs"></div>
+            <button class="nav-feedback-btn" id="feedbackNavBtn" title="填写使用反馈（约1分钟）">📝 使用反馈<span class="fb-dot" id="fbDot"></span></button>
             <button class="nav-icon-btn" id="installBtn" title="安装应用到桌面/手机">📲</button>
         </div>
     </div>
@@ -699,7 +718,7 @@
                     <p>免费开放交流分享，禁止二次打包、售卖、商用。</p>
                     <p>欢迎同行交流探讨。</p>
                 </div>
-                <!-- 问卷星二维码：待提供图片后在此插入 <div class="wb-license-qr">…</div> -->
+                <button class="wb-feedback-entry" onclick="openFeedback()">📝 填写使用反馈（约 1 分钟）</button>
             </div>
         </footer>
 
@@ -994,6 +1013,48 @@
     <button onclick="closeInstall()" style="width:100%;padding:11px;border:0;border-radius:12px;background:#2bb8a3;color:#fff;font-size:15px;cursor:pointer;">知道了</button>
   </div>
 </div>
+
+<!-- 使用反馈问卷（问卷星内嵌，手机可直接填写，无需扫码） -->
+<div id="feedbackModal" style="display:none;" onclick="if(event.target===this)closeFeedback()">
+  <div class="fb-dialog" role="dialog" aria-modal="true" aria-label="工作台使用反馈问卷">
+    <div class="fb-head">
+      <span>📝 工作台使用反馈 · 约 1 分钟</span>
+      <button class="fb-close" onclick="closeFeedback()" aria-label="关闭">×</button>
+    </div>
+    <iframe id="feedbackFrame" class="fb-frame" src="about:blank" title="地理教学工作台使用反馈问卷" allow="forms"></iframe>
+    <div class="fb-foot">
+      <span>问卷匿名，感谢同行交流</span>
+      <a href="https://v.wjx.cn/vm/O6M8MN8.aspx" target="_blank" rel="noopener">加载不出来？在新窗口填写 ↗</a>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var FB_URL = 'https://v.wjx.cn/vm/O6M8MN8.aspx';
+  var m = document.getElementById('feedbackModal');
+  var f = document.getElementById('feedbackFrame');
+  var dot = document.getElementById('fbDot');
+  var seen = false;
+  try { seen = localStorage.getItem('wb_fb_opened') === '1'; } catch(e) {}
+  if (dot && seen) dot.style.display = 'none';
+
+  window.openFeedback = function(){
+    if (!m || !f) return;
+    if (f.getAttribute('src') !== FB_URL) f.setAttribute('src', FB_URL);
+    m.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    if (dot) dot.style.display = 'none';
+    try { localStorage.setItem('wb_fb_opened', '1'); } catch(e) {}
+  };
+  window.closeFeedback = function(){
+    if (m) m.style.display = 'none';
+    document.body.style.overflow = '';
+  };
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') window.closeFeedback(); });
+  var nav = document.getElementById('feedbackNavBtn');
+  if (nav) nav.addEventListener('click', window.openFeedback);
+})();
+</script>
 
 <script>
   if ('serviceWorker' in navigator) {
