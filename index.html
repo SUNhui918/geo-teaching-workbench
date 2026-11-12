@@ -569,12 +569,13 @@
 .wb-update-more{flex:none;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:0.78rem;padding:4px 12px;border-radius:var(--radius-pill);cursor:pointer;transition:color .2s,border-color .2s;}
 .wb-update-more:hover{color:var(--accent);border-color:var(--accent);}
 .wb-new-badge{position:absolute;top:8px;right:8px;background:#ff4d4f;color:#fff;font-size:11px;font-weight:700;line-height:1;padding:3px 7px;border-radius:999px;z-index:6;box-shadow:0 1px 4px rgba(255,77,79,.45);}
-.wb-license-card{max-width:560px;margin:0 auto;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:22px 20px 16px;text-align:center;box-shadow:var(--shadow-card);}
-.wb-license-icon{width:44px;height:44px;margin:0 auto 8px;display:block;}
-.wb-license-main{font-size:1.05rem;font-weight:700;color:var(--text);letter-spacing:1px;}
-.wb-license-cc{display:inline-block;margin-top:10px;background:#e3f4e8;color:#1d7a5b;font-weight:700;font-size:.85rem;padding:4px 16px;border-radius:10px;letter-spacing:.5px;}
-.wb-license-author{margin-top:12px;color:var(--text-muted);font-size:.9rem;display:flex;align-items:center;gap:14px;justify-content:center;}
-.wb-license-author::before,.wb-license-author::after{content:"";height:1px;width:64px;background:var(--border);}
+.wb-license-card{max-width:560px;margin:0 auto;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:20px 22px 22px;text-align:center;box-shadow:var(--shadow-card);}
+.wb-license-icon{width:40px;height:40px;margin:0 auto 10px;display:block;}
+.wb-license-statement{font-size:.94rem;line-height:1.95;color:var(--text);letter-spacing:.3px;}
+.wb-license-statement p{margin:0;}
+.wb-license-qr{margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:8px;}
+.wb-license-qr img{width:132px;height:132px;object-fit:contain;border-radius:10px;border:1px solid var(--border);background:#fff;padding:6px;}
+.wb-license-qr span{font-size:.82rem;color:var(--text-muted);}
 </style>
 </head>
 <body>
@@ -693,8 +694,12 @@
                     <circle cx="24" cy="24" r="20" stroke="#2bb8a3" stroke-width="3.4"/>
                     <path d="M30.5 17.5 a9 9 0 1 0 0 13" stroke="#2bb8a3" stroke-width="3.4" stroke-linecap="round" fill="none"/>
                 </svg>
-                <div class="wb-license-main">教学免费使用 · 转载请注明出处 · 禁止商用</div>
-                <span class="wb-license-cc">CC BY-NC 4.0</span>
+                <div class="wb-license-statement">
+                    <p>本工作台为个人原创作品，内置HTML网页著作权归作者个人所有。</p>
+                    <p>免费开放交流分享，禁止二次打包、售卖、商用。</p>
+                    <p>欢迎同行交流探讨。</p>
+                </div>
+                <!-- 问卷星二维码：待提供图片后在此插入 <div class="wb-license-qr">…</div> -->
             </div>
         </footer>
 
