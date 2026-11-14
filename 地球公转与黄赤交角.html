@@ -334,8 +334,8 @@ function m2(){
   $('r2').innerHTML=`<dt>太阳直射点</dt><dd>${fmtLat(dec)}</dd><dt>直射点移动范围</dt><dd>${eps<0.05?'始终在赤道':fmtDM(eps)+'N ～ '+fmtDM(eps)+'S'}</dd>
    <dt>回归线 / 极圈</dt><dd>${fmtDM(eps)} / ${fmtDM(90-eps)}</dd>
    <dt>热带 / 温带 / 寒带面积</dt><dd>${(zf.hot*100).toFixed(1)}% / ${(zf.temp*100).toFixed(1)}% / ${(zf.cold*100).toFixed(1)}%</dd>
-   <dt>常州正午太阳高度</dt><dd>${Math.max(0,nhS).toFixed(1)}°（夏至）～ ${Math.max(0,nhW).toFixed(1)}°（冬至）</dd>
-   <dt>常州昼长范围</dt><dd>${dl(phi,-eps).toFixed(1)} ～ ${dl(phi,eps).toFixed(1)} 小时</dd>`;
+   <dt>长三角正午太阳高度</dt><dd>${Math.max(0,nhS).toFixed(1)}°（夏至）～ ${Math.max(0,nhW).toFixed(1)}°（冬至）</dd>
+   <dt>长三角昼长范围</dt><dd>${dl(phi,-eps).toFixed(1)} ～ ${dl(phi,eps).toFixed(1)} 小时</dd>`;
   const c=canvasCtx($('c2')),W=c.W,H=c.H,R=Math.min(W,H)*0.27,cam=makeCam(B.az,B.el,W/2,H*0.54,R);
   // 平面
   const disc=(Nrm,col,edge,rad)=>{const [a,b]=basisOf(Nrm);const pts=[];for(let i=0;i<=96;i++){const t=i/96*2*Math.PI;pts.push(add(mul(a,rad*Math.cos(t)),mul(b,rad*Math.sin(t))));}return {a,b,pts,col,edge,rad};};
@@ -458,7 +458,7 @@ function m3(){
   else{const cam=makeCam(-60,12,gb.W/2,gb.H*0.55,gb.H*0.36);const N=[0,Math.sin(e*D2R),Math.cos(e*D2R)];renderGlobe(gb,cam,gb.W/2,gb.H*0.55,gb.H*0.36,N,[0,1,0],{eps:e,zones:true,names:true});
     label(gb,10,14,`交角 ${e.toFixed(1)}° 时的五带（夏至日光照）`,'#cfe0ff',12.5,'left');}
   const gc=canvasCtx($('c3c'));
-  if(e!=null){const now=EPS0,rows=[['回归线',e,now,'°'],['极圈',90-e,90-now,'°'],['热带面积',zoneFrac(e).hot*100,zoneFrac(now).hot*100,'%'],['寒带面积',zoneFrac(e).cold*100,zoneFrac(now).cold*100,'%'],['温带面积',zoneFrac(e).temp*100,zoneFrac(now).temp*100,'%'],['常州正午太阳高度年较差',2*e,2*now,'°']];
+  if(e!=null){const now=EPS0,rows=[['回归线',e,now,'°'],['极圈',90-e,90-now,'°'],['热带面积',zoneFrac(e).hot*100,zoneFrac(now).hot*100,'%'],['寒带面积',zoneFrac(e).cold*100,zoneFrac(now).cold*100,'%'],['温带面积',zoneFrac(e).temp*100,zoneFrac(now).temp*100,'%'],['长三角正午太阳高度年较差',2*e,2*now,'°']];
     label(gc,10,14,'该时期 vs 现在','#cfe0ff',12.5,'left');
     if(C.rev)rows.forEach(([n,a,b,u],k)=>{const y=40+k*30;label(gc,10,y,n,'#e8eeff',12.5,'left',500);label(gc,gc.W-10,y,`${a.toFixed(1)}${u}（现在 ${b.toFixed(1)}${u}）`,Math.abs(a-b)<0.05?'#cfe0ff':a>b?'#ff9b5c':'#8fc3ff',12.5,'right');});
     else label(gc,gc.W/2,gc.H/2,'先在右侧完成推测，再点“揭晓”','#9fb0dd',13);}
@@ -478,8 +478,8 @@ $('p3go').onclick=()=>{C.rev=true;m3();};
 questions('q3',[
  {t:'约 30 亿年前交角约 20°，而且几乎不摆动（±0.1°）。推测当时的四季与现在相比？',opts:['四季差异更大','四季差异略小，且很稳定','没有四季'],ans:1,go:()=>{C.zoom='deep';C.ga=3;C.yr=null;C.rev=false;C.pred={};m3();},
   why:'交角约 20°，比现在小约 3°：回归线在 20°、极圈在 70°，热带、寒带略小，温带略大，<b>季节差异略弱</b>；而且交角几乎不变，由交角摆动带来的气候周期（今天的 4.1 万年周期）当时很弱。'},
- {t:'现在交角正在变小（每世纪约 0.013°）。几千年后，常州夏至日正午太阳高度和北极圈纬度会怎样？',opts:['正午太阳高度变大，北极圈纬度变小','正午太阳高度变小，北极圈纬度变大（向北移）','都不变'],ans:1,go:()=>{C.zoom='recent';C.yr=9800;C.ga=0;C.rev=false;C.pred={};m3();},
-  why:'交角变小 → 北回归线南移，常州离夏至直射点更远，夏至日正午太阳高度变小；极圈度数 = 90° − 交角，<b>北极圈向北移</b>（纬度数变大），北寒带变小。'},
+ {t:'现在交角正在变小（每世纪约 0.013°）。几千年后，长三角夏至日正午太阳高度和北极圈纬度会怎样？',opts:['正午太阳高度变大，北极圈纬度变小','正午太阳高度变小，北极圈纬度变大（向北移）','都不变'],ans:1,go:()=>{C.zoom='recent';C.yr=9800;C.ga=0;C.rev=false;C.pred={};m3();},
+  why:'交角变小 → 北回归线南移，长三角离夏至直射点更远，夏至日正午太阳高度变小；极圈度数 = 90° − 交角，<b>北极圈向北移</b>（纬度数变大），北寒带变小。'},
  {t:'对比“如果没有月球”：月球对地球气候有什么意义？',go:()=>{C.zoom='deep';C.nm=true;$('nm3').checked=true;m3();},
   why:'月球的引力使地轴进动加快，让地球避开与其他行星引力的共振，<b>交角只在很小范围内摆动</b>。没有月球，交角可能在几百万年到上亿年间混沌变化几十度，五带和四季会剧烈改变，不利于生命长期稳定演化。'},
  {t:'为什么时间轴最早的 10 多亿年是灰色“无可靠重建”？',why:'交角的长期计算依赖月地距离、地球自转速度等参数，越往前误差越大；还需要岩石中的沉积旋回记录来校正，而约 35 亿年前的地层极少保存。科学结论要区分“<b>有证据的</b>”和“<b>推测的</b>”。'}

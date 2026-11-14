@@ -351,13 +351,13 @@ const STAGES=[
  {t:'7月 · 北半球夏季',mode:'pressure',view:'2d',month:7,
   txt:'<p>7月大陆热，亚欧大陆形成<em>亚洲低压（印度低压）</em>，切断了<em>副热带高气压带</em>，副高只保留在海洋上：<em>夏威夷高压、亚速尔高压</em>。</p>',key:'7月：陆低海高，副热带高气压带被切断。'}
 ]},
-{name:'阶段五 · 季风环流与气候',qs:[QA('东亚季风和南亚季风的成因有什么不同？','东亚季风主要由海陆热力性质差异形成；南亚冬季风也由海陆热力差异形成，夏季风（西南季风）主要由气压带风带季节移动形成——东南信风北移越过赤道，向右偏转成西南风。'),QA('常州冬、夏季各盛行什么风？对气候有什么影响？','冬季盛行偏北风，寒冷干燥；夏季盛行东南季风，从海洋带来水汽，高温多雨。'),QA('为什么澳大利亚北部1月吹西北季风？','北半球的东北季风越过赤道进入南半球，受向左的地转偏向力影响，偏转为西北风。')],steps:[
+{name:'阶段五 · 季风环流与气候',qs:[QA('东亚季风和南亚季风的成因有什么不同？','东亚季风主要由海陆热力性质差异形成；南亚冬季风也由海陆热力差异形成，夏季风（西南季风）主要由气压带风带季节移动形成——东南信风北移越过赤道，向右偏转成西南风。'),QA('长三角冬、夏季各盛行什么风？对气候有什么影响？','冬季盛行偏北风，寒冷干燥；夏季盛行东南季风，从海洋带来水汽，高温多雨。'),QA('为什么澳大利亚北部1月吹西北季风？','北半球的东北季风越过赤道进入南半球，受向左的地转偏向力影响，偏转为西北风。')],steps:[
  {t:'东亚季风',mode:'monsoon',view:'2d',month:1,region:'ea',
   txt:'<p><em>冬季（1月）</em>：亚洲高压强大，风从陆地吹向海洋——我国盛行<em>西北季风</em>，寒冷干燥；南亚盛行<em>东北季风</em>。</p><p><em>夏季（7月）</em>：亚洲大陆形成低压，太平洋上的夏威夷高压加强，风从海洋吹向陆地——盛行<em>东南季风</em>，高温多雨。点「1月 / 7月」对比。</p>',key:'东亚季风：海陆热力性质差异是主因，冬季西北风、夏季东南风。'},
  {t:'南亚季风',mode:'monsoon',view:'2d',month:7,region:'sa',
   txt:'<p><em>冬季（1月）</em>：亚洲高压吹向印度洋，南亚盛行<em>东北季风</em>；它越过赤道后左偏，成为澳大利亚北部的<em>西北季风</em>。</p><p><em>夏季（7月）</em>：气压带风带北移，南半球的<em>东南信风越过赤道，受向右的地转偏向力偏转成西南季风</em>，再被印度低压吸引，带来丰沛降水。</p>',key:'南亚夏季风 = 气压带风带季节移动 + 海陆热力差异共同作用。'},
  {t:'季风气候的分布与特征',mode:'monsoon',view:'2d',month:7,region:'all',climate:true,
-  txt:'<p><em>温带季风气候</em>（我国华北、东北，朝韩，日本北部）：夏季高温多雨，冬季寒冷干燥。</p><p><em>亚热带季风气候</em>（我国秦岭—淮河以南等）：夏季高温多雨，冬季温和少雨。常州就在这里。</p><p><em>热带季风气候</em>（印度半岛、中南半岛）：全年高温，分旱、雨两季。</p>',key:'季风气候的共同点：雨热同期，降水集中在夏季。'}
+  txt:'<p><em>温带季风气候</em>（我国华北、东北，朝韩，日本北部）：夏季高温多雨，冬季寒冷干燥。</p><p><em>亚热带季风气候</em>（我国秦岭—淮河以南等）：夏季高温多雨，冬季温和少雨。长三角就在这里。</p><p><em>热带季风气候</em>（印度半岛、中南半岛）：全年高温，分旱、雨两季。</p>',key:'季风气候的共同点：雨热同期，降水集中在夏季。'}
 ]}
 ];
 const FLAT=[];STAGES.forEach((s,si)=>s.steps.forEach((p,pi)=>FLAT.push({si,pi,...p})));
@@ -566,7 +566,7 @@ function draw2D(S,s){
   if(s.climate)climateZones();
   if(L.labels)centerLabels(S,(la,lo)=>m2s(la,lo));
   if(S.mode==='monsoon'&&L.wind)monsoonArrows(S,(la,lo)=>m2s(la,lo));
-  if(S.mode==='monsoon'){const p=m2s(31.8,119.97);ctx.fillStyle='#ff4d6d';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,6,0,7);ctx.fill();ctx.stroke();label(p.x+30,p.y+16,'常州',{fs:13,color:'#ffd0d8',force:true})}
+  if(S.mode==='monsoon'){const p=m2s(31.8,119.97);ctx.fillStyle='#ff4d6d';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,6,0,7);ctx.fill();ctx.stroke();label(p.x+30,p.y+16,'长三角',{fs:13,color:'#ffd0d8',force:true})}
  }
  if(s.cases){const P=(la,lo)=>m2s(la,lo);if(s.herd)drawHerd(P);caseMarkers(S,P)}
  ctx.restore();

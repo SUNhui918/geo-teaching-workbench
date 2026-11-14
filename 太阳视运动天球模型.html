@@ -182,7 +182,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:6px 0 20px}
     </div>
 
     <div class="card">
-      <h3>🌐 观察者纬度 <span class="val" id="latVal">常州 31.8°N</span></h3>
+      <h3>🌐 观察者纬度 <span class="val" id="latVal">长三角 31.8°N</span></h3>
       <input type="range" id="lat" min="-90" max="90" step="0.1" value="31.8">
       <div class="ticks"><span>90°S</span><span>0°</span><span>90°N</span></div>
       <div class="chips" id="places"></div>
@@ -252,7 +252,7 @@ const MDAYS=[31,28,31,30,31,30,31,31,30,31,30,31];
 const TERMS={80:{n:'春分',c:'equinox'},173:{n:'夏至',c:'summer'},266:{n:'秋分',c:'equinox'},356:{n:'冬至',c:'winter'}};
 const COL={summer:'#ff7a59',equinox:'#5fd38a',winter:'#58a6ff'};
 const PLACES=[
-  ['北极点',90],['北极圈',POLAR],['哈尔滨',45.8],['北京',39.9],['常州',31.8],['北回归线',EPS],
+  ['北极点',90],['北极圈',POLAR],['哈尔滨',45.8],['北京',39.9],['长三角',31.8],['北回归线',EPS],
   ['赤道',0],['南回归线',-EPS],['南极圈',-POLAR],['南极点',-90]];
 
 /* ---------- 日期 ---------- */
@@ -745,12 +745,12 @@ cv.addEventListener('wheel',e=>{e.preventDefault();S.zoom=Math.max(0.6,Math.min(
 
 /* ---------- 探究任务 ---------- */
 const TASKS=[
- {q:'常州（31.8°N）春分日，太阳视运动轨迹所在的平面与地平面的夹角是多少？',
+ {q:'长三角（31.8°N）春分日，太阳视运动轨迹所在的平面与地平面的夹角是多少？',
   opts:['31.8°','58.2°','90°','23°26′'],ans:1,
   setup:{lat:31.8,doy:80,t:9,view:'side',show:{axis:true,equator:true,earth:true,terms:false}},
   look:'侧视图里：紫色的“地轴”与“观察者→北极星”是平行线；蓝色天赤道垂直于它们；橙色轨迹与天赤道重合。量一量两段弧线的度数。',
   why:'太阳视运动是地球自转的反映，太阳每天沿着与<b>天赤道平行</b>的圆周运动。天赤道是地球赤道面的无限延伸，垂直于地轴。地轴指向北极星，北极星高度 = 当地纬度 φ，所以轨迹平面与地平面的夹角 = <b>90° − φ = 58.2°</b>。纬度越高，轨迹越“躺平”。'},
- {q:'常州夏至日，太阳从哪个方向升起？',
+ {q:'长三角夏至日，太阳从哪个方向升起？',
   opts:['正东','东北','东南'],ans:1,
   setup:{lat:31.8,doy:173,t:4.2,view:'3d',play:true,show:{terms:false,axis:false}},
   look:'看地平圈上的红色“日出点”落在“东”的哪一侧，再打开“二分二至轨迹对比”比较三条轨迹。',
@@ -770,11 +770,11 @@ const TASKS=[
   setup:{lat:90,doy:173,t:6,view:'top',play:true,show:{axis:false}},
   look:'先用俯视图看太阳转动方向（顺时针还是逆时针），再切到侧视图看轨迹和地平面的关系。',
   why:'北极点的地轴垂直于地平面，天赤道与地平圈重合，太阳轨迹<b>平行于地平圈</b>，高度一整天约等于直射点纬度 23°26′——极昼。从天顶向下看，太阳<b>顺时针</b>转动（南极点逆时针）。'},
- {q:'一年中，常州正午人影最长出现在哪一天？',
+ {q:'一年中，长三角正午人影最长出现在哪一天？',
   opts:['夏至日','春分日','冬至日'],ans:2,
   setup:{lat:31.8,doy:356,t:12,view:'3d',show:{shadow:true,terms:true,angle:true}},
   look:'在四个节气之间切换（或点“一年变化”），观察正午太阳高度角和地面上黑色人影的长短与朝向。',
-  why:'常州在北回归线以北，正午太阳在正南，影子朝<b>正北</b>。正午太阳高度 H = 90° − |φ − δ|，冬至日直射点离常州最远，H 最小（34.8°），影子最长；夏至日 H 最大（81.6°），影子最短。'}
+  why:'长三角在北回归线以北，正午太阳在正南，影子朝<b>正北</b>。正午太阳高度 H = 90° − |φ − δ|，冬至日直射点离长三角最远，H 最小（34.8°），影子最长；夏至日 H 最大（81.6°），影子最短。'}
 ];
 function buildTasks(){
   const box=document.getElementById('tasks');

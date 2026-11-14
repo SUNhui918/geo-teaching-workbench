@@ -303,7 +303,7 @@ function drag(cv,st,cb){let d=null;cv.addEventListener('pointerdown',e=>{cv.setP
 /* ============ ① 自转特征 ============ */
 const SID=23+56/60+4.09/3600,VEQ=2*Math.PI*6378.137/SID;
 const A={T:4,view:'side',az:20,el:20,lat:31.8,playing:false,speed:3,hide:false,sd:{t:0,run:false,ex:true,end:0}};
-const PL1=[['北极点',90],['60°N',60],['北京',39.9],['常州',31.8],['赤道',0],['30°S',-30],['60°S',-60]];
+const PL1=[['北极点',90],['60°N',60],['北京',39.9],['长三角',31.8],['赤道',0],['30°S',-30],['60°S',-60]];
 (function(){const b=$('l1c');PL1.forEach(([n,v])=>{const e=document.createElement('button');e.className='chip';e.textContent=n;e.dataset.v=v;e.onclick=()=>{A.lat=v;m1();};b.appendChild(e);});})();
 $('l1').oninput=e=>{A.lat=+e.target.value;m1();};$('p1').onclick=()=>{A.playing=!A.playing;m1();};$('sp1').onchange=e=>A.speed=+e.target.value;$('r1').onclick=()=>{A.T=4;m1();};
 $('h1').onclick=()=>{A.hide=!A.hide;m1();};document.querySelectorAll('#v1 [data-v]').forEach(b=>b.onclick=()=>{A.view=b.dataset.v;m1();});drag($('c1'),A,m1);
@@ -350,7 +350,7 @@ function m1sd(){const c=canvasCtx($('c1b')),W=c.W,H=c.H;const S=A.sd;const cx=W*
 $('sd1').onclick=()=>{A.sd.t=0;A.sd.end=360+(360/365.2564)*(A.sd.ex?15:1);A.sd.run=true;};$('sdx').onchange=e=>{A.sd.ex=e.target.checked;m1sd();};
 questions('q1',[
  {t:'分别从北极上空、南极上空看，地球自转是什么方向？',opts:['都是逆时针','北逆南顺','北顺南逆'],ans:1,go:()=>{A.view='north';A.playing=true;m1();},why:'地球<b>自西向东</b>自转：从北极上空看为<b>逆时针</b>，从南极上空看为<b>顺时针</b>。'},
- {t:'常州与赤道上的人，谁的自转角速度大？谁的线速度大？',opts:['角速度相同，赤道线速度大','都是赤道大','都相同'],ans:0,go:()=>{A.lat=31.8;m1();},why:'除极点外，各地<b>角速度都约为 15°/小时</b>；线速度 ≈ 1670 × cos 纬度（千米/小时），<b>由赤道向两极递减</b>。常州约 1420 千米/小时，60° 约为赤道的一半，极点为 0。'},
+ {t:'长三角与赤道上的人，谁的自转角速度大？谁的线速度大？',opts:['角速度相同，赤道线速度大','都是赤道大','都相同'],ans:0,go:()=>{A.lat=31.8;m1();},why:'除极点外，各地<b>角速度都约为 15°/小时</b>；线速度 ≈ 1670 × cos 纬度（千米/小时），<b>由赤道向两极递减</b>。长三角约 1420 千米/小时，60° 约为赤道的一半，极点为 0。'},
  {t:'地球自转的真正周期是多少？为什么和昼夜交替的周期不一样？',why:'以遥远恒星为参照，自转 360° 用时 <b>23 时 56 分 4 秒（恒星日）</b>，是真正周期。地球同时在公转，每天约前进 1°，要再转约 1°（约 4 分钟）才能再次对着太阳，所以昼夜交替周期是 <b>24 小时（太阳日）</b>。'}
 ]);
 
@@ -372,10 +372,10 @@ function m2(){
   $('rd2').className='read'+(B.hide?' hid':'');
   $('rd2').innerHTML=`<dt>太阳直射点</dt><dd>${fmtLat(dl)}，${fmtLon(ls)}</dd><dt>12 时经线</dt><dd>${fmtLon(ls)}</dd><dt>0 时经线</dt><dd>${fmtLon(ls+180)}</dd>
     <dt>晨线与赤道交点</dt><dd>${fmtLon(ls-90)}（6 时）</dd><dt>昏线与赤道交点</dt><dd>${fmtLon(ls+90)}（18 时）</dd>
-    <dt>晨昏线与地轴夹角</dt><dd>${fmtDM(Math.abs(dl))}</dd><dt>极昼</dt><dd>${polar}</dd><dt>常州地方时</dt><dd>${fmtT(lt(119.97))}</dd>`;
+    <dt>晨昏线与地轴夹角</dt><dd>${fmtDM(Math.abs(dl))}</dd><dt>极昼</dt><dd>${polar}</dd><dt>长三角地方时</dt><dd>${fmtT(lt(119.97))}</dd>`;
   const c=canvasCtx($('c2')),W=c.W,H=c.H,R=Math.min(W*0.3,H*0.36);
   const G=drawGlobe(c,{dl,ls,view:B.view,az:B.az,el:B.el,R,cx:W*0.45,cy:H*0.53,lonStep:30,lonLabels:B.ot?'time':'lon',special:B.os,rays:true,sub:true,keys:B.ok,termLabels:true,rot:true,
-    labelLat:B.view==='side'?-6:0,marks:[{lat:31.8,lon:119.97,t:'常州',col:'#ff9bd2'}]});
+    labelLat:B.view==='side'?-6:0,marks:[{lat:31.8,lon:119.97,t:'长三角',col:'#ff9bd2'}]});
   if(B.oa&&B.view==='side'){const cx=W*0.45,cy=H*0.53;const a1=-Math.PI/2,a2=-Math.PI/2+dl*D2R;c.beginPath();c.arc(cx,cy,R*0.35,Math.min(a1,a2),Math.max(a1,a2));c.strokeStyle='#ffd84d';c.lineWidth=2.6;c.stroke();
     label(c,cx+R*0.42*Math.cos((a1+a2)/2)+(dl>=0?14:-14),cy+R*0.42*Math.sin((a1+a2)/2),`α = ${fmtDM(Math.abs(dl))}`,'#ffe9a0',13.5);}
   label(c,14,20,`${mo}月${dd}日${tn?' '+tn[1]:''} · 北京时间 ${fmtT(B.bj)}`,'#fff',16,'left');
@@ -385,7 +385,7 @@ questions('q2',[
  {t:'播放：晨昏线向哪个方向移动？每小时移动多少度？',go:()=>{B.view='north';B.playing=true;m2();},why:'地球自西向东自转，晨昏线相对地面<b>自东向西</b>移动，每小时 <b>15°</b>。'},
  {t:'怎样判断晨线和昏线？',why:'<b>自转法</b>：顺着自转方向，由夜进入昼为晨线，由昼进入夜为昏线。<b>时间法</b>：与赤道交点地方时为 6 时的是晨线，18 时的是昏线。<b>方位法</b>：夜半球东侧为晨线，西侧为昏线。'},
  {t:'勾选“晨昏线与地轴夹角”，切换二分二至：夹角和直射点纬度有什么关系？',go:()=>{B.view='side';B.oa=true;$('o2a').checked=true;B.doy=173;m2();},why:'晨昏线所在平面与太阳光线<b>垂直</b>，所以晨昏线与地轴的夹角 = 太阳直射点的纬度（0°～23°26′）。二分日为 0°，晨昏线过两极；二至日为 23°26′，晨昏线与极圈相切。'},
- {t:'侧视图中，常州所在纬线有一段在昼半球、一段在夜半球。怎样由此算出日出时间？',why:'昼长 = 昼弧度数 ÷ 15°；日出时间 = 12 − 昼长/2，日落时间 = 12 + 昼长/2。'}
+ {t:'侧视图中，长三角所在纬线有一段在昼半球、一段在夜半球。怎样由此算出日出时间？',why:'昼长 = 昼弧度数 ÷ 15°；日出时间 = 12 − 昼长/2，日落时间 = 12 + 昼长/2。'}
 ]);
 /* 读图挑战 */
 const QZ={};
@@ -410,7 +410,7 @@ function drawQuiz(){const s=QZ.s;if(!s)return;const c=canvasCtx($('c2')),W=c.W,H
   label(c,14,20,'光照图判读挑战（阴影表示黑夜）','#fff',16,'left');label(c,14,44,'大圆 = 赤道，虚线 = 回归线、极圈','#cfe0ff',12.5,'left',500);}
 
 /* ============ ③ 地方时与区时 ============ */
-const CITIES=[['北京',116.4,39.9],['常州',119.97,31.8],['乌鲁木齐',87.6,43.8],['东京',139.7,35.7],['悉尼',151.2,-33.9],['惠灵顿',174.8,-41.3],['莫斯科',37.6,55.8],['开罗',31.2,30.0],['伦敦',-0.1,51.5],['纽约',-74.0,40.7],['洛杉矶',-118.2,34.1],['檀香山',-157.9,21.3]];
+const CITIES=[['北京',116.4,39.9],['长三角',119.97,31.8],['乌鲁木齐',87.6,43.8],['东京',139.7,35.7],['悉尼',151.2,-33.9],['惠灵顿',174.8,-41.3],['莫斯科',37.6,55.8],['开罗',31.2,30.0],['伦敦',-0.1,51.5],['纽约',-74.0,40.7],['洛杉矶',-118.2,34.1],['檀香山',-157.9,21.3]];
 const C={bj:14,playing:false,a:0,b:9,m:0,mode:'local',hide:false};
 const BASE_DATE=[6,22];// 北京日期基准：6月22日（滑块 0~24 为当日，24~48 为次日）
 ['ca','cb'].forEach((id,k)=>{const s=$(id);CITIES.forEach(([n,lon],i)=>{const o=document.createElement('option');o.value=i;o.textContent=`${n}（${fmtLon(lon)}）`;s.appendChild(o);});s.value=k?C.b:C.a;s.onchange=e=>{C[k?'b':'a']=+e.target.value;m3();};});
@@ -439,7 +439,7 @@ function m3(){
   c.beginPath();c.moveTo(X(l0),y0);c.lineTo(X(l0),y1);c.strokeStyle='#d7b4ff';c.lineWidth=2;c.setLineDash([6,4]);c.stroke();c.setLineDash([]);label(c,X(l0),y0+28,'0 时','#d7b4ff',12);c.lineWidth=1;
   // 城市
   CITIES.forEach(([n,lon,lat],i)=>{const sel=i===C.a||i===C.b;const x=X(lon),y=Y(lat);c.beginPath();c.arc(x,y,sel?6:4,0,7);c.fillStyle=i===C.a?'#ffb02e':i===C.b?'#5fd38a':'#fff';c.fill();
-    const lt=U+lon/15;const dy=n==='常州'?22:0;label(c,x+7,y-9+dy,n,sel?(i===C.a?'#ffd27a':'#9ff0bb'):'#e8eeff',12,'left');label(c,x+7,y+8+dy,fmtT(lt),'#cfe0ff',11,'left',400);});
+    const lt=U+lon/15;const dy=n==='长三角'?22:0;label(c,x+7,y-9+dy,n,sel?(i===C.a?'#ffd27a':'#9ff0bb'):'#e8eeff',12,'left');label(c,x+7,y+8+dy,fmtT(lt),'#cfe0ff',11,'left',400);});
   label(c,14,16,`各地地方时（北京时间 ${bjDate} ${fmtT(C.bj)}，阴影为夜）`,'#fff',14,'left');
   // 表格（下方）
   const g=canvasCtx($('c3b')),gw=g.W;const cols=['城市','经度','地方时','所在时区','区时','日期'];const cw=gw/6;
@@ -469,7 +469,7 @@ function m3(){
   $('cs').innerHTML=html;$('cs').classList.toggle('hidden-ans',C.hide);
 }
 questions('q3',[
- {t:'北京（116.4°E）与常州（119.97°E）谁的地方时早？相差多少？',go:()=>{C.a=0;C.b=1;C.mode='local';$('ca').value=0;$('cb').value=1;m3();},why:'常州在北京以东约 3.6°，地方时<b>早约 14 分钟</b>（3.6 × 4 分）。北京时间不是北京的地方时，而是 <b>120°E 的地方时</b>（东八区区时），常州几乎就在 120°E 上。'},
+ {t:'北京（116.4°E）与长三角（119.97°E）谁的地方时早？相差多少？',go:()=>{C.a=0;C.b=1;C.mode='local';$('ca').value=0;$('cb').value=1;m3();},why:'长三角在北京以东约 3.6°，地方时<b>早约 14 分钟</b>（3.6 × 4 分）。北京时间不是北京的地方时，而是 <b>120°E 的地方时</b>（东八区区时），长三角几乎就在 120°E 上。'},
  {t:'北京时间 14 时，伦敦（中时区）的区时是几点？',go:()=>{C.bj=14;C.a=0;C.b=8;C.mode='zone';$('ca').value=0;$('cb').value=8;m3();},why:'东八区与中时区相差 8 个时区，伦敦在西：14 − 8 = <b>6 时</b>（同一天）。'},
  {t:'一架飞机北京时间 6 月 22 日 14 时从北京起飞，飞行 13 小时到达纽约，降落时纽约区时是？',go:()=>{C.bj=14;C.a=0;C.b=9;C.m=13;$('cm').value=13;C.mode='zone';$('ca').value=0;$('cb').value=9;m3();},
   why:'纽约（74°W）：74 ÷ 15 = 4 余 14°，进一 → 西五区，与东八区相差 13 小时。降落时间 = 14 + 13（行程）− 13（时差）= <b>6 月 22 日 14 时</b>。公式：到达时间 = 起飞时间 ± 时差 + 行程时间，“东加西减”。'}

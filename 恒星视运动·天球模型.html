@@ -103,7 +103,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:6px 0 20px}
   <!-- 左：控制 -->
   <div class="col" id="leftCol">
     <div class="card">
-      <h3>🌐 观测纬度 <span class="val" id="latVal">常州 31.8°N</span></h3>
+      <h3>🌐 观测纬度 <span class="val" id="latVal">长三角 31.8°N</span></h3>
       <input type="range" id="lat" min="-90" max="90" step="0.1" value="31.8">
       <div class="ticks"><span>90°S</span><span>0°</span><span>90°N</span></div>
       <div class="chips" id="places"></div>
@@ -242,7 +242,7 @@ const CONST_LABEL=[['北斗七星','UMa4',0,-18],['小熊座','UMi5',0,16],['仙
 const FAINT=[];(function(){let s=20261106;const rnd=()=>((s=(s*1664525+1013904223)>>>0)/4294967296);
   for(let i=0;i<420;i++){FAINT.push({ra:rnd()*24,dec:Math.asin(rnd()*2-1)*R2D,mag:3.6+rnd()*1.8});}})();
 
-const PLACES=[['北极点',90],['哈尔滨',45.8],['北京',39.9],['常州',31.8],['30°N',30],['北回归线',23+26/60],['赤道',0],['南回归线',-(23+26/60)],['南极点',-90]];
+const PLACES=[['北极点',90],['哈尔滨',45.8],['北京',39.9],['长三角',31.8],['30°N',30],['北回归线',23+26/60],['赤道',0],['南回归线',-(23+26/60)],['南极点',-90]];
 
 /* ---------------- 几何 ---------------- */
 const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],mul=(a,k)=>[a[0]*k,a[1]*k,a[2]*k];
@@ -587,10 +587,10 @@ const TASKS=[
   setup:{lat:30,lst:2,view:'zenith',frame:'ground',show:{circum:true,trails:false,selPath:false,decRing:false}},
   look:'打开了恒显圈（绿）和恒隐圈（红）。拖动纬度从赤道到极点，看红色恒隐圈怎样变化，并留意右侧“可见星空占全天”。',
   why:'恒隐圈以内的星永远看不到。纬度越高，恒隐圈越大：赤纬界线为 ∓(90° − φ)。可见比例 = (1 + cos φ)/2：赤道 100%，30°N 约 93%，极点只有 50%。所以<b>赤道看到的星空最大</b>。'},
- {q:'在常州拍一张“星轨”长曝光照片，为什么北极星几乎不动，其他星都绕着它画圆弧？',opts:['北极星离地球最近','北极星几乎就在天轴的延长线（北天极）上','北极星亮度最大'],ans:1,
+ {q:'在长三角拍一张“星轨”长曝光照片，为什么北极星几乎不动，其他星都绕着它画圆弧？',opts:['北极星离地球最近','北极星几乎就在天轴的延长线（北天极）上','北极星亮度最大'],ans:1,
   setup:{lat:31.8,lst:3,view:'zenith',frame:'ground',sel:SID.UMi0,az:180,el:15,show:{trails:true,selPath:true,circum:false,decRing:false,names:true}},
   look:'镜头朝北。看星轨的圆心在哪里，再看北极星的黄色周日圈有多大。然后切到“从北天极俯视”。',
-  why:'恒星的周日运动是地球自转的反映，所有星都绕<b>天轴</b>转。北极星赤纬 +89.3°，离北天极不到 1°，周日圈极小，看起来几乎不动；它的地平高度 ≈ 当地纬度（常州约 31.8°）。'},
+  why:'恒星的周日运动是地球自转的反映，所有星都绕<b>天轴</b>转。北极星赤纬 +89.3°，离北天极不到 1°，周日圈极小，看起来几乎不动；它的地平高度 ≈ 当地纬度（长三角约 31.8°）。'},
  {q:'恒星“东升西落”，真正的原因是什么？',opts:['恒星绕地球自东向西转','地球绕地轴自西向东自转','天球自己在转，地球不动'],ans:1,
   setup:{lat:31.8,lst:4,view:'pole',frame:'space',play:true,sel:SID.Ori1,show:{trails:false,selPath:true,circum:false,decRing:false}},
   look:'现在是“太空视角”：恒星都不动，地球带着观察者和地平面转。看参宿四什么时候从地平面“下方”跑到“上方”。再切回“地面视角”对比。',

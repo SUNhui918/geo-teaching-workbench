@@ -153,7 +153,7 @@ function dirName(E,N){if(Math.hypot(E,N)<1e-6)return '—';let A=(Math.atan2(E,N
 const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],mul=(a,k)=>[a[0]*k,a[1]*k,a[2]*k],dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
 const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],norm=a=>{const l=Math.hypot(...a)||1;return [a[0]/l,a[1]/l,a[2]/l];};
 function slerp(a,b,t){const w=Math.acos(Math.max(-1,Math.min(1,dot(a,b))));if(w<1e-6)return a;const s=Math.sin(w);return add(mul(a,Math.sin((1-t)*w)/s),mul(b,Math.sin(t*w)/s));}
-const PLACES=[['北极点',90],['北极圈',POLAR],['北京',39.9],['常州',31.8],['北回归线',EPS],['赤道',0],['南回归线',-EPS],['南极圈',-POLAR]];
+const PLACES=[['北极点',90],['北极圈',POLAR],['北京',39.9],['长三角',31.8],['北回归线',EPS],['赤道',0],['南回归线',-EPS],['南极圈',-POLAR]];
 const placeName=v=>{for(const [n,p] of PLACES)if(Math.abs(p-v)<0.06)return n;return '';};
 const $=id=>document.getElementById(id);
 const FONT='"PingFang SC","Microsoft YaHei",sans-serif';
@@ -260,10 +260,10 @@ function m1(){
 }
 questions('m1qs',[
  {t:'播放一天：竿影的长短怎样变化？什么时刻影子最短？',why:'日出、日落时太阳高度最小，影子最长；随太阳升高影子变短，<b>地方时 12 时太阳高度最大、影子最短</b>，之后又变长。影长与太阳高度“此长彼消”：影长 = 竿高 ÷ tan h。'},
- {t:'常州冬至日：日出时影子朝向哪里？正午呢？日落呢？',opts:['西北 → 正北 → 东北','西南 → 正北 → 东南','西北 → 正南 → 东北'],ans:0,go:()=>{A.lat=31.8;A.doy=356;A.t=7.2;A.view='3d';A.az=155;A.el=28;A.playing=true;m1();},
+ {t:'长三角冬至日：日出时影子朝向哪里？正午呢？日落呢？',opts:['西北 → 正北 → 东北','西南 → 正北 → 东南','西北 → 正南 → 东北'],ans:0,go:()=>{A.lat=31.8;A.doy=356;A.t=7.2;A.view='3d';A.az=155;A.el=28;A.playing=true;m1();},
   why:'影子总是<b>背向太阳</b>。冬至日太阳东南升、西南落，所以影子早上朝<b>西北</b>，正午太阳在正南、影子朝<b>正北</b>，傍晚朝<b>东北</b>。切到“俯视”看日影图：影子顶端在一天中划过一条弧线。'},
- {t:'在哪里、哪一天的正午，竿子会“没有影子”？',opts:['常州的夏至日','北回归线上的夏至日','赤道上的冬至日'],ans:1,go:()=>{A.lat=EPS;A.doy=173;A.t=12;A.view='3d';A.playing=false;m1();},
-  why:'只有<b>太阳直射</b>时（太阳高度 90°）竿影长度为 0。太阳直射点只在南北回归线之间移动：夏至日直射北回归线，所以北回归线上夏至日正午“立竿无影”。常州在北回归线以北，全年都有影子。'}
+ {t:'在哪里、哪一天的正午，竿子会“没有影子”？',opts:['长三角的夏至日','北回归线上的夏至日','赤道上的冬至日'],ans:1,go:()=>{A.lat=EPS;A.doy=173;A.t=12;A.view='3d';A.playing=false;m1();},
+  why:'只有<b>太阳直射</b>时（太阳高度 90°）竿影长度为 0。太阳直射点只在南北回归线之间移动：夏至日直射北回归线，所以北回归线上夏至日正午“立竿无影”。长三角在北回归线以北，全年都有影子。'}
 ]);
 
 /* ================= 模块二：正午太阳高度规律 ================= */
@@ -335,17 +335,17 @@ function m2panel(){const P=$('m2panel');
     <div class="card"><h3>📍 选择要比较的地点（可多选）</h3><div class="chips" id="m2lats"></div></div>
     <div class="card"><h3>📅 日期 <span class="val" id="m2sdate"></span></h3><input type="range" id="m2sR" min="1" max="365">
       <div class="row"><button class="play" id="m2play">▶</button><span style="font-size:14px;color:var(--muted)">从 1 月 1 日播放一年，边走边画</span></div></div>
-    <div class="tip">任务：先预测常州一年中正午太阳高度何时最大、何时最小，再播放验证。注意曲线是一边播放一边“画”出来的。</div>
+    <div class="tip">任务：先预测长三角一年中正午太阳高度何时最大、何时最小，再播放验证。注意曲线是一边播放一边“画”出来的。</div>
     <div id="m2qs"></div>`;
-    const LL=[['北极圈',POLAR],['常州',31.8],['北回归线',EPS],['10°N',10],['赤道',0],['南回归线',-EPS],['40°S',-40]];
+    const LL=[['北极圈',POLAR],['长三角',31.8],['北回归线',EPS],['10°N',10],['赤道',0],['南回归线',-EPS],['40°S',-40]];
     const box=$('m2lats');box.innerHTML='';LL.forEach(([n,v])=>{const b=document.createElement('button');b.className='chip';b.textContent=n;b.onclick=()=>{const i=B.season.lats.findIndex(x=>Math.abs(x-v)<0.01);if(i>=0)B.season.lats.splice(i,1);else B.season.lats.push(v);m2();};b.dataset.v=v;box.appendChild(b);});
     $('m2sR').oninput=e=>{B.season.doy=+e.target.value;B.season.playing=false;m2();};
     $('m2play').onclick=()=>{const S=B.season;S.playing=!S.playing;if(S.playing&&S.doy>=365)S.doy=1;m2();};
     questions('m2qs',[
-      {t:'常州一年中正午太阳高度何时最大？何时最小？',opts:['春分最大，秋分最小','夏至最大，冬至最小','冬至最大，夏至最小'],ans:1,why:'常州在北回归线以北，直射点<b>越靠近常州</b>，正午太阳高度越大：夏至（直射北回归线）最大 81°38′，冬至最小 34°46′，相差 46°52′（两倍黄赤交角）。'},
+      {t:'长三角一年中正午太阳高度何时最大？何时最小？',opts:['春分最大，秋分最小','夏至最大，冬至最小','冬至最大，夏至最小'],ans:1,why:'长三角在北回归线以北，直射点<b>越靠近长三角</b>，正午太阳高度越大：夏至（直射北回归线）最大 81°38′，冬至最小 34°46′，相差 46°52′（两倍黄赤交角）。'},
       {t:'赤道上，一年中正午太阳高度达到最大值几次？',opts:['1 次','2 次','4 次'],ans:1,why:'赤道在春分、秋分两次被太阳直射（90°），二至日最小（66°34′）。南北回归线之间的地方，每年都有<b>两次</b>太阳直射；回归线上一年一次。'},
       {t:'40°S 的正午太阳高度何时最大？',opts:['6 月 22 日前后','12 月 22 日前后','3 月 21 日前后'],ans:1,why:'南回归线以南地区与北半球相反：<b>冬至日（12 月 22 日）最大，夏至日最小</b>。'},
-      {t:'比较常州和北回归线：一年中正午太阳高度的变化幅度一样吗？',why:'回归线及其以外（极昼极夜区除外）的地方，正午太阳高度年变化幅度都等于 <b>46°52′</b>，因为直射点在两回归线之间移动了 46°52′。回归线之间的地方变化幅度较小。'}]);
+      {t:'比较长三角和北回归线：一年中正午太阳高度的变化幅度一样吗？',why:'回归线及其以外（极昼极夜区除外）的地方，正午太阳高度年变化幅度都等于 <b>46°52′</b>，因为直射点在两回归线之间移动了 46°52′。回归线之间的地方变化幅度较小。'}]);
   }
 }
 function rec(v){const k=B.doy;(B.rec[k]=B.rec[k]||[]);if(!B.rec[k].some(p=>Math.abs(p[0]-v)<0.5))B.rec[k].push([v,noonH(v,decl(k))]);}
@@ -373,7 +373,7 @@ function m2(){
     $('m2sdate').textContent=`${m}月${d}日`;$('m2sR').value=S.doy;$('m2play').textContent=S.playing?'❚❚':'▶';
     $('m2lats').querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',S.lats.some(x=>Math.abs(x-+b.dataset.v)<0.01)));
     const cols=['#ffb02e','#ff7a59','#5fd38a','#4da3ff','#d7b4ff','#8fd0ff','#ff9bd2'];const colOf=v=>cols[[POLAR,31.8,EPS,10,0,-EPS,-40].findIndex(x=>Math.abs(x-v)<0.01)]||'#fff';
-    const nm=v=>({[POLAR]:'北极圈',31.8:'常州',[EPS]:'北回归线',10:'10°N',0:'赤道',[-EPS]:'南回归线','-40':'40°S'})[v]||fmtLat(v);
+    const nm=v=>({[POLAR]:'北极圈',31.8:'长三角',[EPS]:'北回归线',10:'10°N',0:'赤道',[-EPS]:'南回归线','-40':'40°S'})[v]||fmtLat(v);
     earthDiagram(ca,dl,S.lats.map(v=>({lat:v,col:colOf(v),name:nm(v)})),{angles:S.lats.length<=2});
     label(ca,12,18,`${m}月${d}日 正午的地球`,'#cfe0ff',14,'left');
     const W=cb.W,Hc=cb.H,x0=46,y0=24,w=W-64,h=Hc-60;const X=dd=>x0+(dd-1)/364*w,Y=v=>y0+h*(1-v/90);
@@ -402,7 +402,7 @@ function m3panel(){const P=$('m3panel');
     <div class="card"><h3>📅 日期</h3><div class="chips" id="bD"></div></div>
     <div class="tip">任务：要让北楼<b>一楼</b>全年正午都有阳光，楼间距至少多少米？先拖动楼间距试一试，再看原理。</div>
     <div class="card"><dl class="read" id="bRead"></dl></div><div id="m3qs"></div>`;
-    const plu=chips('bPl',[['海口',20.0],['广州',23.1],['常州',31.8],['北京',39.9],['哈尔滨',45.8]],v=>{C.lat=v;m3();},v=>Math.abs(v-C.lat)<0.06);C._u=[plu];
+    const plu=chips('bPl',[['海口',20.0],['广州',23.1],['长三角',31.8],['北京',39.9],['哈尔滨',45.8]],v=>{C.lat=v;m3();},v=>Math.abs(v-C.lat)<0.06);C._u=[plu];
     C._u.push(chips('bD',TERMS.map(([d,n,c])=>[n,d,c]),v=>{C.doy=v;m3();},v=>v===C.doy));
     $('bLatR').oninput=e=>{C.lat=+e.target.value;m3();};$('bFR').oninput=e=>{C.floors=+e.target.value;m3();};$('bLR').oninput=e=>{C.L=+e.target.value;m3();};
     questions('m3qs',[{t:'楼间距应当按哪一天的正午太阳高度来设计？',opts:['夏至日','冬至日','春分日'],ans:1,why:'我国大部分地区在北回归线以北，<b>冬至日正午太阳高度最小、影子最长</b>。只要冬至日正午北楼一楼有阳光，其他日子都有。最小楼间距 <b>L = h ÷ tan H</b>（H 取冬至日正午太阳高度 = 90° − (纬度 + 23°26′)）。纬度越高，所需楼间距越大。'}]);}
@@ -415,7 +415,7 @@ function m3panel(){const P=$('m3panel');
     C._u=[chips('sD',TERMS.map(([d,n,c])=>[n,d,c]),v=>{C.sdoy=v;m3();},v=>v===C.sdoy)];
     $('sLatR').oninput=e=>{C.lat=+e.target.value;m3();};$('sDR').oninput=e=>{C.sdoy=+e.target.value;m3();};$('sAR').oninput=e=>{C.alpha=+e.target.value;m3();};
     questions('m3qs',[{t:'正午时，倾角 α 与太阳高度 H 满足什么关系时效果最好？',opts:['α = H','α + H = 90°','α = 2H'],ans:1,why:'阳光与集热板<b>垂直</b>时接收最多。集热板与地面夹角 α，阳光与地面夹角 H，三角形内角关系得 <b>α + H = 90°</b>。'},
-      {t:'在常州，一年中倾角应该怎样调整？',why:'夏至 H 最大（81°38′），α 最小约 8°22′；冬至 H 最小（34°46′），α 最大约 55°14′。<b>夏半年调小、冬半年调大</b>，从夏至到冬至倾角逐渐增大。'}]);}
+      {t:'在长三角，一年中倾角应该怎样调整？',why:'夏至 H 最大（81°38′），α 最小约 8°22′；冬至 H 最小（34°46′），α 最大约 55°14′。<b>夏半年调小、冬半年调大</b>，从夏至到冬至倾角逐渐增大。'}]);}
   if(C.part==='lat'){P.innerHTML=`
     <div class="card"><h3>📅 测量日期</h3><div class="chips" id="lD"></div></div>
     <div class="card"><h3>📏 正午 1 米竿影长 <span class="val" id="lS"></span></h3><input type="range" id="lSR" min="0" max="3" step="0.01">
@@ -490,7 +490,7 @@ function m3(){const c=canvasCtx($('c3')),W=c.W,Hc=c.H;C._u&&C._u.forEach(f=>f())
     // 影朝北 → 太阳在南 → 观测点在直射点以北： φ = δ + (90−H)
     const phi=C.sdir==='N'?dl+(90-H):dl-(90-H);
     const ok=Math.abs(phi)<=90;const tn=TERMS.find(x=>x[0]===C.ldoy)[1];
-    $('lCalc').innerHTML=C.showCalc?`① H = arctan(竿高 ÷ 影长) = arctan(1 ÷ ${s.toFixed(2)}) ≈ <b>${H.toFixed(1)}°</b><br>② ${tn}日直射点 ${fmtLat(dl)}；影子朝${C.sdir==='N'?'北 → 太阳在南 → 本地在直射点<b>以北</b>':'南 → 太阳在北 → 本地在直射点<b>以南</b>'}<br>③ 纬度差 = 90° − H = ${(90-H).toFixed(1)}°<br>④ 本地纬度 ≈ <span class="big">${ok?fmtLat(phi):'不合理'}</span>${ok&&Math.abs(phi-31.8)<1.2?'（接近常州！）':''}`:'先自己算一算，再点按钮核对。';
+    $('lCalc').innerHTML=C.showCalc?`① H = arctan(竿高 ÷ 影长) = arctan(1 ÷ ${s.toFixed(2)}) ≈ <b>${H.toFixed(1)}°</b><br>② ${tn}日直射点 ${fmtLat(dl)}；影子朝${C.sdir==='N'?'北 → 太阳在南 → 本地在直射点<b>以北</b>':'南 → 太阳在北 → 本地在直射点<b>以南</b>'}<br>③ 纬度差 = 90° − H = ${(90-H).toFixed(1)}°<br>④ 本地纬度 ≈ <span class="big">${ok?fmtLat(phi):'不合理'}</span>${ok&&Math.abs(phi-31.8)<1.2?'（接近长三角！）':''}`:'先自己算一算，再点按钮核对。';
     const gy=Hc*0.72,sc=Math.min(Hc*0.45,W*0.22),px=W*0.5;c.fillStyle='#1f3b22';c.fillRect(0,gy,W,Hc-gy);
     const dir=C.sdir==='N'?1:-1;// 右=北
     c.fillStyle='rgba(0,0,0,.6)';c.fillRect(Math.min(px,px+dir*s*sc),gy-3,Math.abs(s*sc),6);
@@ -503,7 +503,7 @@ function m3(){const c=canvasCtx($('c3')),W=c.W,Hc=c.H;C._u&&C._u.forEach(f=>f())
 
 /* ================= 模块四：赤道式日晷 ================= */
 const Dg={lat:31.8,doy:173,t:9,az:28,el:38,playing:false,elMin:2};
-const m4PlaceUpd=chips('m4places',[['哈尔滨',45.8],['北京',39.9],['常州',31.8],['广州',23.1]],v=>{Dg.lat=v;m4();},v=>Math.abs(v-Dg.lat)<0.06);
+const m4PlaceUpd=chips('m4places',[['哈尔滨',45.8],['北京',39.9],['长三角',31.8],['广州',23.1]],v=>{Dg.lat=v;m4();},v=>Math.abs(v-Dg.lat)<0.06);
 const m4TermUpd=chips('m4terms',TERMS.map(([d,n,c])=>[n,d,c]),v=>{Dg.doy=v;m4();},v=>v===Dg.doy);
 $('m4latR').oninput=e=>{Dg.lat=+e.target.value;m4();};$('m4doyR').oninput=e=>{Dg.doy=+e.target.value;m4();};$('m4tR').oninput=e=>{Dg.t=+e.target.value;Dg.playing=false;m4();};
 $('m4play').onclick=()=>{Dg.playing=!Dg.playing;m4();};$('m4reset').onclick=()=>{Dg.az=28;Dg.el=38;m4();};

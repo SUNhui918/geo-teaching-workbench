@@ -124,7 +124,7 @@ footer{text-align:center;color:var(--muted);font-size:13px;padding:6px 0 20px}
       <div class="card"><h3>📅 日期 <span class="val" id="d3v"></span></h3><input type="range" id="d3" min="1" max="365">
         <div class="row"><button class="play" id="p3">▶</button><span style="font-size:13.5px;color:var(--muted)">从 1 月 1 日播放一年，边走边画</span></div>
         <div id="trend3" style="margin-top:8px;font-size:14px;line-height:1.6"></div></div>
-      <div class="tip">任务：先预测常州一年中哪天昼最长、哪天最短，再播放验证。注意看：昼长“变长”和“昼长夜短”是一回事吗？</div>
+      <div class="tip">任务：先预测长三角一年中哪天昼最长、哪天最短，再播放验证。注意看：昼长“变长”和“昼长夜短”是一回事吗？</div>
       <div id="q3"></div>
       <div class="card"><h3>🕵 读图识地 <button class="chip" id="mysNew" style="margin-left:auto">换一题</button></h3>
         <div style="font-size:13.5px;color:var(--muted)">下图为某地一年中昼夜长短变化（阴影表示黑夜），判断它最可能位于：</div>
@@ -151,7 +151,7 @@ function fmtT(h){h=((h%24)+24)%24;let H=Math.floor(h+1e-9),M=Math.round((h-H)*60
 function fmtDur(h){let H=Math.floor(h+1e-9),M=Math.round((h-H)*60);if(M===60){H++;M=0;}return M?`${H} 时 ${M} 分`:`${H} 小时`;}
 const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],mul=(a,k)=>[a[0]*k,a[1]*k,a[2]*k],dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
 const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],norm=a=>{const l=Math.hypot(...a)||1;return [a[0]/l,a[1]/l,a[2]/l];};
-const PLACES=[['北极点',90],['北极圈',POLAR],['60°N',60],['北京',39.9],['常州',31.8],['北回归线',EPS],['赤道',0],['南回归线',-EPS],['40°S',-40],['南极圈',-POLAR],['南极点',-90]];
+const PLACES=[['北极点',90],['北极圈',POLAR],['60°N',60],['北京',39.9],['长三角',31.8],['北回归线',EPS],['赤道',0],['南回归线',-EPS],['40°S',-40],['南极圈',-POLAR],['南极点',-90]];
 const placeName=v=>{for(const [n,p] of PLACES)if(Math.abs(p-v)<0.06)return n;return '';};
 const $=id=>document.getElementById(id);const FONT='"PingFang SC","Microsoft YaHei",sans-serif';
 const today=(()=>{const t=new Date();return mdDoy(t.getMonth()+1,Math.min(t.getDate(),MD[t.getMonth()]));})();
@@ -271,7 +271,7 @@ function m1(){
     const a=-1.6,b=-2.6;const ex=ccw?cx+r*Math.cos(b):cx+r*Math.cos(a),ey=ccw?cy+r*Math.sin(b):cy+r*Math.sin(a);const ex0=ccw?cx+r*Math.cos(b+0.1):cx+r*Math.cos(a-0.1),ey0=ccw?cy+r*Math.sin(b+0.1):cy+r*Math.sin(a-0.1);arrowHead(c,ex0,ey0,ex,ey,'#ff9b5c',10);label(c,cx-r*0.6,cy-r*1.02,'自转方向','#ffb38a',12.5);}
 }
 questions('q1',[
- {t:'侧视图中，常州所在纬线上，黄色昼弧和紫色夜弧哪个长？今天常州是昼长还是夜长？',why:'昼弧所跨的度数 ÷ 15° 就是昼长小时数。<b>昼弧比夜弧长 → 昼长夜短</b>；昼弧比夜弧短 → 昼短夜长。11 月太阳直射南半球，常州所在纬线昼弧短于夜弧，昼短夜长。'},
+ {t:'侧视图中，长三角所在纬线上，黄色昼弧和紫色夜弧哪个长？今天长三角是昼长还是夜长？',why:'昼弧所跨的度数 ÷ 15° 就是昼长小时数。<b>昼弧比夜弧长 → 昼长夜短</b>；昼弧比夜弧短 → 昼短夜长。11 月太阳直射南半球，长三角所在纬线昼弧短于夜弧，昼短夜长。'},
  {t:'夏至日，切到“北极上空俯视”：北极圈以内的纬线有没有夜弧？',opts:['有一小段','没有，整圈都是昼弧','整圈都是夜弧'],ans:1,go:()=>{A.doy=173;A.view='north';A.lat=75;m1();},
   why:'夏至日直射北回归线，晨昏线与北极圈相切。北极圈及其以北的纬线全部落在昼半球，<b>出现极昼</b>；南极圈及其以南出现极夜。极昼（极夜）的起始纬度 = 90° − 直射点纬度。'},
  {t:'春分日，各条纬线的昼弧与夜弧有什么关系？',go:()=>{A.doy=80;A.view='side';A.multi=true;document.querySelector('[data-s=multi]').checked=true;m1();},why:'直射赤道时，晨昏线经过两极、与所有纬线垂直，把每条纬线都<b>平分</b>：全球昼夜平分，各地昼长 12 小时。'},
@@ -321,7 +321,7 @@ questions('q2',[
 ]);
 
 /* ================= 模块③ ================= */
-const LL=[['北极圈',POLAR],['60°N',60],['常州',31.8],['北回归线',EPS],['赤道',0],['40°S',-40],['南极圈',-POLAR]];
+const LL=[['北极圈',POLAR],['60°N',60],['长三角',31.8],['北回归线',EPS],['赤道',0],['40°S',-40],['南极圈',-POLAR]];
 const LCOL=['#9fe0ff','#d7b4ff','#ffb02e','#ff7a59','#5fd38a','#4da3ff','#ff9bd2'];
 const C={doy:1,lats:[31.8,0],playing:false};
 const lcol=v=>LCOL[LL.findIndex(x=>Math.abs(x[1]-v)<0.01)]||'#fff';const lname=v=>(LL.find(x=>Math.abs(x[1]-v)<0.01)||[fmtLat(v)])[0];
@@ -350,12 +350,12 @@ function m3(){
   cb.beginPath();cb.moveTo(X(C.doy),y0);cb.lineTo(X(C.doy),y0+h);cb.strokeStyle='rgba(255,255,255,.5)';cb.stroke();
 }
 questions('q3',[
- {t:'常州一年中哪天昼最长？哪天最短？',opts:['夏至最长，冬至最短','春分最长，秋分最短','冬至最长，夏至最短'],ans:0,go:()=>{C.lats=[31.8];C.doy=1;C.playing=true;m3();},
-  why:'常州在北半球。直射点越往北，北半球昼越长：<b>夏至日昼最长、冬至日昼最短</b>，春分、秋分昼夜平分。'},
- {t:'夏至到秋分这段时间，常州的昼夜状况是？',opts:['昼渐短，但仍昼长夜短','昼渐长，昼长夜短','昼渐短，昼短夜长'],ans:0,go:()=>{C.lats=[31.8];C.doy=230;C.playing=false;m3();},
+ {t:'长三角一年中哪天昼最长？哪天最短？',opts:['夏至最长，冬至最短','春分最长，秋分最短','冬至最长，夏至最短'],ans:0,go:()=>{C.lats=[31.8];C.doy=1;C.playing=true;m3();},
+  why:'长三角在北半球。直射点越往北，北半球昼越长：<b>夏至日昼最长、冬至日昼最短</b>，春分、秋分昼夜平分。'},
+ {t:'夏至到秋分这段时间，长三角的昼夜状况是？',opts:['昼渐短，但仍昼长夜短','昼渐长，昼长夜短','昼渐短，昼短夜长'],ans:0,go:()=>{C.lats=[31.8];C.doy=230;C.playing=false;m3();},
   why:'这一段要分开两件事看：<b>“长短状况”看直射点在哪个半球</b>——直射北半球，所以仍是昼长夜短；<b>“变化趋势”看直射点移动方向</b>——直射点向南移，北半球昼渐短。'},
- {t:'同时选中赤道、常州、60°N、北极圈：纬度越高，昼长的年变化幅度怎样？',why:'赤道全年 12 小时不变；纬度越高，曲线起伏越大；到北极圈变化范围达到 0～24 小时，一年中有一天极昼、一天极夜；再往北，极昼、极夜的天数越来越多。'},
- {t:'选中常州和 40°S：两条曲线有什么关系？',why:'南北半球<b>相反</b>：北半球昼最长时（夏至），南半球昼最短。同一天两半球纬度相同的地方，昼长之和为 24 小时。'}
+ {t:'同时选中赤道、长三角、60°N、北极圈：纬度越高，昼长的年变化幅度怎样？',why:'赤道全年 12 小时不变；纬度越高，曲线起伏越大；到北极圈变化范围达到 0～24 小时，一年中有一天极昼、一天极夜；再往北，极昼、极夜的天数越来越多。'},
+ {t:'选中长三角和 40°S：两条曲线有什么关系？',why:'南北半球<b>相反</b>：北半球昼最长时（夏至），南半球昼最短。同一天两半球纬度相同的地方，昼长之和为 24 小时。'}
 ]);
 /* 读图识地 */
 const MY=[['赤道',0],['北回归线',EPS],['40°N',40],['60°N',60],['北极圈',POLAR],['80°N',80],['南回归线',-EPS],['40°S',-40],['南极圈',-POLAR],['80°S',-80]];
