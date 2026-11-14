@@ -101,8 +101,8 @@ main{min-width:0}
 </div>
 
 <script>
-/* ---------- 加载 three.js：依次尝试多个 CDN（只需要主库，旋转控制为本页自带） ---------- */
-const CDNS=['https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js',
+/* ---------- 加载 three.js：先用工作台自带的本地文件（断网可用），失败再依次尝试多个 CDN（只需要主库，旋转控制为本页自带） ---------- */
+const CDNS=['three/three.min.js',  'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js',
  'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
  'https://unpkg.com/three@0.128.0/build/three.min.js',
  'https://cdn.bootcdn.net/ajax/libs/three.js/r128/three.min.js',
