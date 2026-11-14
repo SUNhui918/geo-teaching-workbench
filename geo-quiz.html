@@ -150,6 +150,7 @@ h1 span{color:var(--yel)}
     <label>每题限时
       <select id="timeSel"><option value="10">10 秒</option><option value="15">15 秒</option><option value="20" selected>20 秒</option><option value="30">30 秒</option><option value="45">45 秒</option><option value="60">60 秒</option></select>
     </label>
+    <label><input type="checkbox" id="autoRev" checked> 选后自动公布答案</label>
     <label><input type="checkbox" id="sound" checked> 音效</label>
     <span class="vol">音量 <input type="range" id="vol" min="0" max="100" value="70"></span>
     <label id="voiceWrap" class="hide"><input type="checkbox" id="voice"> 语音鼓励</label>
@@ -856,14 +857,14 @@ function renderCats(){
 
 /* ================= 出题 ================= */
 let cur=null,curCat=null,revealed=false,clueShown=1,shuffled=null,chosen=-1,lastClue=1;
-let resultKind='',streak=0;
+let resultKind='',streak=0,autoPend=false;
 function startCat(k){if(!pool(k).length){msg('提示','该关卡没有题目');return}curCat=k;SFX.go();nextQ()}
 function nextQ(){
   const p=pool(curCat),u=usedIn(curCat);
   const avail=p.filter(q=>!u.includes(qid(q)));
   if(!avail.length){showOver();return}
   cur=avail[Math.floor(Math.random()*avail.length)];S.used[cur.cat].push(qid(cur));
-  revealed=false;clueShown=1;chosen=-1;resultKind='';
+  revealed=false;clueShown=1;chosen=-1;resultKind='';autoPend=false;
   $('home').classList.add('hide');$('play').classList.remove('hide');
   const c=CATS[cur.cat],mc0=CATS[curCat];
   $('qTag').textContent=(curCat==='mix'?'🎲 大乱斗 · ':'')+c.ic+' '+c.name+(cur.t?' · '+cur.t:'');$('qTag').style.background=c.tag;
@@ -882,7 +883,7 @@ function nextQ(){
     if(!cur.fixed)shuffled.sort(()=>Math.random()-.5);
     $('qOpts').classList.toggle('two',!!cur.fixed);
     $('qOpts').innerHTML=shuffled.map((o,i)=>`<button class="opt" data-i="${i}"><i>${'ABCD'[i]}</i>${esc(o.t)}</button>`).join('');
-    $('qOpts').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(revealed)return;chosen=+b.dataset.i;SFX.pop();$('qOpts').querySelectorAll('.opt').forEach(x=>x.classList.toggle('sel',x===b))});
+    $('qOpts').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(revealed||autoPend)return;chosen=+b.dataset.i;SFX.pop();$('qOpts').querySelectorAll('.opt').forEach(x=>x.classList.toggle('sel',x===b));if($('autoRev').checked){autoPend=true;const q=cur;setTimeout(()=>{if(cur===q&&!revealed)reveal()},700)}});
   }
   resetTimer();renderBoards();window.scrollTo(0,0);
 }
@@ -1045,9 +1046,9 @@ function onAward(i,pts,old){
 function onNobody(){if(resultKind===''){streak=0;updStreak()}resultKind='bad';SFX.bad();const t=fxPick(NOBODY);fxToast('🤔 '+t,'bad');fxTears();$('award').innerHTML='<span>😅 '+t+'</span>';speak(t)}
 function goNext(){SFX.next();nextQ()}
 function initSfxUI(){
-  try{const p=JSON.parse(localStorage.getItem('gq_sfx')||'{}');if(p.vol!=null)$('vol').value=p.vol;if(p.voice)$('voice').checked=true;if(p.sound===false)$('sound').checked=false}catch(e){}
-  const save=()=>{try{localStorage.setItem('gq_sfx',JSON.stringify({vol:+$('vol').value,voice:$('voice').checked,sound:$('sound').checked}))}catch(e){}};
-  ['vol','voice','sound'].forEach(id=>$(id).addEventListener('change',save));
+  try{const p=JSON.parse(localStorage.getItem('gq_sfx')||'{}');if(p.vol!=null)$('vol').value=p.vol;if(p.voice)$('voice').checked=true;if(p.sound===false)$('sound').checked=false;if(p.auto===false)$('autoRev').checked=false}catch(e){}
+  const save=()=>{try{localStorage.setItem('gq_sfx',JSON.stringify({vol:+$('vol').value,voice:$('voice').checked,sound:$('sound').checked,auto:$('autoRev').checked}))}catch(e){}};
+  ['vol','voice','sound','autoRev'].forEach(id=>$(id).addEventListener('change',save));
   $('sound').addEventListener('change',()=>{if(!$('sound').checked){try{speechSynthesis.cancel()}catch(e){}}});
   $('sfxTest').onclick=()=>{SFX.good(1);setTimeout(()=>SFX.bad(),1300)};
   document.addEventListener('pointerdown',()=>SFX.unlock());
