@@ -278,6 +278,31 @@
         }
         .nav-tab.active .nav-count { background: rgba(255,255,255,.3); }
 
+        .nav-tab { font-size: 0.85rem; padding: 6px 14px; }
+        .sub-tabs { display:flex; gap:6px; flex-wrap:wrap; padding:8px 4px 10px; }
+        .sub-tab { padding:3px 11px; border-radius:999px; font-size:.78rem; cursor:pointer; user-select:none;
+            color:var(--text-muted); background:var(--bg-card); border:1px solid var(--border); transition:var(--transition); }
+        .sub-tab:hover { color:var(--text); }
+        .sub-tab.active { color:var(--accent); border-color:var(--accent); background:var(--accent-glow); font-weight:700; }
+        .sub-tab small { opacity:.7; margin-left:3px; }
+
+
+        /* ===== 使用说明弹窗 ===== */
+        .guide-mask { position:fixed; inset:0; background:rgba(15,25,35,.55); z-index:9999; display:none; align-items:center; justify-content:center; padding:16px; }
+        .guide-mask.show { display:flex; }
+        .guide-box { background:var(--bg-card); color:var(--text); border-radius:20px; max-width:560px; width:100%; max-height:92vh; overflow:auto; padding:24px 24px 18px; box-shadow:0 20px 60px rgba(0,0,0,.35); }
+        .guide-box h2 { margin:0 0 4px; font-size:1.25rem; color:var(--accent); }
+        .guide-box .g-sub { margin:0 0 14px; font-size:.85rem; color:var(--text-muted); }
+        .g-row { display:flex; gap:12px; align-items:flex-start; padding:11px 12px; border-radius:14px; border:1px solid var(--border); margin-bottom:9px; background:var(--bg); }
+        .g-row .g-ic { font-size:1.6rem; line-height:1; flex-shrink:0; }
+        .g-row b { display:block; font-size:.98rem; margin-bottom:2px; }
+        .g-row span { font-size:.84rem; color:var(--text-muted); line-height:1.55; }
+        .g-row em { font-style:normal; color:var(--accent); font-weight:700; }
+        .g-tips { font-size:.82rem; color:var(--text-muted); line-height:1.7; margin:10px 2px 14px; }
+        .g-foot { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+        .g-foot label { font-size:.82rem; color:var(--text-muted); cursor:pointer; }
+        .g-ok { border:0; cursor:pointer; padding:9px 26px; border-radius:999px; font-size:.95rem; font-weight:700; color:#fff; background:linear-gradient(135deg,var(--accent),#25a991); font-family:inherit; }
+
         .nav-search-wrap { position: relative; flex-shrink: 0; }
         .nav-search-input {
             width: 180px;
@@ -696,7 +721,27 @@
     <div class="nav-bar">
         <div class="nav-row nav-row-2">
             <div class="nav-tabs" id="navTabs"></div>
+            <button class="nav-icon-btn" id="helpBtn" title="使用说明" onclick="openGuide()" style="font-size:.8rem;width:auto;padding:0 10px;">❓ 使用说明</button>
             <button class="nav-icon-btn" id="installBtn" title="安装应用到桌面/手机">📲</button>
+        </div>
+        <div class="sub-tabs" id="subTabs" style="display:none;"></div>
+    </div>
+
+    <!-- 使用说明弹窗 -->
+    <div class="guide-mask" id="guideMask" onclick="if(event.target===this)closeGuide()">
+        <div class="guide-box" role="dialog" aria-label="使用说明">
+            <h2>👋 欢迎使用地理智能化教学工作台</h2>
+            <p class="g-sub">先看一眼，30 秒就会用。顶部有 5 个入口：</p>
+            <div class="g-row"><div class="g-ic">🎓</div><div><b>要上某一节课 → 交互课件</b><span>按教材册、章、节排列，<em>整节课</em>可直接投屏，自带问题链和随堂练习。</span></div></div>
+            <div class="g-row"><div class="g-ic">🧰</div><div><b>要一个演示 → 教学工具</b><span>天文、地质、天气、水、人口等<em>单个演示和模拟实验</em>，上课随手打开。里面可按主题筛选。</span></div></div>
+            <div class="g-row"><div class="g-ic">🗺️</div><div><b>要查地图或数据 → 地图与数据库</b><span>教学地图集、地图与地理空间、专业数据库，<em>备课查资料</em>用。</span></div></div>
+            <div class="g-row"><div class="g-ic">🎮</div><div><b>想活跃课堂 → 课堂游戏</b><span>地理快问快答，学生分组抢答，有音效和计分。</span></div></div>
+            <div class="g-row"><div class="g-ic">🌐</div><div><b>想不起在哪 → 全部 / 搜索</b><span>「全部」把所有内容摊开；右上角搜索框输入关键词（如“土壤”“热力”）直接找。</span></div></div>
+            <div class="g-tips">💡 点卡片会在新标签页打开；打开后左下角有「返回工作台」和「全屏」按钮，投屏时点全屏。<br>💡 带红色「新」字的是最近上线的内容。<br>💡 想再看这页说明，点右上角「❓ 使用说明」。</div>
+            <div class="g-foot">
+                <label><input type="checkbox" id="guideNoMore"> 以后不再自动弹出</label>
+                <button class="g-ok" onclick="closeGuide()">知道了，开始使用</button>
+            </div>
         </div>
     </div>
 
@@ -898,24 +943,49 @@
             }
         ];
 
-        let activeCategory = 'all';
+        // 顶层 5 个入口（按用途）→ 下面是原有的主题分类（作为小筛选）
+        const entrances = [
+            { id: 'courseware', name: '交互课件', icon: '🎓', cats: ['courseware'] },
+            { id: 'tools', name: '教学工具', icon: '🧰', cats: ['astronomy', 'geology', 'weather', 'water', 'population'] },
+            { id: 'maps', name: '地图与数据库', icon: '🗺️', cats: ['mapset', 'maps', 'database'] },
+            { id: 'game', name: '课堂游戏', icon: '🎮', cats: ['game'] }
+        ];
+        function catSites(id) { const c = categories.find(x => x.id === id); return c ? c.sites.length : 0; }
+
+        let activeEntrance = 'all';
+        let activeCategory = 'all'; // 当前小筛选（分类 id 或 all）
 
         // Render categories
         // 全局卡序号
         let globalCardIdx = 0;
         const _cardIdxMap = new WeakMap();
 
-        // Render nav tabs（彩色手绘图标 + 药丸圆角）
         function renderCategories() {
             const container = document.getElementById('navTabs');
             let total = 0;
             categories.forEach(c => total += c.sites.length);
-
-            let html = `<div class="nav-tab active" onclick="selectCategory('all')" data-cat="all"><span class="tab-icon">🌐</span>全部 <span class="nav-count">${total}</span></div>`;
-            categories.forEach(c => {
-                html += `<div class="nav-tab" onclick="selectCategory('${c.id}')" data-cat="${c.id}"><span class="tab-icon">${c.icon}</span>${c.name} <span class="nav-count">${c.sites.length}</span></div>`;
+            let html = '';
+            entrances.forEach(e => {
+                const n = e.cats.reduce((a, id) => a + catSites(id), 0);
+                html += `<div class="nav-tab" onclick="selectEntrance('${e.id}')" data-ent="${e.id}"><span class="tab-icon">${e.icon}</span>${e.name} <span class="nav-count">${n}</span></div>`;
             });
+            html += `<div class="nav-tab" onclick="selectEntrance('all')" data-ent="all"><span class="tab-icon">🌐</span>全部 <span class="nav-count">${total}</span></div>`;
             container.innerHTML = html;
+            updateNavState();
+        }
+
+        function updateNavState() {
+            document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.toggle('active', btn.dataset.ent === activeEntrance));
+            const sub = document.getElementById('subTabs');
+            const ent = entrances.find(e => e.id === activeEntrance);
+            if (ent && ent.cats.length > 1) {
+                let h = `<span class="sub-tab ${activeCategory === 'all' ? 'active' : ''}" onclick="selectCategory('all')">全部</span>`;
+                ent.cats.forEach(id => {
+                    const c = categories.find(x => x.id === id);
+                    h += `<span class="sub-tab ${activeCategory === id ? 'active' : ''}" onclick="selectCategory('${id}')">${c.icon} ${c.name}<small>${c.sites.length}</small></span>`;
+                });
+                sub.innerHTML = h; sub.style.display = 'flex';
+            } else { sub.innerHTML = ''; sub.style.display = 'none'; }
         }
 
         // Render content（可爱卡片：莫兰迪胶囊 + 标题 + 描述 + 右上角主题图标 + 大数字水印）
@@ -927,7 +997,11 @@
             globalCardIdx = 0;
 
             categories.forEach(cat => {
-                if (catFilter !== 'all' && catFilter !== cat.id) return;
+                if (filterText === '') {
+                    const ent = entrances.find(e => e.id === activeEntrance);
+                    if (ent && !ent.cats.includes(cat.id)) return;
+                }
+                if (filterText === '' && catFilter !== 'all' && catFilter !== cat.id) return;
 
                 const filteredSites = cat.sites.filter(s => {
                     if (!filterText) return true;
@@ -991,14 +1065,19 @@
             noResults.classList.toggle('show', !hasResults);
         }
 
-        // Select category
+        // 选入口
+        function selectEntrance(entId) {
+            activeEntrance = entId;
+            activeCategory = 'all';
+            updateNavState();
+            renderContent(document.getElementById('navSearch').value.trim(), 'all');
+        }
+
+        // 选小筛选
         function selectCategory(catId) {
             activeCategory = catId;
-            document.querySelectorAll('.nav-tab').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.cat === catId);
-            });
-            const searchText = document.getElementById('navSearch').value.trim();
-            renderContent(searchText, catId);
+            updateNavState();
+            renderContent(document.getElementById('navSearch').value.trim(), catId);
         }
 
         // Search
@@ -1006,6 +1085,15 @@
             const searchText = document.getElementById('navSearch').value.trim();
             renderContent(searchText, activeCategory);
         }
+
+        // ===== 使用说明弹窗 =====
+        function openGuide() { document.getElementById('guideMask').classList.add('show'); }
+        function closeGuide() {
+            document.getElementById('guideMask').classList.remove('show');
+            try { if (document.getElementById('guideNoMore').checked) localStorage.setItem('wb_guide_seen', '1'); } catch (e) {}
+        }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeGuide(); });
+        (function () { let seen = false; try { seen = localStorage.getItem('wb_guide_seen') === '1'; } catch (e) {} if (!seen) openGuide(); })();
 
         // Init
         renderCategories();
