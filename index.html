@@ -576,7 +576,8 @@
         }
         ::-webkit-scrollbar-thumb:hover { background: rgba(78, 205, 196, 0.4); }
 
-    </style>
+            .card-rel{margin-top:6px;font-size:12px;line-height:1.5;color:var(--muted,#7a8b99);border-top:1px dashed rgba(120,160,160,.35);padding-top:5px}
+</style>
     <script>
         (function () {
             var t = null;
@@ -801,6 +802,7 @@
         <!-- 版权水印 -->
     </div>
 
+    <script src="lib/relations.js"></script>
     <script>
         // Sync toggle button label with saved theme
         (function () {
@@ -1181,6 +1183,18 @@
                     html += `<div class="card-badge" data-kind="${kind}">${badge}</div>`;
                     html += `<div class="card-title">${site.title}</div>`;
                     html += `<div class="card-desc">${site.desc}</div>`;
+                    // 关联标签（总开关在 lib/relations.js 的 enabled）
+                    if (window.GEO_RELATIONS && window.GEO_RELATIONS.enabled) {
+                        let relTxt = '';
+                        if (cat.id === 'courseware') {
+                            const ts = window.GEO_RELATIONS.toolsFor(site.title).map(x => x.t);
+                            if (ts.length) relTxt = '🧰 配套工具：' + ts.join('、');
+                        } else {
+                            const cs = window.GEO_RELATIONS.usedBy(site.title);
+                            if (cs.length) relTxt = '🎓 可配合课件：' + cs.join('、');
+                        }
+                        if (relTxt) html += `<div class="card-rel">${relTxt}</div>`;
+                    }
                     html += `<div class="card-mini-icon">${site.icon || cat.icon}</div>`;
                     html += `<div class="card-watermark">${String(globalCardIdx).padStart(2, '0')}</div>`;
                     html += `</a>`;
