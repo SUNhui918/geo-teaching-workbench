@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>土壤 · 质地、剖面与养护</title>
+<style>
+:root{--bg:#0d1630;--card:#172656;--card2:#1d2f68;--line:#2c4185;--text:#e8eeff;--muted:#9fb0dd;--accent:#ffb02e;--blue:#4da3ff;--green:#5fd38a;--red:#ff6b6b;--soil:#c58a4a}
+*{box-sizing:border-box}
+html,body{margin:0;background:radial-gradient(1200px 700px at 30% -10%,#1d2f6b 0%,var(--bg) 60%);color:var(--text);font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;min-height:100vh}
+button,select,input{font-family:inherit}
+header{padding:12px 20px 4px;display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+header h1{margin:0;font-size:27px;letter-spacing:2px} header h1 span{color:var(--accent)}
+header p{margin:0;color:var(--muted);font-size:15px}
+.tabs{display:flex;gap:6px;padding:6px 18px 0;flex-wrap:wrap}
+.tab{background:var(--card);border:1px solid var(--line);color:var(--muted);border-radius:12px 12px 0 0;padding:9px 16px;cursor:pointer;font-size:15px;text-align:left}
+.tab b{display:block;color:var(--text);font-size:16px}
+.tab.on{background:var(--card2);border-color:var(--accent);border-bottom-color:transparent}
+.tab.on b{color:var(--accent)}
+.mod{display:none;padding:10px 18px 18px}.mod.on{display:block}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px;align-items:start}
+.stage{background:linear-gradient(180deg,#0a1129,#0e1838);border:1px solid var(--line);border-radius:16px;position:relative;overflow:hidden}
+.stage canvas{display:block;width:100%;touch-action:none}
+.cvbig{height:clamp(440px,calc(100vh - 300px),740px)}
+.btn{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:7px 12px;font-size:14.5px;cursor:pointer}
+.btn:hover{border-color:var(--blue)} .btn.on{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+.btn.acc{background:var(--accent);border-color:var(--accent);color:#1a1300;font-weight:700}
+.panel{display:flex;flex-direction:column;gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 13px}
+.card h3{margin:0 0 6px;font-size:16px;display:flex;align-items:center;gap:8px}
+.card h3 .val{margin-left:auto;color:var(--accent);font-size:17px;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:12px;border-radius:6px;background:#2a3a70;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:4px solid var(--accent);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:4px solid var(--accent);cursor:pointer}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.chip{background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:4px 10px;font-size:13.5px;cursor:pointer}
+.chip:hover{border-color:var(--blue)} .chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.chip.done{border-color:var(--green)}
+.row{display:flex;align-items:center;gap:8px;margin-top:7px;flex-wrap:wrap}
+.play{width:40px;height:40px;border-radius:50%;border:none;background:var(--accent);color:#1a1300;font-size:17px;cursor:pointer;font-weight:700;flex:none}
+.read{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:14.5px;margin:0}
+.read dt{color:var(--muted)} .read dd{margin:0;font-weight:700;color:var(--accent)}
+.q{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px}
+.q .t{font-size:15px;font-weight:600;line-height:1.55}
+.q .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.q .acts .btn{font-size:13px;padding:5px 10px}
+.why{display:none;font-size:14px;line-height:1.7;background:#1a2f22;border-left:3px solid var(--green);padding:7px 10px;border-radius:6px;margin-top:6px}
+.q.rev .why{display:block}
+.opt{display:block;width:100%;text-align:left;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:14px;cursor:pointer;margin-top:5px}
+.opt.pick{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)} .opt.right{background:#1e5a3a;border-color:var(--green)} .opt.wrong{background:#5a1e2a;border-color:var(--red)}
+.sub{display:flex;gap:6px;margin:0 0 10px;flex-wrap:wrap}
+.tip{font-size:14px;line-height:1.7;color:#cfe0ff;background:#12204c;border-left:3px solid var(--blue);padding:7px 10px;border-radius:6px}
+.tip.stu{border-left-color:var(--green);background:#13283a}
+.tip.tea{border-left-color:var(--accent);background:#2a2440}
+.tag{display:inline-block;font-size:12px;font-weight:700;border-radius:6px;padding:1px 6px;margin-right:4px}
+.tag.s{background:#1e5a3a;color:#bff5d3}.tag.t{background:#5a4210;color:#ffe2a0}
+table.sm{border-collapse:collapse;width:100%;font-size:13.5px;margin-top:6px}
+table.sm th,table.sm td{border:1px solid var(--line);padding:4px 6px;text-align:center}
+table.sm th{background:var(--card2)}
+table.sm td.l{text-align:left}
+#rTab{table-layout:fixed}
+table.sm td.hid{color:transparent;background:repeating-linear-gradient(45deg,#1d2f68,#1d2f68 6px,#22377a 6px,#22377a 12px);cursor:pointer}
+.pb{display:grid;grid-template-columns:5.6em 1fr 4.6em;align-items:center;gap:8px;font-size:14px;margin-top:6px}
+.pb i{display:block;height:12px;background:#2a3a70;border-radius:6px;overflow:hidden}.pb b{display:block;height:100%;border-radius:6px;transition:width .3s}
+.pb em{font-style:normal;color:var(--accent);font-size:13px;text-align:right}
+.chain{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 10px;font-size:14px}
+.chain .lead{color:var(--muted);margin-right:2px}
+.chain span.s{background:#1a2a5c;border:1px solid var(--line);border-radius:8px;padding:4px 9px}
+.chain span.s b{color:var(--accent);margin-right:4px}
+.chain .ar{color:var(--muted)}
+.hook{background:linear-gradient(90deg,#3a2a14,#1d2f68);border:1px solid #6b5426;border-radius:12px;padding:8px 12px;margin:0 0 10px;font-size:14.5px;line-height:1.7}
+.hook b{color:var(--accent)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.exp h3{font-size:17px}
+.exp .sec{font-size:14px;line-height:1.75;margin-top:6px}
+.exp .sec b{color:var(--accent)}
+.exp ol{margin:4px 0 0;padding-left:20px}
+.inv select,.inv input{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:3px 4px;font-size:13px;width:100%}
+.flow{display:flex;flex-wrap:wrap;gap:6px;font-size:13.5px}
+.flow div{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:6px 9px;flex:1 1 140px}
+.flow div b{display:block;color:var(--accent)}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:6px 0 20px}
+@media (max-width:1080px){.grid{grid-template-columns:1fr}.cvbig{height:min(80vw,70vh)}.g2{grid-template-columns:1fr}}
+@media (max-width:640px){header h1{font-size:21px}.mod{padding:8px}.tab{padding:7px 10px;font-size:12px}.tab b{font-size:14px}}
+@media print{header,.tabs,footer,.noprint{display:none!important}body{background:#fff;color:#000}.card{background:#fff;color:#000;border-color:#999}.inv select,.inv input{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🟫 土壤 · <span>质地、剖面与养护</span></h1>
+  <p>先动手、再追问、自己得出结论（人教版 · 第五章第二节）</p>
+</header>
+<div class="tabs" id="tabs">
+  <button class="tab on" data-m="m1"><b>① 土壤质地</b>砂土 · 壤土 · 黏土</button>
+  <button class="tab" data-m="m2"><b>② 土壤剖面</b>森林土壤 · 耕作土壤 · 形成过程</button>
+  <button class="tab" data-m="m3"><b>③ 成土因素</b>气候 · 地貌 · 五色土</button>
+  <button class="tab" data-m="m4"><b>④ 土壤养护</b>水土流失 · 盐碱地 · 红壤改良</button>
+  <button class="tab" data-m="m5"><b>⑤ 实验与调查</b>实验卡 · 记录表 · 随堂练习</button>
+</div>
+
+<!-- ============ 模块一 ============ -->
+<section class="mod on" id="m1">
+  <div class="hook">🎬 <b>情境导入</b>：北京中山公园的社稷坛里铺着“五色土”——<b>东青、西白、南红、北黑、中黄</b>。为什么各地的土壤颜色不一样？土壤里到底有什么？今天我们像地理学家一样，<b>动手</b>把土壤“拆开”来研究。</div>
+  <div class="chain"><span class="lead">问题链</span><span class="s"><b>Q1</b>土壤由什么组成？</span><span class="ar">→</span><span class="s"><b>Q2</b>颗粒粗细不同，孔隙有何不同？</span><span class="ar">→</span><span class="s"><b>Q3</b>孔隙怎样影响透水、保水？</span><span class="ar">→</span><span class="s"><b>Q4</b>哪种土最适合耕作？</span></div>
+  <div class="sub"><button class="btn on" data-p1="grain">A. 放大镜看颗粒</button><button class="btn" data-p1="water">B. 渗水实验</button><button class="btn" data-p1="roll">C. 搓条实验</button></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c1" class="cvbig"></canvas></div>
+    <div class="panel" id="m1panel"></div>
+  </div>
+</section>
+
+<!-- ============ 模块二 ============ -->
+<section class="mod" id="m2">
+  <div class="chain"><span class="lead">问题链</span><span class="s"><b>Q1</b>土壤从上到下一样吗？</span><span class="ar">→</span><span class="s"><b>Q2</b>各层颜色为什么不同？</span><span class="ar">→</span><span class="s"><b>Q3</b>物质怎样在层间迁移？</span><span class="ar">→</span><span class="s"><b>Q4</b>岩石怎样变成土壤？人类耕作改变了什么？</span></div>
+  <div class="sub"><button class="btn on" data-p2="profile">A. 认识土壤剖面</button><button class="btn" data-p2="block">B. 观察家乡的土壤（土块实验）</button><button class="btn" data-p2="form">C. 土壤的形成过程</button></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c2" class="cvbig"></canvas></div>
+    <div class="panel" id="m2panel"></div>
+  </div>
+</section>
+
+<!-- ============ 模块三 ============ -->
+<section class="mod" id="m3">
+  <div class="chain"><span class="lead">问题链</span><span class="s"><b>Q1</b>为什么东北土黑、南方土红？</span><span class="ar">→</span><span class="s"><b>Q2</b>温度和降水怎样影响有机质积累？</span><span class="ar">→</span><span class="s"><b>Q3</b>地貌怎样影响颗粒粗细？</span><span class="ar">→</span><span class="s"><b>Q4</b>你能解释“五色土”吗？</span></div>
+  <div class="sub"><button class="btn on" data-p3="climate">A. 气候：黑土与红壤</button><button class="btn" data-p3="relief">B. 地貌：山顶到平原</button><button class="btn" data-p3="five">C. 解释五色土与土壤现象</button></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c3" class="cvbig"></canvas></div>
+    <div class="panel" id="m3panel"></div>
+  </div>
+</section>
+
+<!-- ============ 模块四 ============ -->
+<section class="mod" id="m4">
+  <div class="hook">🌍 <b>土壤的功能</b>：土壤处在岩石圈、水圈、大气圈和生物圈相互接触的过渡地带，是联系有机界和无机界的关键环节；1 克土壤中的微生物可达 10 亿个左右。它能<b>蓄水保水</b>、为植物<b>扎根立足</b>、是农业的<b>物质基础</b>——可耕作层却只有 15—30 厘米。</div>
+  <div class="chain"><span class="lead">问题链</span><span class="s"><b>Q1</b>土壤会怎样“受伤”？</span><span class="ar">→</span><span class="s"><b>Q2</b>哪些因素影响水土流失？</span><span class="ar">→</span><span class="s"><b>Q3</b>盐碱地为什么“春秋返盐”？怎样治理？</span><span class="ar">→</span><span class="s"><b>Q4</b>怎样让土壤持续肥沃？</span></div>
+  <div class="sub"><button class="btn on" data-p4="erosion">A. 水土流失模拟实验</button><button class="btn" data-p4="salt">B. 盐碱地的水盐运动</button><button class="btn" data-p4="improve">C. 红壤改良与种养结合</button></div>
+  <div class="grid">
+    <div class="stage"><canvas id="c4" class="cvbig"></canvas></div>
+    <div class="panel" id="m4panel"></div>
+  </div>
+</section>
+
+<!-- ============ 模块五 ============ -->
+<section class="mod" id="m5">
+  <div class="card noprint" style="margin-bottom:12px"><h3>🗺 课堂流程建议（1 课时）</h3>
+    <div class="flow">
+      <div><b>导入 3′</b>五色土：为什么颜色不同？</div>
+      <div><b>活动一 10′</b>质地：放大镜 + 渗水 + 搓条</div>
+      <div><b>活动二 10′</b>剖面：认层 + 土块观察</div>
+      <div><b>活动三 8′</b>成土因素：气候、地貌、解释现象</div>
+      <div><b>活动四 10′</b>养护：水土流失、盐碱地、改良</div>
+      <div><b>小结 4′</b>本课要点 + 随堂练习</div>
+    </div></div>
+  <div class="g2">
+    <div class="panel">
+      <div class="card exp noprint" id="expA"></div>
+      <div class="card exp noprint" id="expB"></div>
+      <div class="card exp noprint" id="expC"></div>
+    </div>
+    <div class="panel">
+      <div class="card exp inv" id="expD"></div>
+      <div class="card exp noprint"><h3>🧭 本课要点</h3><div class="sec">
+        <b>组成</b>：土壤是陆地表层具有一定肥力、能够生长植物的疏松表层，由<b>矿物质、有机质、水分和空气</b>组成。<br>
+        <b>观察</b>：从<b>颜色、质地、剖面构造</b>等方面观察。质地分砂土、壤土、黏土，壤土最理想；森林土壤剖面最复杂，耕作土壤分耕作层、犁底层、自然土层。<br>
+        <b>形成</b>：成土母质（物质基础）、生物（最基本、最活跃）、气候、地貌、时间，人类活动影响极为深刻。<br>
+        <b>养护</b>：防治水土流失、治理盐碱地、改良红壤，种养结合（休耕、绿肥、轮作、农家肥）。</div></div>
+      <div class="card noprint"><h3>✍ 随堂练习</h3><div id="m5qs"></div></div>
+    </div>
+  </div>
+</section>
+<footer>土壤交互课件 · 图中实验数据为教学模拟值，仅用于比较趋势，课堂实验以实测为准</footer>
+
+<script>
+(()=>{
+/* ================= 公共 ================= */
+const D2R=Math.PI/180;
+const $=id=>document.getElementById(id);
+const FONT='"PingFang SC","Microsoft YaHei",sans-serif';
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const lerp3=(a,b,c,t)=>t<.5?a+(b-a)*t*2:b+(c-b)*(t-.5)*2;
+const ease=t=>t<=0?0:t>=1?1:t*t*(3-2*t);
+const mix=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
+const rgb=(a,al)=>al==null?`rgb(${a.map(v=>Math.round(clamp(v,0,255))).join(',')})`:`rgba(${a.map(v=>Math.round(clamp(v,0,255))).join(',')},${al})`;
+function rng(s){s=s>>>0||1;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
+function canvasCtx(cv){const r=cv.getBoundingClientRect(),dpr=Math.min(2,devicePixelRatio||1);const w=Math.max(10,r.width),h=Math.max(10,r.height);
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}
+  const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);c.W=w;c.H=h;return c;}
+function label(c,x,y,t,col,size,align,w){c.font=`${w||600} ${size||14}px ${FONT}`;c.textAlign=align||'center';c.textBaseline='middle';c.lineJoin='round';c.lineWidth=4;c.strokeStyle='rgba(8,14,34,.85)';c.strokeText(t,x,y);c.fillStyle=col||'#fff';c.fillText(t,x,y);}
+function arrowHead(c,x0,y0,x1,y1,col,s){const a=Math.atan2(y1-y0,x1-x0);s=s||10;c.save();c.translate(x1,y1);c.rotate(a);c.beginPath();c.moveTo(2,0);c.lineTo(-s,-s*0.55);c.lineTo(-s,s*0.55);c.closePath();c.fillStyle=col;c.fill();c.restore();}
+function arrow(c,x0,y0,x1,y1,col,w,s){c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y1);c.strokeStyle=col;c.lineWidth=w||2;c.stroke();arrowHead(c,x0,y0,x1,y1,col,s||8);}
+function chips(boxId,list,onPick,isOn){const box=$(boxId);box.innerHTML='';for(const [n,v,col] of list){const b=document.createElement('button');b.className='chip';b.textContent=n;b.dataset.v=v;if(col)b.style.borderColor=col;b.onclick=()=>onPick(v);box.appendChild(b);}
+  const upd=()=>box.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',!!isOn(b.dataset.v)));upd();return upd;}
+// 问题卡：{t, opts?, ans?, why, go?}
+function questions(boxId,list){const box=$(boxId);box.innerHTML='';list.forEach(q=>{const d=document.createElement('div');d.className='q';
+  d.innerHTML=`<div class="t">❓ ${q.t}</div>${q.opts?q.opts.map((o,j)=>`<button class="opt" data-j="${j}">${String.fromCharCode(65+j)}. ${o}</button>`).join(''):''}
+   <div class="acts">${q.go?'<button class="btn on go">🔭 去验证</button>':''}<button class="btn rv">💡 看原理</button></div><div class="why">${q.why}</div>`;
+  let pick=-1;d.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{pick=+b.dataset.j;d.querySelectorAll('.opt').forEach(x=>x.classList.remove('pick','right','wrong'));b.classList.add('pick');});
+  if(q.go)d.querySelector('.go').onclick=q.go;
+  d.querySelector('.rv').onclick=()=>{d.classList.add('rev');d.querySelectorAll('.opt').forEach((x,j)=>{if(j===q.ans)x.classList.add('right');else if(j===pick)x.classList.add('wrong');});};
+  box.appendChild(d);});}
+function bars(list){return list.map(([n,v,txt,col])=>`<div class="pb"><span>${n}</span><i><b style="width:${Math.round(clamp(v,0,1)*100)}%;background:${col||'var(--accent)'}"></b></i><em>${txt||''}</em></div>`).join('');}
+const lv=v=>v>.72?'强':v>.45?'较强':v>.25?'较弱':'弱';
+function subSwitch(attr,state,panelFn,drawFn){document.querySelectorAll(`[data-${attr}]`).forEach(b=>b.onclick=()=>{state.part=b.dataset[attr];document.querySelectorAll(`[data-${attr}]`).forEach(x=>x.classList.toggle('on',x===b));panelFn();drawFn();});}
+function setSub(attr,state,v,panelFn,drawFn){state.part=v;document.querySelectorAll(`[data-${attr}]`).forEach(x=>x.classList.toggle('on',x.dataset[attr]===v));panelFn();drawFn();}
+function grass(c,x,y,h,col){c.strokeStyle=col||'#6fbf5a';c.lineWidth=1.6;for(let k=-2;k<=2;k++){c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+k*2,y-h*0.6,x+k*4,y-h*(1-Math.abs(k)*0.12));c.stroke();}}
+function tree(c,x,y,h,col){c.fillStyle='#5a3d22';c.fillRect(x-h*0.05,y-h*0.55,h*0.1,h*0.55);c.fillStyle=col||'#3f8f4a';c.beginPath();c.arc(x,y-h*0.7,h*0.3,0,7);c.fill();c.beginPath();c.arc(x-h*0.18,y-h*0.55,h*0.2,0,7);c.fill();c.beginPath();c.arc(x+h*0.18,y-h*0.55,h*0.2,0,7);c.fill();}
+
+/* ================= 模块一：土壤质地 ================= */
+const SOIL3=[['砂土',0],['壤土',0.5],['黏土',1]];
+const tName=t=>t<.3?'砂土':t<.7?'壤土':'黏土';
+const comp=t=>{const s=lerp3(85,40,15,t),cl=lerp3(5,20,60,t);return {sand:s,clay:cl,silt:100-s-cl};};
+const soilRGB=t=>t<.5?mix([214,182,124],[139,106,69],t*2):mix([139,106,69],[112,80,58],(t-.5)*2);
+const mkB=t=>({t,pond:0,inf:0,poured:0,timer:0,last:null,anim:0});
+const S1={part:'grain',t:0.5,B:[mkB(0),mkB(1)],roll:{t:0,step:0,res:{}}};
+const PC={};
+function particles(t){const k=Math.round(t*20);if(PC[k])return PC[k];const r=rng(97+k*131),cp=comp(k/20),out=[];
+  const R={sand:.085,silt:.03,clay:.011},col={sand:[224,192,130],silt:[176,140,96],clay:[124,88,62]};
+  for(const ty of ['sand','silt','clay']){const n=Math.round(0.6*cp[ty]/100/(R[ty]**2));
+    for(let i=0;i<n;i++){let ok=false,x=0,y=0;const rr=R[ty]*(0.75+r()*0.5);
+      for(let a=0;a<(ty==='clay'?1:40);a++){const ang=r()*Math.PI*2,d=Math.sqrt(r())*(1-rr);x=Math.cos(ang)*d;y=Math.sin(ang)*d;
+        if(ty==='clay'){ok=true;break;}
+        ok=!out.some(p=>Math.hypot(p.x-x,p.y-y)<p.r+rr*0.92);if(ok)break;}
+      if(ok)out.push({x,y,r:rr,ty,c:col[ty].map(v=>v+(r()-.5)*34)});}}
+  return PC[k]=out;}
+const wProp=t=>({rate:lerp3(26,8,2.4,t),cap:lerp3(80,96,110,t)});
+function propsOf(t){return {perm:1-t*0.85,keep:0.15+0.8*t,till:1-0.78*t,agri:1-Math.abs(t-0.5)*1.5};}
+function m1panel(){const P=$('m1panel');
+  if(S1.part==='grain'){P.innerHTML=`
+    <div class="card"><h3>🔬 颗粒组成 <span class="val" id="g1n"></span></h3><input type="range" id="g1t" min="0" max="1" step="0.01"><div class="chips" id="g1c"></div>
+      <div id="g1comp" style="font-size:13.5px;color:var(--muted);margin-top:6px"></div></div>
+    <div class="card"><h3>📊 土壤性质</h3><div id="g1bars"></div></div>
+    <div class="tip stu"><span class="tag s">学生活动</span>把滑块从“砂土”慢慢拖到“黏土”：①颗粒大小怎样变？②孔隙（深色空隙）怎样变？③再看右边的性质条，用“因为……所以……”说出因果链。</div>
+    <div class="tip tea"><span class="tag t">教师追问</span>颗粒粗 → 孔隙大 → 水和空气走得快 → 通气透水好，但水、肥留不住。反过来呢？</div>
+    <div id="m1qs"></div>`;
+    S1._u=chips('g1c',SOIL3,v=>{S1.t=+v;m1();},v=>Math.abs(+v-S1.t)<0.01);
+    $('g1t').oninput=e=>{S1.t=+e.target.value;m1();};
+    questions('m1qs',[
+      {t:'为什么砂土“漏水漏肥”，而黏土“保水保肥”？',why:'砂土以<b>砂粒</b>占优势，大孔隙多、毛管孔隙少，水分和溶在水里的养分很快渗走；黏土以<b>黏粒</b>占优势，孔隙细小，水分移动慢，细小的黏粒还能吸附养分，所以蓄水、保肥性能强。'},
+      {t:'哪种质地是农业生产理想的土壤？',opts:['砂土','壤土','黏土'],ans:1,go:()=>{S1.t=0.5;m1();},why:'<b>壤土</b>所含砂粒、粉粒、黏粒比例适中，兼有砂土和黏土的优点：通气、透水性能良好，蓄水、保肥性能也强。'},
+      {t:'黏土有机质分解慢、易积累，保肥好，为什么农民却说它“不好种”？',why:'黏土<b>质地黏重</b>，通气透水差：湿时黏犁、雨后易积水烂根，干时板结坚硬，所以<b>不易耕作</b>。砂土正好相反：易耕作，但保水保肥差。'},
+      {t:'联系生活：长江中下游的水稻田土壤偏黏，这对种水稻有什么好处？',why:'水稻生长期要保持田面水层。偏黏的土壤渗漏少、保水保肥，再加上下面紧实的<b>犁底层</b>托住水分，正适合淹水种植。'}]);}
+  if(S1.part==='water'){P.innerHTML=`
+    <div class="card"><h3>🧪 左杯 <span class="val" id="wLn"></span></h3><div class="chips" id="wL"></div>
+      <h3 style="margin-top:8px">🧪 右杯 <span class="val" id="wRn"></span></h3><div class="chips" id="wR"></div></div>
+    <div class="row"><button class="btn acc" id="wPour">💧 两杯同时倒入 50 mL 水</button><button class="btn" id="wReset">⟲ 重来</button></div>
+    <div class="card"><h3>📋 实验记录</h3><table class="sm" id="wTab"></table></div>
+    <div class="tip stu"><span class="tag s">学生活动</span>仿“实验 2 土壤质地的测定”：①两个烧杯各装 1/2 杯砂土和黏土；②同时倒入 50 mL 水，比较渗水快慢；③继续注入等量的水，直到水高过土壤表面为止。<b>先预测，再倒水验证。</b></div>
+    <div id="m1qs"></div>`;
+    S1._u=()=>{};const uL=chips('wL',SOIL3,v=>{S1.B[0]=mkB(+v);m1();},v=>Math.abs(+v-S1.B[0].t)<0.01);const uR=chips('wR',SOIL3,v=>{S1.B[1]=mkB(+v);m1();},v=>Math.abs(+v-S1.B[1].t)<0.01);S1._u=()=>{uL();uR();};
+    $('wPour').onclick=()=>{for(const b of S1.B){if(b.pond+50<=230){b.pond+=50;b.poured+=50;b.timer=0;b.anim=1;}}};
+    $('wReset').onclick=()=>{S1.B=S1.B.map(b=>mkB(b.t));m1();};
+    questions('m1qs',[
+      {t:'倒入 50 mL 水后，哪个烧杯里的水“消失”得快？',opts:['砂土杯','黏土杯','一样快'],ans:0,why:'砂土颗粒粗、<b>大孔隙多</b>，水能迅速向下渗透，所以<b>渗水性好</b>；黏土孔隙细小，水只能慢慢渗入，表面长时间积水。'},
+      {t:'停止注水后，哪个烧杯增重更多（土里存的水更多）？',opts:['砂土杯','黏土杯','一样多'],ans:1,why:'黏土总孔隙多而细，能把更多的水“攥”在孔隙里——<b>黏土比砂土的含水性好</b>。所以说：砂土渗水性好，黏土含水性好。'},
+      {t:'想一想：沙漠地区种菜为什么要“少量多次”地浇水？',why:'砂质土壤透水快、保水差，一次浇得多，水会很快渗到根系以下流失；少量多次才能让根系附近保持湿润，也减少肥料流失。'}]);}
+  if(S1.part==='roll'){P.innerHTML=`
+    <div class="card"><h3>✋ 选择土样 <span class="val" id="rN"></span></h3><div class="chips" id="rS"></div></div>
+    <div class="card"><h3>👣 步骤 <span class="val" id="rStep"></span></h3><div class="row"><button class="btn acc" id="rNext">下一步 ▶</button><button class="btn" id="rReset">⟲ 重来</button></div></div>
+    <div class="card"><h3>📋 手感记录表</h3><table class="sm" id="rTab"></table></div>
+    <div class="tip stu"><span class="tag s">学生活动</span>2～3 人一组：取适量砂土和黏土，加水搅拌到“充分湿润、挤不出水、似黏但不黏手”，放在手心来回揉搓成球、条、环，感受它们的差别，填写记录表。</div>
+    <div id="m1qs"></div>`;
+    S1._u=chips('rS',SOIL3,v=>{S1.roll.t=+v;S1.roll.step=0;m1();},v=>Math.abs(+v-S1.roll.t)<0.01);
+    $('rNext').onclick=()=>{S1.roll.step=Math.min(4,S1.roll.step+1);m1();};$('rReset').onclick=()=>{S1.roll.step=0;m1();};
+    questions('m1qs',[
+      {t:'哪种土更适合做泥塑作品？',opts:['砂土','黏土'],ans:1,why:'<b>黏土</b>是均匀的细末物质，有黏着感，可以搓成条、环或球，压扁时边缘完整；砂土在指间有粗糙感，搓捻时散碎，即便含水也不能成形。（沙雕要配一定比例的水反复压实，长期保存还要喷特殊试剂增加黏性。）'},
+      {t:'野外没有仪器时，怎样快速判断土壤质地？',why:'用<b>手指研磨</b>和<b>搓条法</b>：粗糙、搓不成形 → 砂土；能成球、能成条但易断 → 壤土；细腻发黏、能弯成环 → 黏土。教材说“在野外可根据手指研磨土壤的感觉近似地作出判断”。'}]);}
+}
+function m1(){const c=canvasCtx($('c1')),W=c.W,H=c.H;S1._u&&S1._u();
+  if(S1.part==='grain'){const t=S1.t,cp=comp(t),pr=propsOf(t);
+    $('g1n').textContent=tName(t);$('g1t').value=t;
+    $('g1comp').innerHTML=`砂粒 <b style="color:#e0c082">${cp.sand.toFixed(0)}%</b>　粉粒 <b style="color:#b08c60">${cp.silt.toFixed(0)}%</b>　黏粒 <b style="color:#c99a72">${cp.clay.toFixed(0)}%</b>（示意）`;
+    $('g1bars').innerHTML=bars([['通气透水',pr.perm,lv(pr.perm),'#4da3ff'],['蓄水保肥',pr.keep,lv(pr.keep),'#5fd38a'],['易于耕作',pr.till,pr.till>.6?'容易':pr.till>.4?'一般':'困难','#ffb02e'],['农业适宜',pr.agri,pr.agri>.8?'理想':pr.agri>.45?'一般':'较差','#ff7a59']]);
+    const cx=W*0.40,cy=H*0.53,R=Math.min(W*0.33,H*0.4);
+    c.save();c.beginPath();c.arc(cx,cy,R,0,7);c.clip();c.fillStyle='#0f1a36';c.fillRect(cx-R,cy-R,2*R,2*R);
+    for(const p of particles(t)){c.beginPath();c.arc(cx+p.x*R,cy+p.y*R,Math.max(0.9,p.r*R),0,7);c.fillStyle=rgb(p.c);c.fill();
+      if(p.ty==='sand'){c.strokeStyle='rgba(255,255,255,.28)';c.lineWidth=1;c.stroke();}}
+    c.restore();
+    c.beginPath();c.moveTo(cx+R*0.72,cy+R*0.72);c.lineTo(cx+R*1.12,cy+R*1.12);c.strokeStyle='#8a6a3a';c.lineWidth=16;c.lineCap='round';c.stroke();c.lineCap='butt';
+    c.beginPath();c.arc(cx,cy,R,0,7);c.strokeStyle='#d8e0f4';c.lineWidth=7;c.stroke();
+    label(c,14,20,`放大镜下的${tName(t)}（示意图）`,'#fff',17,'left');
+    label(c,14,44,'深色空隙 = 孔隙，里面充满空气或水','#ffe2a0',13,'left',500);
+    const lx=Math.min(cx+R+28,W-190),ly=H*0.2;
+    [['砂粒','0.05—2 毫米',[224,192,130],10],['粉粒','0.002—0.05 毫米',[176,140,96],5],['黏粒','< 0.002 毫米',[124,88,62],2.5]].forEach(([n,s,col,r],i)=>{const y=ly+i*44;c.beginPath();c.arc(lx+12,y,r,0,7);c.fillStyle=rgb(col);c.fill();label(c,lx+30,y-8,n,'#fff',14,'left');label(c,lx+30,y+10,s,'#9fb0dd',12,'left',400);});
+    const pz=t<.3?'大孔隙多，毛管孔隙少':t<.7?'大小孔隙搭配适当':'孔隙细小，毛管孔隙多';
+    label(c,lx,ly+150,'孔隙特点：','#cfe0ff',13.5,'left');label(c,lx,ly+172,pz,'#ffe9a0',13.5,'left');
+  }
+  if(S1.part==='water'){
+    const rows=[['累计注水',b=>b.poured+' mL'],['已渗入土中',b=>b.inf.toFixed(0)+' mL'],['表面积水',b=>b.pond.toFixed(0)+' mL'],['最近一次渗完用时',b=>b.last!=null?b.last.toFixed(1)+' 秒':(b.pond>0.5&&b.inf<wProp(b.t).cap-0.5?'渗水中…':'—')],['状态',b=>b.inf>=wProp(b.t).cap-0.5?'<span style="color:#ff9b9b">已饱和，水高过土面</span>':b.poured?'未饱和':'未注水']];
+    $('wLn').textContent=tName(S1.B[0].t);$('wRn').textContent=tName(S1.B[1].t);
+    $('wTab').innerHTML=`<tr><th></th><th>左：${tName(S1.B[0].t)}</th><th>右：${tName(S1.B[1].t)}</th></tr>`+rows.map(([n,f])=>`<tr><td class="l">${n}</td><td>${f(S1.B[0])}</td><td>${f(S1.B[1])}</td></tr>`).join('');
+    const bw=Math.min(W*0.26,210),bh=Math.min(H*0.62,360),by=H*0.82;
+    S1.B.forEach((b,i)=>{const cx=W*(i?0.7:0.3),x0=cx-bw/2,soilH=bh*0.5,wp=wProp(b.t);
+      // 土
+      const base=soilRGB(b.t),wet=mix(base,[40,28,20],0.45);const f=clamp(b.inf/wp.cap,0,1);
+      c.fillStyle=rgb(base);c.fillRect(x0,by-soilH,bw,soilH);
+      const r=rng(7+i*13+Math.round(b.t*10));for(let k=0;k<260;k++){c.fillStyle=rgb(mix(base,[255,240,210],r()*0.3),0.7);c.fillRect(x0+r()*bw,by-soilH+r()*soilH,b.t<.3?2.4:1.4,b.t<.3?2.4:1.4);}
+      if(f>0){const g=c.createLinearGradient(0,by-soilH,0,by-soilH+soilH*f+6);g.addColorStop(0,rgb(wet,0.92));g.addColorStop(Math.max(0,1-6/(soilH*f+6)),rgb(wet,0.85));g.addColorStop(1,rgb(wet,0));c.fillStyle=g;c.fillRect(x0,by-soilH,bw,soilH*f+6);}
+      // 积水
+      const ph=b.pond/230*(bh-soilH);if(ph>0.3){c.fillStyle='rgba(90,160,235,.6)';c.fillRect(x0,by-soilH-ph,bw,ph);c.fillStyle='rgba(200,230,255,.6)';c.fillRect(x0,by-soilH-ph,bw,2);}
+      // 倒水动画
+      if(b.anim>0){c.fillStyle=`rgba(120,190,255,${0.8*b.anim})`;c.fillRect(cx-4,by-bh-60,8,60+bh-soilH-ph);}
+      // 烧杯
+      c.strokeStyle='rgba(220,235,255,.85)';c.lineWidth=3;c.beginPath();c.moveTo(x0-6,by-bh-4);c.lineTo(x0,by-bh);c.lineTo(x0,by);c.lineTo(x0+bw,by);c.lineTo(x0+bw,by-bh);c.stroke();
+      for(let k=1;k<=4;k++){const y=by-bh*k/5;c.beginPath();c.moveTo(x0+bw-16,y);c.lineTo(x0+bw,y);c.lineWidth=1.5;c.stroke();}
+      label(c,cx,by-bh-26,tName(b.t),'#ffe9a0',18);
+      label(c,cx,by+22,`渗入 ${b.inf.toFixed(0)} mL · 积水 ${b.pond.toFixed(0)} mL`,'#cfe0ff',13.5);
+      if(b.inf>=wp.cap-0.5)label(c,cx,by-soilH-ph-14,'已饱和','#ff9b9b',14);
+      // 湿润锋
+      if(f>0&&f<1){const y=by-soilH+soilH*f;c.setLineDash([4,4]);c.strokeStyle='rgba(140,200,255,.8)';c.lineWidth=1.2;c.beginPath();c.moveTo(x0,y);c.lineTo(x0+bw,y);c.stroke();c.setLineDash([]);label(c,x0+bw+8,y,'湿润锋','#8fd0ff',12,'left',500);}
+    });
+    label(c,14,20,'渗水实验：同时倒入等量的水','#fff',17,'left');label(c,14,44,'观察：哪杯渗得快？继续加水直到水高过土面，哪杯“喝”进的水多？','#ffe2a0',13,'left',500);
+  }
+  if(S1.part==='roll'){const R=S1.roll,t=R.t,nm=tName(t),STEPS=['取干土研磨','加水湿润','揉成球','搓成条','弯成环'];
+    const RES={砂土:['颗粒粗，有粗糙感','湿后仍松散','不能成球，一捏就散','搓不成条','—'],壤土:['略有粗糙感','湿后可塑','能揉成球','能成条，但有裂纹','一弯就断'],黏土:['细腻、手感滑','湿后发黏','成球，表面光滑','细长条，不断','弯成完整圆环']};
+    (R.res[nm]=R.res[nm]||[]);for(let k=0;k<=R.step;k++)R.res[nm][k]=RES[nm][k];
+    $('rN').textContent=nm;$('rStep').textContent=`${R.step+1}/5 ${STEPS[R.step]}`;
+    $('rTab').innerHTML=`<tr><th>步骤</th>${SOIL3.map(([n])=>`<th>${n}</th>`).join('')}</tr>`+STEPS.map((s,k)=>`<tr><td class="l">${s}</td>${SOIL3.map(([n])=>`<td>${(R.res[n]&&R.res[n][k])||''}</td>`).join('')}</tr>`).join('');
+    const cx=W*0.48,cy=H*0.56,pw=Math.min(W*0.34,H*0.42);
+    // 手掌
+    c.fillStyle='#e6bf9a';c.beginPath();c.ellipse(cx,cy,pw*0.85,pw*0.72,0,0,7);c.fill();
+    for(let k=0;k<4;k++){c.beginPath();c.ellipse(cx-pw*0.54+k*pw*0.36,cy-pw*0.86+Math.abs(k-1.5)*pw*0.06,pw*0.15,pw*0.36,(k-1.5)*0.08,0,7);c.fill();}
+    c.beginPath();c.ellipse(cx+pw*0.86,cy+pw*0.12,pw*0.16,pw*0.38,-0.9,0,7);c.fill();
+    c.strokeStyle='rgba(150,100,70,.35)';c.lineWidth=2;c.beginPath();c.arc(cx-pw*0.1,cy+pw*0.1,pw*0.55,3.6,5.2);c.stroke();
+    const base=soilRGB(t),dark=mix(base,[40,28,20],0.4),col=R.step>=1?dark:base,r=rng(5+Math.round(t*10));const s=pw*0.5;
+    const crumbs=(n,sp)=>{for(let k=0;k<n;k++){const a=r()*7,d=Math.sqrt(r())*sp;c.beginPath();c.arc(cx+Math.cos(a)*d,cy+Math.sin(a)*d*0.7,1.5+r()*3.2,0,7);c.fillStyle=rgb(mix(col,[255,235,200],r()*0.25));c.fill();}};
+    if(R.step<=1){if(t<.3)crumbs(240,s*0.8);else{c.fillStyle=rgb(col);c.beginPath();c.ellipse(cx,cy,s*0.75,s*0.45,0,0,7);c.fill();crumbs(90,s*0.75);}}
+    else if(t<.3){crumbs(300,s*1.1);label(c,cx,cy-s*0.9,R.step===2?'一捏就散！':'搓不成形','#ff9b9b',16);}
+    else{const smooth=t>.7;c.fillStyle=rgb(col);c.strokeStyle=rgb(mix(col,[0,0,0],.3));c.lineWidth=2;
+      if(R.step===2){c.beginPath();c.arc(cx,cy,s*0.42,0,7);c.fill();if(smooth){c.fillStyle='rgba(255,255,255,.22)';c.beginPath();c.arc(cx-s*0.14,cy-s*0.15,s*0.12,0,7);c.fill();}
+        else{c.beginPath();c.moveTo(cx-s*0.2,cy-s*0.3);c.lineTo(cx-s*0.05,cy-s*0.1);c.lineTo(cx-s*0.15,cy+s*0.1);c.stroke();}}
+      if(R.step===3){c.beginPath();c.roundRect(cx-s*1.1,cy-s*0.11,s*2.2,s*0.22,s*0.11);c.fill();if(!smooth){for(let k=-4;k<=4;k++){c.beginPath();c.moveTo(cx+k*s*0.24,cy-s*0.11);c.lineTo(cx+k*s*0.24+4,cy+s*0.02);c.stroke();}}}
+      if(R.step===4){c.lineWidth=s*0.2;c.lineCap='round';c.strokeStyle=rgb(col);
+        if(smooth){c.beginPath();c.arc(cx,cy,s*0.6,0,7);c.stroke();}
+        else{for(const [a0,a1] of [[0.2,1.6],[2.0,3.5],[3.9,5.6]]){c.beginPath();c.arc(cx,cy,s*0.6,a0,a1);c.stroke();}label(c,cx,cy-s*0.95,'弯曲时断裂','#ff9b9b',16);}
+        c.lineCap='butt';}}
+    label(c,14,20,`搓条实验 · ${nm} · 第 ${R.step+1} 步：${STEPS[R.step]}`,'#fff',17,'left');
+    label(c,14,44,'充分湿润、挤不出水、似黏但不黏手时再揉搓','#ffe2a0',13,'left',500);
+  }
+}
+subSwitch('p1',S1,m1panel,m1);
+
+/* ================= 模块二：土壤剖面 ================= */
+const PROF={forest:[
+  {n:'枯枝落叶层',s:'有机层',h:.08,c:[96,78,44],f:'枯枝落叶和部分分解的有机碎屑，以分解和半分解的有机质为主。',q:'这些有机质从哪里来？森林、草原、荒漠，哪里地表的枯枝落叶最多？',a:'来自植物的枯枝落叶、动物残体。<b>生物量：森林 > 草原 > 荒漠</b>，所以森林地表的枯落物最多；但草原土壤的有机质含量往往更高——草本植物根系密集，每年死亡后直接留在土中。'},
+  {n:'腐殖质层',s:'颜色最深',h:.16,c:[44,34,24],f:'腐殖质积累，颜色较深，呈灰黑色或黑色。',q:'这一层颜色为什么最深？',a:'有机质在<b>微生物</b>作用下转化为腐殖质并在此积累。腐殖质呈黑色，含量越多颜色越深，土壤越肥沃。'},
+  {n:'淋溶层',s:'颜色较浅',h:.15,c:[182,166,142],f:'可溶物质随水的下渗向下运移，本层矿物质淋失，颜色较浅。',q:'这一层的物质到哪里去了？（点“模拟雨水下渗”验证）',a:'降水下渗时，把可溶性物质和细小颗粒带往下层，这叫<b>淋溶作用</b>。降水越多，淋溶越强，这一层颜色越浅。'},
+  {n:'淀积层',s:'黏重紧实',h:.18,c:[142,82,46],f:'上层土壤淋失的物质在此沉淀、积累，质地黏重、紧实，呈棕色或红棕色。',q:'为什么这一层质地黏重、颜色发红？',a:'从上层淋溶下来的<b>黏粒和铁、铝氧化物</b>在这里沉淀积累，所以黏重紧实；铁的氧化物使它呈棕色或红棕色。'},
+  {n:'母质层',s:'风化碎屑',h:.2,c:[190,154,98],f:'疏松的风化碎屑物质。',q:'母质层和上面各层是什么关系？',a:'岩石风化形成的疏松碎屑叫<b>成土母质</b>，是土壤发育的<b>物质基础</b>，决定了土壤矿物质的成分和养分状况，并影响土壤质地。'},
+  {n:'母岩层',s:'坚硬岩石',h:.23,c:[118,121,130],f:'坚硬的岩石。',q:'坚硬的岩石怎样变成土壤？',a:'岩石风化 → 成土母质 → 生物作用积累有机质 → 原始土壤 → 成熟土壤。切到“C. 土壤的形成过程”看看。'}],
+ farm:[
+  {n:'耕作层',s:'熟土层',h:.3,c:[66,52,36],f:'又称表土层或熟土层：土质疏松，有机质比例高，颜色较暗。',q:'这一层是怎样“熟”起来的？',a:'人们通过<b>深耕、施有机肥、种绿肥、合理轮作</b>等长期耕作培育，使土壤变得疏松肥沃，叫<b>土壤熟化</b>。耕作层一般只有 15—30 厘米厚，尤其需要呵护。'},
+  {n:'犁底层',s:'保水保肥',h:.15,c:[100,86,66],f:'又称亚表土层：土层紧实，颜色较浅，具有保肥、保水作用。',q:'它为什么紧实？对水稻田有什么好处？',a:'长期犁耕时犁底的挤压，加上细小黏粒随水下移沉积，使这一层紧实。它像一层“托盘”，减少水分和养分向下渗漏流失。'},
+  {n:'自然土层',s:'未熟化',h:.55,c:[146,126,94],f:'未经耕作熟化，不利于作物生长。',q:'与森林土壤相比，耕作土壤的剖面发生了什么变化？',a:'自然土壤经过人为耕作就变成耕作土壤：表层被翻耕、施肥成为熟土层，下面形成犁底层，原来的自然层次只保留在下部。'}]};
+const S2={part:'profile',type:'forest',sel:1,rain:{t:0,on:false,ions:[]},lay:[],box:null,
+  block:{done:{}},form:{p:0,playing:false,farm:false}};
+function m2panel(){const P=$('m2panel');
+  if(S2.part==='profile'){P.innerHTML=`
+    <div class="card"><h3>🪨 剖面类型</h3><div class="chips" id="pT"></div>
+      <div class="row"><button class="btn acc" id="pRain">🌧 模拟雨水下渗</button><span style="font-size:13px;color:var(--muted)">点击左图任意一层查看</span></div></div>
+    <div class="card" id="pInfo"></div>
+    <div class="tip stu"><span class="tag s">学生活动</span>①从上到下说出每一层的名称和颜色；②点“模拟雨水下渗”，描述物质从哪层迁到哪层；③切换到“耕作土壤”，找出人类耕作改变了什么。</div>
+    <div id="m2qs"></div>`;
+    S2._u=chips('pT',[['森林土壤剖面','forest'],['耕作土壤剖面','farm']],v=>{S2.type=v;S2.sel=v==='forest'?1:0;S2.rain={t:0,on:false,ions:[]};m2();},v=>v===S2.type);
+    $('pRain').onclick=()=>{S2.rain={t:0,on:true,ions:[]};};
+    questions('m2qs',[
+      {t:'森林土壤剖面中，颜色最深的是哪一层？',opts:['枯枝落叶层','腐殖质层','淀积层'],ans:1,go:()=>{S2.type='forest';S2.sel=1;m2();},why:'<b>腐殖质层</b>：有机质被微生物分解转化为腐殖质并积累，颜色呈灰黑色或黑色。'},
+      {t:'“淋溶层颜色浅、淀积层黏重发红”，说明土壤剖面是怎样形成的？',why:'土壤剖面的各个土层，是土壤形成过程中<b>物质转化、迁移和积累</b>的结果：上层物质被淋溶带走（变浅），在下层淀积（变黏、变红）。'},
+      {t:'耕作土壤中，犁底层的主要作用是',opts:['疏松通气','保水保肥','提供有机质'],ans:1,go:()=>{S2.type='farm';S2.sel=1;S2.rain={t:0,on:true,ions:[]};m2();},why:'犁底层土层紧实，能减少水分、养分向下渗漏，<b>保水保肥</b>——水田尤其依赖它。'}]);}
+  if(S2.part==='block'){P.innerHTML=`
+    <div class="card"><h3>🧰 观察工具（点一个做一项）</h3><div class="chips" id="bTools"></div>
+      <div class="row"><button class="btn" id="bAll">全部揭晓</button><button class="btn" id="bClr">⟲ 重来</button></div></div>
+    <div class="card"><h3>📋 观察记录表</h3><table class="sm" id="bTab"></table></div>
+    <div class="tip tea"><span class="tag t">教师准备</span>课前在校园空地清理地表植物和杂物，自地表向下挖出边长 20 厘米的土壤立方块，放在白纸上称重。课上分组观察。</div>
+    <div class="tip stu"><span class="tag s">学生活动</span>每做一项先<b>预测</b>，再点表格中的灰色格子揭晓。最后用一句话描述“我家乡的土壤”。（示意结果，因地而异）</div>
+    <div id="m2qs"></div>`;
+    S2._u=()=>{$('bTools').querySelectorAll('.chip').forEach(b=>b.classList.toggle('done',!!S2.block.done[b.dataset.v]));};
+    const box=$('bTools');box.innerHTML='';TOOLS.forEach(([k,n])=>{const b=document.createElement('button');b.className='chip';b.dataset.v=k;b.textContent=n;b.onclick=()=>{S2.block.done[k]=true;m2();};box.appendChild(b);});
+    $('bAll').onclick=()=>{TOOLS.forEach(([k])=>S2.block.done[k]=true);m2();};$('bClr').onclick=()=>{S2.block.done={};m2();};
+    questions('m2qs',[
+      {t:'土块晾晒一天后变轻了，说明土壤中含有什么？',opts:['矿物质','水分','有机质'],ans:1,go:()=>{S2.block.done.dry=true;m2();},why:'晾晒蒸发掉的是<b>水分</b>。结合其他观察：土粒（矿物质）、腐殖质和根系（有机质）、孔隙（空气）——土壤由<b>矿物质、有机质、水分和空气</b>四种物质组成。'},
+      {t:'为什么表层颜色深、疏松，小动物也多？',why:'表层接受枯枝落叶等有机质最多，腐殖质积累使颜色变深；根系和蚯蚓等生物活动使土壤疏松多孔、通气良好，小动物也集中在这里。'}]);}
+  if(S2.part==='form'){P.innerHTML=`
+    <div class="card"><h3>⏳ 成土进程 <span class="val" id="fP"></span></h3><input type="range" id="fR" min="0" max="100" step="0.5">
+      <div class="row"><button class="play" id="fPlay">▶</button><span style="font-size:14px;color:var(--muted)">从裸露岩石开始播放</span></div>
+      <div class="chips" id="fFarm"></div></div>
+    <div class="card"><h3>📊 当前状态</h3><dl class="read" id="fRead"></dl></div>
+    <div class="tip">在自然状态下，形成 <b>20 厘米</b>厚、可供耕作的土壤，一般需要 <b>100—1 000 年</b>。土层越厚、分化越明显，说明发育时间越长。</div>
+    <div class="tip stu"><span class="tag s">学生活动</span>拖动进程条，用箭头写出：裸露岩石 → ______ → ______ → 成熟土壤 → 耕作土壤，并说出每一步是什么在起作用。</div>
+    <div id="m2qs"></div>`;
+    S2._u=chips('fFarm',[['🌾 人类耕作熟化','1']],()=>{S2.form.farm=!S2.form.farm;if(S2.form.farm)S2.form.p=100;m2();},()=>S2.form.farm);
+    $('fR').oninput=e=>{S2.form.p=+e.target.value;S2.form.playing=false;if(S2.form.p<100)S2.form.farm=false;m2();};
+    $('fPlay').onclick=()=>{const F=S2.form;F.playing=!F.playing;if(F.playing&&F.p>=100){F.p=0;F.farm=false;}m2();};
+    questions('m2qs',[
+      {t:'在土壤形成过程中，最基本也是最活跃的因素是',opts:['成土母质','生物','气候'],ans:1,why:'<b>生物</b>是影响土壤发育的最基本也是最活跃的因素，没有生物的作用就不可能形成土壤：生物残体提供有机质，微生物把它转化为腐殖质；植物把分散在母质、水和大气中的氮、磷、钾、钙等营养元素吸收储存，死亡分解后释放到土壤表层，使营养元素在表层富集。'},
+      {t:'成土母质能长庄稼吗？为什么还需要“先锋植物”？',why:'成土母质只有矿物质，<b>缺少有机质和氮</b>，没有肥力。地衣、苔藓等先锋植物耐贫瘠、生长快，它们的残体开始积累有机质，促进土壤“成熟”。'},
+      {t:'为什么说土壤在短期内几乎是“不可再生”的？',why:'形成 20 厘米可耕作土壤要 100—1 000 年，而一场暴雨、几年不当耕作就可能冲走或毁坏它。所以要合理利用和保护土壤（见模块④）。'}]);}
+}
+const TOOLS=[
+ ['color','👀 看颜色','自上而下观察颜色','表层深，向下逐渐变浅','表层腐殖质多'],
+ ['paper','🧻 贴纸巾','干纸巾贴表层、底层','底层纸巾湿痕更大','表层蒸发强，较干'],
+ ['loose','🖐 比疏松','比较表层、底层疏松状况','表层疏松多孔、有根系；底层紧实','表层生物活动多'],
+ ['heft','⚖ 掂重量','表层、底层各取等大一团','底层那团更重','底层紧实、含水多'],
+ ['grind','👆 手指研磨','感受湿度和颗粒大小','表层较干、略粗；底层湿润、较细腻','底层黏粒较多'],
+ ['animal','🐛 找动物','翻找土中的小动物','表层有蚯蚓、蚂蚁，底层少见','动物喜欢有机质多、疏松的表层'],
+ ['dry','☀ 晾晒称重','捣碎晾晒一天后称重','刚挖出约 9.2 kg，晒后约 7.9 kg','土壤含有水分'],
+ ['strip','🪱 搓土条','表层、底层分别加水搓条','底层更容易搓成土条','底层黏粒多、黏性大']];
+function layerAt(y){for(let i=0;i<S2.lay.length;i++)if(y>=S2.lay[i][0]&&y<S2.lay[i][1])return i;return -1;}
+$('c2').addEventListener('pointerdown',e=>{if(S2.part!=='profile')return;const r=$('c2').getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+  if(!S2.box||x<S2.box[0]-20||x>S2.box[1]+260)return;const i=layerAt(y);if(i>=0){S2.sel=i;m2();}});
+function m2(){const c=canvasCtx($('c2')),W=c.W,H=c.H;S2._u&&S2._u();
+  if(S2.part==='profile'){const L=PROF[S2.type],x0=W*0.14,w=Math.min(W*0.3,300),y0=H*0.27,h=H*0.69;S2.box=[x0,x0+w];
+    const l=L[S2.sel];$('pInfo').innerHTML=`<h3>🔎 ${l.n} <span class="val" style="font-size:14px">${l.s}</span></h3><div style="font-size:14.5px;line-height:1.7">${l.f}</div>
+      <div class="q" id="pQ"><div class="t">❓ ${l.q}</div><div class="acts"><button class="btn rv">💡 看解释</button></div><div class="why">${l.a}</div></div>`;
+    $('pQ').querySelector('.rv').onclick=()=>$('pQ').classList.add('rev');
+    // 地上部分
+    if(S2.type==='forest'){for(let k=0;k<4;k++)tree(c,x0+w*(0.12+k*0.26),y0,H*0.17,k%2?'#3f8f4a':'#4a9a52');for(let k=0;k<10;k++)grass(c,x0+w*(0.05+k*0.1),y0,10);}
+    else{for(let k=0;k<7;k++){const x=x0+w*(0.08+k*0.14);c.strokeStyle='#8fcf5a';c.lineWidth=2;c.beginPath();c.moveTo(x,y0);c.lineTo(x,y0-H*0.1);c.stroke();for(let j=1;j<4;j++){c.beginPath();c.moveTo(x,y0-H*0.025*j);c.quadraticCurveTo(x+12,y0-H*0.025*j-10,x+18,y0-H*0.025*j-4);c.stroke();}
+      c.fillStyle='#e8c860';c.beginPath();c.ellipse(x,y0-H*0.11,3.5,9,0,0,7);c.fill();}}
+    let y=y0;S2.lay=[];const R=S2.rain,done=S2.type==='forest'&&R.t>=1;
+    L.forEach((ly,i)=>{const hh=ly.h*h;let col=ly.c;if(done&&i===2)col=mix(col,[215,205,188],0.25);if(done&&i===3)col=mix(col,[120,60,30],0.2);
+      c.fillStyle=rgb(col);c.beginPath();c.moveTo(x0,y);for(let x=0;x<=w;x+=6)c.lineTo(x0+x,y+(i?Math.sin(x*0.07+i*2)*3:0));c.lineTo(x0+w,y+hh+3);for(let x=w;x>=0;x-=6)c.lineTo(x0+x,y+hh+(i<L.length-1?Math.sin(x*0.07+i*2+2)*3:0));c.closePath();c.fill();
+      const r=rng(31+i*7);for(let k=0;k<hh*w/90;k++){c.fillStyle=rgb(mix(col,r()<.5?[0,0,0]:[255,245,220],0.15+r()*0.2),0.8);c.fillRect(x0+r()*w,y+r()*hh,1.8,1.8);}
+      if(S2.type==='forest'&&i===0){for(let k=0;k<26;k++){c.fillStyle=rgb([[150,110,40],[120,90,30],[90,120,50]][k%3]);c.beginPath();c.ellipse(x0+r()*w,y+3+r()*(hh-6),6,2.4,r()*3,0,7);c.fill();}}
+      if(S2.type==='forest'&&i===5){for(let k=0;k<9;k++){const cx=x0+w*(0.1+k*0.1),cy=y+hh*(0.3+0.4*r());c.fillStyle='rgba(160,165,175,.6)';c.beginPath();c.moveTo(cx-14,cy);c.lineTo(cx-4,cy-12);c.lineTo(cx+12,cy-6);c.lineTo(cx+10,cy+10);c.lineTo(cx-8,cy+11);c.closePath();c.fill();}}
+      if(S2.type==='forest'&&i===4){for(let k=0;k<16;k++){c.fillStyle='rgba(150,150,150,.55)';c.beginPath();c.arc(x0+r()*w,y+r()*hh,2+r()*4,0,7);c.fill();}}
+      if((S2.type==='farm'&&i===0)||(S2.type==='forest'&&i<=1)){c.strokeStyle='rgba(230,210,170,.5)';c.lineWidth=1;for(let k=0;k<8;k++){let x=x0+w*(0.06+k*0.12),yy=y;c.beginPath();c.moveTo(x,yy);for(let j=0;j<6;j++){x+=(r()-.5)*10;yy+=hh/6;c.lineTo(x,yy);}c.stroke();}}
+      S2.lay.push([y,y+hh]);
+      // 标签
+      const ym=y+hh/2,sel=i===S2.sel;c.beginPath();c.moveTo(x0+w+4,ym);c.lineTo(x0+w+24,ym);c.strokeStyle=sel?'#ffb02e':'rgba(200,215,255,.5)';c.lineWidth=sel?2:1;c.stroke();
+      label(c,x0+w+30,ym-(hh>34?9:0),ly.n,sel?'#ffb02e':'#fff',sel?16:14.5,'left');if(hh>34)label(c,x0+w+30,ym+11,ly.f.length>24?ly.f.slice(0,24)+'…':ly.f,'#9fb0dd',12,'left',400);
+      if(sel){c.strokeStyle='#ffb02e';c.lineWidth=3;c.strokeRect(x0-2,y,w+4,hh);}
+      y+=hh;});
+    c.strokeStyle='rgba(220,230,255,.4)';c.lineWidth=1.5;c.strokeRect(x0,y0,w,h);
+    // 雨水下渗
+    if(R.on||R.t>0){const t=R.t;if(S2.type==='forest'){
+        if(!R.ions.length){const r=rng(77);const a=S2.lay[2],b=S2.lay[3];for(let k=0;k<70;k++)R.ions.push({x:x0+8+r()*(w-16),y0:a[0]+4+r()*(a[1]-a[0]-8),y1:b[0]+(b[1]-b[0])*(0.25+0.65*r()),d:r()*0.45});}
+        for(const p of R.ions){const k=ease((t-p.d)/0.5);c.beginPath();c.arc(p.x,p.y0+(p.y1-p.y0)*k,2.6,0,7);c.fillStyle=k>=1?'#e0703a':'#ffd27a';c.fill();}
+        if(t>0.2)label(c,x0+w/2,(S2.lay[2][0]+S2.lay[2][1])/2,'可溶物质被淋失 ↓','#fff',13);
+        if(t>0.8)label(c,x0+w/2,(S2.lay[3][0]+S2.lay[3][1])/2,'在此淀积 → 黏重、发红','#fff',13);}
+      else{const a=S2.lay[1];const hw=clamp(t*1.3,0,1)*(a[0]-S2.lay[0][0])*0.45;c.fillStyle='rgba(90,160,235,.45)';c.fillRect(x0,a[0]-hw,w,hw);if(t>0.6)label(c,x0+w/2,a[0]-hw/2,'犁底层托住水分','#fff',13);}
+      if(R.on){const r=rng(3);for(let k=0;k<40;k++){const x=x0+r()*w,yy=((r()*400+t*900)%(y0-10));c.strokeStyle='rgba(140,200,255,.7)';c.lineWidth=1.4;c.beginPath();c.moveTo(x,yy);c.lineTo(x-2,yy+9);c.stroke();}
+        for(let k=0;k<3;k++){const x=x0+w*(0.2+k*0.3),yy=y0+((t*260+k*60)%(S2.lay[2][1]-y0));arrow(c,x,yy-18,x,yy,'rgba(120,190,255,.9)',2,7);}}}
+    label(c,14,20,S2.type==='forest'?'森林土壤剖面及各土层特点':'耕作土壤剖面及各土层特点','#fff',17,'left');
+    label(c,14,44,'点击任意土层查看特点 · 自然土壤中森林土壤剖面构造最为复杂','#ffe2a0',13,'left',500);}
+  if(S2.part==='block'){const D=S2.block.done;
+    $('bTab').innerHTML='<tr><th>项目</th><th>方法</th><th>结果</th><th>说明</th></tr>'+TOOLS.map(([k,n,m,res,ex])=>`<tr><td class="l">${n}</td><td class="l">${m}</td><td class="l${D[k]?'':' hid'}" data-k="${k}">${D[k]?res:'?'}</td><td class="l${D[k]?'':' hid'}" data-k="${k}">${D[k]?ex:'?'}</td></tr>`).join('');
+    $('bTab').querySelectorAll('td.hid').forEach(td=>td.onclick=()=>{S2.block.done[td.dataset.k]=true;m2();});
+    const s=Math.min(W*0.34,H*0.52),fx=W*0.36-s/2,fy=H*0.56-s/2,dx=s*0.38,dy=-s*0.24;
+    const top=[60,46,30],bot=[160,126,86];
+    // 白纸
+    c.fillStyle='#eef0f4';c.beginPath();c.moveTo(fx-30,fy+s+16);c.lineTo(fx+s+30,fy+s+16);c.lineTo(fx+s+dx+40,fy+s+dy-6);c.lineTo(fx+dx-20,fy+s+dy-6);c.closePath();c.fill();
+    // 顶面
+    c.fillStyle=rgb(mix(top,[0,0,0],0.05));c.beginPath();c.moveTo(fx,fy);c.lineTo(fx+s,fy);c.lineTo(fx+s+dx,fy+dy);c.lineTo(fx+dx,fy+dy);c.closePath();c.fill();
+    // 正面渐变
+    const g=c.createLinearGradient(0,fy,0,fy+s);g.addColorStop(0,rgb(top));g.addColorStop(0.35,rgb(mix(top,bot,0.45)));g.addColorStop(1,rgb(bot));c.fillStyle=g;c.fillRect(fx,fy,s,s);
+    const r=rng(11);for(let k=0;k<700;k++){const yy=r();c.fillStyle=rgb(mix(mix(top,bot,yy),r()<.5?[0,0,0]:[255,240,210],0.18),0.7);c.fillRect(fx+r()*s,fy+yy*s,2,2);}
+    // 侧面
+    const g2=c.createLinearGradient(0,fy,0,fy+s);g2.addColorStop(0,rgb(mix(top,[0,0,0],.3)));g2.addColorStop(1,rgb(mix(bot,[0,0,0],.3)));c.fillStyle=g2;c.beginPath();c.moveTo(fx+s,fy);c.lineTo(fx+s+dx,fy+dy);c.lineTo(fx+s+dx,fy+s+dy);c.lineTo(fx+s,fy+s);c.closePath();c.fill();
+    // 根系
+    c.strokeStyle='rgba(235,215,175,.55)';c.lineWidth=1.2;for(let k=0;k<9;k++){let x=fx+s*(0.06+k*0.11),yy=fy;c.beginPath();c.moveTo(x,yy);for(let j=0;j<5;j++){x+=(r()-.5)*12;yy+=s*0.07;c.lineTo(x,yy);}c.stroke();}
+    label(c,fx+s/2,fy+s+34,'边长 20 厘米的土壤立方块','#cfe0ff',13);
+    if(D.color){arrow(c,fx-26,fy+8,fx-26,fy+s-8,'#ffd27a',2.5,9);label(c,fx-34,fy+12,'深','#ffd27a',14,'right');label(c,fx-34,fy+s-12,'浅','#ffd27a',14,'right');}
+    if(D.paper){for(const [yy,wet] of [[fy+s*0.08,0.25],[fy+s*0.78,0.8]]){c.fillStyle='#f6f6f6';c.fillRect(fx+s*0.6,yy,s*0.3,s*0.16);c.fillStyle=`rgba(80,120,170,${0.25+wet*0.4})`;c.beginPath();c.ellipse(fx+s*0.75,yy+s*0.08,s*0.12*wet+3,s*0.06*wet+2,0,0,7);c.fill();}
+      label(c,fx+s*0.92,fy+s*0.16,'湿痕小','#fff',12.5,'left');label(c,fx+s*0.92,fy+s*0.86,'湿痕大','#fff',12.5,'left');}
+    if(D.animal){c.strokeStyle='#d98a8a';c.lineWidth=5;c.lineCap='round';c.beginPath();c.moveTo(fx+s*0.2,fy+s*0.2);c.bezierCurveTo(fx+s*0.28,fy+s*0.12,fx+s*0.34,fy+s*0.28,fx+s*0.42,fy+s*0.2);c.stroke();c.lineCap='butt';
+      for(const [ax,ay] of [[0.15,0.3],[0.5,0.12]]){c.fillStyle='#1a1a1a';c.beginPath();c.arc(fx+s*ax,fy+s*ay,2.4,0,7);c.arc(fx+s*ax+4,fy+s*ay,2,0,7);c.fill();}}
+    const sx=fx+s+dx+50;
+    if(D.dry&&sx<W-100){c.fillStyle='#3a4a7a';c.fillRect(sx,fy+s*0.1,130,74);c.fillStyle='#0d1a12';c.fillRect(sx+10,fy+s*0.1+10,110,32);label(c,sx+65,fy+s*0.1+26,'9.2 → 7.9 kg','#7dff9a',15);label(c,sx+65,fy+s*0.1+58,'晾晒一天后','#cfe0ff',12);}
+    if(D.heft&&sx<W-100){const yy=fy+s*0.55;c.fillStyle=rgb(top);c.beginPath();c.arc(sx+30,yy,16,0,7);c.fill();c.fillStyle=rgb(bot);c.beginPath();c.arc(sx+100,yy,16,0,7);c.fill();label(c,sx+30,yy+28,'表层·轻','#fff',12.5);label(c,sx+100,yy+28,'底层·重','#fff',12.5);}
+    if(D.strip&&sx<W-100){const yy=fy+s*0.88;c.fillStyle=rgb(top);for(let k=0;k<4;k++){c.beginPath();c.ellipse(sx+10+k*14,yy,6,4,0,0,7);c.fill();}c.fillStyle=rgb(bot);c.beginPath();c.roundRect(sx+75,yy-5,70,10,5);c.fill();label(c,sx+30,yy+20,'表层易断','#fff',12);label(c,sx+110,yy+20,'底层成条','#fff',12);}
+    const n=Object.keys(D).length;label(c,14,20,'活动：观察家乡的土壤','#fff',17,'left');label(c,14,44,`已完成 ${n}/${TOOLS.length} 项观察 · 先预测，再揭晓`,'#ffe2a0',13,'left',500);}
+  if(S2.part==='form'){const F=S2.form,p=F.p;$('fR').value=p;$('fP').textContent=p.toFixed(0)+'%';$('fPlay').textContent=F.playing?'❚❚':'▶';
+    const STG=F.farm?['⑥ 耕作土壤','人类活动：耕作、施肥使土壤熟化']:p<15?['① 裸露岩石','风化作用开始']:p<35?['② 成土母质','风化：岩石破碎成疏松碎屑']:p<55?['③ 原始土壤','先锋植物（地衣、苔藓）定居，有机质开始积累']:p<85?['④ 成熟土壤（发育中）','植物繁茂，腐殖质层加厚，土层开始分化']:['⑤ 成熟土壤','剖面完整：腐殖质层、淋溶层、淀积层、母质层'];
+    const reg=ease((p-5)/45)*0.32,hum=ease((p-38)/50)*0.14,diff=ease((p-62)/30),depth=Math.round((reg*0.35+hum)*300);
+    $('fRead').innerHTML=`<dt>阶段</dt><dd>${STG[0]}</dd><dt>主要作用</dt><dd>${STG[1]}</dd><dt>土层厚度（示意）</dt><dd>${p<5?'0':'约 '+Math.max(1,depth)+' 厘米'}</dd>`;
+    const gy=H*0.42,x0=W*0.06,w=W*0.88,bot=H*0.95;const sky=c.createLinearGradient(0,0,0,gy);sky.addColorStop(0,'#16285a');sky.addColorStop(1,'#26407a');c.fillStyle=sky;c.fillRect(x0,24,w,gy-24);
+    // 岩石
+    c.fillStyle='#6f737c';c.fillRect(x0,gy,w,bot-gy);c.strokeStyle='rgba(40,40,50,.6)';c.lineWidth=1.5;const r=rng(21);
+    for(let k=0;k<14+p*0.4;k++){let x=x0+r()*w,yy=gy+r()*(bot-gy)*0.6;c.beginPath();c.moveTo(x,yy);for(let j=0;j<3;j++){x+=(r()-.5)*30;yy+=10+r()*14;c.lineTo(x,yy);}c.stroke();}
+    const regH=(bot-gy)*reg,humH=(bot-gy)*hum;
+    if(regH>1){c.fillStyle='#b99962';c.fillRect(x0,gy,w,regH);for(let k=0;k<regH*w/60;k++){c.fillStyle=rgb([120+r()*60,110+r()*50,90+r()*40]);c.beginPath();c.arc(x0+r()*w,gy+r()*regH,1+r()*3.5,0,7);c.fill();}}
+    if(diff>0&&regH>20){c.fillStyle=`rgba(190,175,150,${0.75*diff})`;c.fillRect(x0,gy+humH,w,regH*0.28);c.fillStyle=`rgba(140,80,46,${0.75*diff})`;c.fillRect(x0,gy+humH+regH*0.28,w,regH*0.3);}
+    if(humH>0.5){const hc=F.farm?[66,52,36]:[46,36,24];c.fillStyle=rgb(hc);c.fillRect(x0,gy,w,humH);
+      if(F.farm){c.fillStyle='rgba(100,86,66,.95)';c.fillRect(x0,gy+humH,w,8);c.strokeStyle='rgba(150,120,80,.6)';for(let x=x0;x<x0+w;x+=22){c.beginPath();c.moveTo(x,gy);c.lineTo(x+10,gy+humH*0.6);c.stroke();}}}
+    // 植物
+    const r2=rng(55);
+    if(!F.farm){if(p>25){const n=Math.round(ease((p-25)/20)*40);for(let k=0;k<n;k++){c.fillStyle=k%2?'#8fae6a':'#c8c47a';c.beginPath();c.ellipse(x0+r2()*w,gy-1,4,2.2,0,0,7);c.fill();}}
+      if(p>45){const n=Math.round(ease((p-45)/20)*30);for(let k=0;k<n;k++)grass(c,x0+r2()*w,gy,8+r2()*10);}
+      if(p>65){const n=Math.round(ease((p-65)/25)*7);for(let k=0;k<n;k++)tree(c,x0+w*(0.08+k*0.13)+r2()*10,gy,40+r2()*40);}}
+    else{for(let k=0;k<16;k++){const x=x0+w*(0.04+k*0.06);c.strokeStyle='#9fd35a';c.lineWidth=2;c.beginPath();c.moveTo(x,gy);c.lineTo(x,gy-36);c.stroke();c.fillStyle='#e8c860';c.beginPath();c.ellipse(x,gy-40,3.5,8,0,0,7);c.fill();}}
+    if(p<35&&p>2){label(c,x0+w*0.75,gy-40,'☀ 冷热变化  💧 流水  🌬 风','#ffe2a0',14);}
+    // 标注
+    const lx=x0+w-8;label(c,lx,gy+humH/2,humH>10?(F.farm?'耕作层':'腐殖质层'):'', '#fff',13,'right');
+    if(regH>14)label(c,lx,gy+humH+(diff>0.3?regH*0.7:regH/2),'成土母质（风化碎屑）','#fff',13,'right');
+    label(c,lx,bot-14,'母岩','#fff',13,'right');
+    label(c,14,20,`土壤的形成：${STG[0]}`,'#fff',17,'left');label(c,14,44,'裸露岩石 → 成土母质 → 原始土壤 → 成熟土壤 → 耕作土壤','#ffe2a0',13,'left',500);}
+}
+subSwitch('p2',S2,m2panel,m2);
+
+/* ================= 模块三：成土因素 ================= */
+const S3={part:'climate',T:3,P:600,px:0.35,storm:{t:0,on:false,ps:[]},sel:'N'};
+const PRESET=[['东北平原',3,600],['长江中下游',16.5,1100],['南方低山丘陵',18.5,1600],['热带雨林',26,2300],['西北干旱区',8,120]];
+function climateModel(T,P){const veg=clamp(P/900,0,1.4)*clamp((T+12)/25,0.15,1.1);const dec=Math.pow(2,(T-5)/10)*clamp(P/800,0.5,1.2);
+  const leach=clamp((P-500)/1500,0,1),weath=clamp(P/1600,0.05,1.3)*Math.pow(2,(T-10)/10);const om=clamp(veg/dec*(1-0.4*leach),0,1);
+  const dark=clamp(om/0.6,0,1),red=clamp((T-10)/12,0,1)*leach,salt=clamp((400-P)/300,0,1);
+  let col=[176,140,90];col=mix(col,[40,32,25],dark*0.9);col=mix(col,[176,64,36],red*0.85);col=mix(col,[214,206,186],salt*0.8);
+  const name=salt>.5?'荒漠土（易盐碱化）':red>.75?'砖红壤':red>.4?'红壤':dark>.85?'黑土':P>800?'黄棕壤（长江中下游一带）':'棕壤 / 褐土';
+  return {veg,dec,leach,weath,om,col,name,dark,red,salt};}
+function reliefZone(x){return x<0.22?['砾质土','#8d8f96',0]:x<0.45?['砂土','#d6b67c',1]:x<0.7?['壤土','#9a7448',2]:['黏土','#5e4230',3];}
+const FIVE={N:['北 · 黑','黑土（东北平原）',[34,30,28],'气候<b>冷湿</b>（温带），植被茂盛提供大量有机质，低温使微生物分解慢，<b>有机质积累多</b>，土壤呈黑色、肥沃。','气候、生物'],
+  S:['南 · 红','红壤（长江以南低山丘陵）',[178,62,40],'<b>湿热</b>：化学风化和淋溶作用强，易溶物质流失，<b>铁、铝氧化物相对富集</b>（Fe₂O₃ 呈红色）；有机质分解快，土壤“酸、瘦、黏”。','气候'],
+  E:['东 · 青','青色土（东部低湿地、水稻土）',[92,112,104],'地势低洼、<b>长期淹水</b>（种水稻），土壤通气差，铁以低价态（FeO）存在，呈青灰、灰绿色。','地貌、人类活动'],
+  W:['西 · 白','白色土（西北干旱区）',[222,218,206],'<b>降水少、蒸发强</b>，盐分随水上升积累在地表（盐碱土），植被稀少、有机质少，土色灰白。','气候'],
+  C:['中 · 黄','黄土（黄土高原）',[208,170,92],'冬季风把西北的粉尘<b>搬运堆积</b>成深厚的黄土，作为成土母质，土壤呈黄色。','成土母质（风力堆积）']};
+function m3panel(){const P=$('m3panel');
+  if(S3.part==='climate'){P.innerHTML=`
+    <div class="card"><h3>🌡 年平均气温 <span class="val" id="cT"></span></h3><input type="range" id="cTR" min="-5" max="28" step="0.5"></div>
+    <div class="card"><h3>🌧 年降水量 <span class="val" id="cP"></span></h3><input type="range" id="cPR" min="50" max="2500" step="10"><div class="chips" id="cPre"></div></div>
+    <div class="card"><h3>🟫 结果</h3><dl class="read" id="cRead"></dl></div>
+    <div class="tip stu"><span class="tag s">学生活动</span>小组对比：点“东北平原”和“南方低山丘陵”，比较右图五根柱子，解释“东北黑土肥沃、南方红壤贫瘠”。再点“热带雨林”：植被最茂盛，土壤为什么反而贫瘠？</div>
+    <div id="m3qs"></div>`;
+    S3._u=chips('cPre',PRESET.map(([n,t,p])=>[n,n]),v=>{const q=PRESET.find(x=>x[0]===v);S3.T=q[1];S3.P=q[2];m3();},v=>{const q=PRESET.find(x=>x[0]===v);return q[1]===S3.T&&q[2]===S3.P;});
+    $('cTR').oninput=e=>{S3.T=+e.target.value;m3();};$('cPR').oninput=e=>{S3.P=+e.target.value;m3();};
+    questions('m3qs',[
+      {t:'东北平原的黑土为什么特别肥沃？',opts:['气温高，植物长得快','气候冷湿，微生物分解慢，有机质积累多','降水多，淋溶作用强'],ans:1,go:()=>{S3.T=3;S3.P=600;m3();},why:'东北植被茂盛，每年提供大量枯枝落叶和根系；但气温低，<b>微生物活动弱、有机质分解慢</b>，于是腐殖质大量积累——“冷湿环境有利于土壤有机质积累”。'},
+      {t:'热带雨林植被最茂盛，为什么土壤反而贫瘠？',go:()=>{S3.T=26;S3.P=2300;m3();},why:'<b>高温</b>：微生物分解作用强，有机质很快被分解；<b>多雨</b>：淋溶作用强，营养元素被淋失。养分主要储存在植被中，一旦失去雨林保护，土壤很快变得贫瘠（剩下铁铝氧化物 → 砖红壤）。'},
+      {t:'南方红壤为什么是红色的？',why:'湿热地区<b>化学风化和淋溶作用强</b>，土壤黏粒比重高；易溶的钙、镁、钾等被淋走，难溶的<b>铁、铝氧化物相对富集</b>，铁的氧化物（Fe₂O₃）使土壤呈红色。'}]);}
+  if(S3.part==='relief'){P.innerHTML=`
+    <div class="card"><h3>📍 取样位置 <span class="val" id="rP"></span></h3><input type="range" id="rPR" min="0.02" max="0.98" step="0.01"><div style="font-size:13px;color:var(--muted);margin-top:4px">也可以在左图上拖动取样旗</div>
+      <div class="row"><button class="btn acc" id="rStorm">⛈ 来一场暴雨</button></div></div>
+    <div class="card"><h3>🔬 土样</h3><dl class="read" id="rRead"></dl></div>
+    <div class="tip stu"><span class="tag s">学生活动</span>从山顶到平原，每隔一段取一个样，记录颗粒粗细。点“来一场暴雨”，观察流水怎样把不同大小的颗粒“分拣”开。</div>
+    <div id="m3qs"></div>`;
+    S3._u=()=>{};$('rPR').oninput=e=>{S3.px=+e.target.value;m3();};
+    $('rStorm').onclick=()=>{const r=rng(Date.now()%9999);S3.storm={t:0,on:true,ps:Array.from({length:90},()=>{const z=Math.floor(r()*4);return {z,x0:0.03+r()*0.1,x1:[0.08,0.3,0.55,0.8][z]+r()*0.16,d:r()*0.3,s:[6,4,2.6,1.6][z]};})};};
+    questions('m3qs',[
+      {t:'从山顶到低平洼地，土壤颗粒怎样变化？',opts:['由细到粗','由粗到细','没有规律'],ans:1,why:'由于成土母质的颗粒存在由粗到细的变化规律，从山顶到低平洼地依次分布着<b>砾质土、砂土、壤土和黏土</b>：流水搬运能力沿途减弱，粗颗粒先沉积，细颗粒被带得更远。'},
+      {t:'同一座山，阳坡和阴坡的土壤会一样吗？',why:'不一样。阳坡光照强、温度高、蒸发强，土壤较干，有机质分解快；阴坡温度低、较湿润，有机质积累相对较多。地貌通过<b>重新分配水热条件和物质</b>影响土壤发育。'}]);}
+  if(S3.part==='five'){P.innerHTML=`
+    <div class="card" id="fInfo"></div>
+    <div class="tip stu"><span class="tag s">学生活动</span>点击左图五个方位，说出每种颜色的土壤“是什么因素造成的”。再完成下面教材活动“解释常见的土壤现象”。</div>
+    <div id="m3qs"></div>`;S3._u=()=>{};
+    const F5=['成土母质','生物','气候','地貌','时间'];
+    questions('m3qs',[
+      {t:'现象①：四川盆地有些地方的岩石是紫色的，土壤也呈紫色。主导因素是',opts:F5,ans:0,why:'紫色砂岩、页岩风化形成紫色土——<b>成土母质</b>决定了土壤矿物质的成分和颜色。'},
+      {t:'现象②：对耕作而言，东北平原的土壤肥沃，而南方地区的土壤相对贫瘠。主导因素是',opts:F5,ans:2,why:'<b>气候</b>：东北冷湿，有机质分解慢、积累多；南方湿热，有机质分解快，淋溶强，养分流失。'},
+      {t:'现象③：山顶土壤的颗粒较粗，山前平原土壤的颗粒较细。主导因素是',opts:F5,ans:3,why:'<b>地貌</b>：从山顶到山前，流水搬运能力减弱，颗粒由粗到细依次沉积。'}]);}
+}
+$('c3').addEventListener('pointerdown',e=>{const r=$('c3').getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+  if(S3.part==='five'&&S3.fb){const [cx,cy,s]=S3.fb,dx=x-cx,dy=y-cy;if(Math.abs(dx)>s||Math.abs(dy)>s)return;
+    S3.sel=Math.abs(dx)<s*0.36&&Math.abs(dy)<s*0.36?'C':Math.abs(dx)>Math.abs(dy)?(dx>0?'E':'W'):(dy>0?'S':'N');m3();}
+  if(S3.part==='relief'&&S3.rb){const [x0,w]=S3.rb;S3.px=clamp((x-x0)/w,0.02,0.98);S3.drag=true;$('c3').setPointerCapture(e.pointerId);m3();}});
+$('c3').addEventListener('pointermove',e=>{if(!S3.drag||S3.part!=='relief')return;const r=$('c3').getBoundingClientRect();const [x0,w]=S3.rb;S3.px=clamp((e.clientX-r.left-x0)/w,0.02,0.98);m3();});
+$('c3').addEventListener('pointerup',()=>S3.drag=false);
+function m3(){const c=canvasCtx($('c3')),W=c.W,H=c.H;S3._u&&S3._u();
+  if(S3.part==='climate'){const M=climateModel(S3.T,S3.P);$('cT').textContent=S3.T+' ℃';$('cTR').value=S3.T;$('cP').textContent=S3.P+' mm';$('cPR').value=S3.P;
+    $('cRead').innerHTML=`<dt>近似土壤类型</dt><dd>${M.name}</dd><dt>有机质积累</dt><dd>${M.om>.5?'多':M.om>.3?'中等':'少'}</dd><dt>淋溶作用</dt><dd>${lv(M.leach)}</dd>`;
+    const half=W*0.48,gy=H*0.4,x0=24,w=half-40;
+    const sky=c.createLinearGradient(0,60,0,gy);sky.addColorStop(0,S3.T>18?'#2a3a6a':'#1a2a5a');sky.addColorStop(1,'#2f4a86');c.fillStyle=sky;c.fillRect(x0,60,w,gy-60);
+    const r=rng(9);const nr=Math.round(S3.P/40);for(let k=0;k<nr;k++){const x=x0+r()*w,y=70+r()*(gy-110);c.strokeStyle='rgba(140,200,255,.6)';c.lineWidth=1.3;c.beginPath();c.moveTo(x,y);c.lineTo(x-2,y+8);c.stroke();}
+    const nv=Math.round(M.veg*14);for(let k=0;k<nv;k++){const x=x0+w*(0.04+0.92*r());if(M.veg>0.7)tree(c,x,gy,45+r()*40,S3.T>18?'#2f8f3f':'#4a9a52');else grass(c,x,gy,8+M.veg*20);}
+    if(M.veg<0.15)for(let k=0;k<5;k++){c.fillStyle='#7a8a5a';c.beginPath();c.arc(x0+r()*w,gy-3,3,0,7);c.fill();}
+    const humH=(H*0.5)*(0.04+M.om*0.4);c.fillStyle=rgb(M.col);c.fillRect(x0,gy,w,humH);
+    c.fillStyle=rgb(mix(M.col,[180,150,110],0.55));c.fillRect(x0,gy+humH,w,H*0.92-gy-humH);
+    if(M.salt>0.2){for(let k=0;k<M.salt*120;k++){c.fillStyle='rgba(250,250,245,.85)';c.fillRect(x0+r()*w,gy+r()*8,2,2);}}
+    label(c,x0+w/2,gy+humH/2,humH>18?'有机质（腐殖质）层':'','#fff',13);label(c,x0+w/2,H*0.95,M.name,'#ffe9a0',16);
+    label(c,x0+8,76,`${S3.T} ℃  ·  ${S3.P} mm`,'#fff',14,'left');
+    // 柱状图
+    const bx=half+20,bw=W-bx-24,items=[['植被提供有机质',clamp(M.veg/1.4,0,1),'#5fd38a'],['微生物分解',clamp(M.dec/4,0,1),'#ff7a59'],['淋溶作用',M.leach,'#4da3ff'],['化学风化',clamp(M.weath/3,0,1),'#d7b4ff'],['有机质积累',M.om,'#ffb02e']];
+    items.forEach(([n,v,col],i)=>{const y=90+i*Math.min(70,(H-160)/5);label(c,bx,y,n,'#cfe0ff',14,'left');c.fillStyle='#24345f';c.fillRect(bx,y+14,bw,16);c.fillStyle=col;c.fillRect(bx,y+14,bw*v,16);label(c,bx+bw*v+6,y+22,lv(v),col,12.5,'left');});
+    label(c,bx,H-40,'有机质积累 ≈ 植被输入 ÷ 微生物分解，再被淋溶削减','#9fb0dd',12.5,'left',500);
+    label(c,14,20,'气候对土壤的影响（模拟）','#fff',17,'left');label(c,14,44,'温度、降水 → 风化快慢、有机质积累多少、淋溶强弱','#ffe2a0',13,'left',500);}
+  if(S3.part==='relief'){const x0=30,w=W-60,top=H*0.18,base=H*0.72;S3.rb=[x0,w];
+    const yOf=x=>{const u=clamp(x,0,1);return u<0.55?top+(base-top)*Math.pow(u/0.55,0.8)*0.92:base-(base-top)*0.08*(1-(u-0.55)/0.45);};
+    c.fillStyle='#4a3a2a';c.beginPath();c.moveTo(x0,H*0.95);for(let u=0;u<=1.001;u+=0.01)c.lineTo(x0+u*w,yOf(u));c.lineTo(x0+w,H*0.95);c.closePath();c.fill();
+    for(let u=0;u<1;u+=0.005){const z=reliefZone(u);c.strokeStyle=z[1];c.lineWidth=14;c.beginPath();c.moveTo(x0+u*w,yOf(u)+6);c.lineTo(x0+(u+0.006)*w,yOf(u+0.006)+6);c.stroke();}
+    const r=rng(4);for(let k=0;k<260;k++){const u=r();const z=reliefZone(u)[2];const s=[4.5,2.6,1.6,1][z];c.fillStyle='rgba(255,255,255,.25)';c.beginPath();c.arc(x0+u*w,yOf(u)+2+r()*10,s,0,7);c.fill();}
+    for(const [u0,u1,n] of [[0,.22,'山顶'],[.22,.45,'山坡'],[.45,.7,'山麓'],[.7,1,'平原 / 洼地']]){label(c,x0+(u0+u1)/2*w,Math.min(H*0.9,yOf((u0+u1)/2)+40),n,'#cfe0ff',14);label(c,x0+(u0+u1)/2*w,Math.min(H*0.9,yOf((u0+u1)/2)+60),reliefZone((u0+u1)/2)[0],'#ffe9a0',13.5);}
+    const St=S3.storm;if(St.on||St.t>0){for(const p of St.ps){const k=ease((St.t-p.d)/0.6),u=p.x0+(p.x1-p.x0)*k;c.beginPath();c.arc(x0+u*w,yOf(u)-p.s,p.s,0,7);c.fillStyle=['#a0a2a8','#e0c58a','#b08454','#7a5840'][p.z];c.fill();}
+      if(St.on){for(let k=0;k<60;k++){const x=x0+r()*w*0.5,y=((r()*300+St.t*800)%(H*0.4))+20;c.strokeStyle='rgba(140,200,255,.6)';c.beginPath();c.moveTo(x,y);c.lineTo(x-2,y+9);c.stroke();}
+        c.strokeStyle='rgba(90,160,235,.7)';c.lineWidth=3;c.beginPath();for(let u=0.02;u<0.98;u+=0.01){const y=yOf(u)-3;u===0.02?c.moveTo(x0+u*w,y):c.lineTo(x0+u*w,y);}c.stroke();}}
+    const px=x0+S3.px*w,py=yOf(S3.px);c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.moveTo(px,py);c.lineTo(px,py-46);c.stroke();c.fillStyle='#ffb02e';c.beginPath();c.moveTo(px,py-46);c.lineTo(px+22,py-39);c.lineTo(px,py-32);c.fill();
+    const z=reliefZone(S3.px);$('rP').textContent=(S3.px*100).toFixed(0)+'%';$('rPR').value=S3.px;
+    $('rRead').innerHTML=`<dt>位置</dt><dd>${S3.px<.22?'山顶':S3.px<.45?'山坡':S3.px<.7?'山麓':'平原 / 洼地'}</dd><dt>土壤</dt><dd>${z[0]}</dd><dt>颗粒</dt><dd>${['很粗（砾石多）','粗','粗细适中','细'][z[2]]}</dd>`;
+    label(c,14,20,'地貌对土壤的影响：从山顶到低平洼地','#fff',17,'left');label(c,14,44,'流水搬运能力沿途减弱 → 颗粒由粗到细','#ffe2a0',13,'left',500);}
+  if(S3.part==='five'){const s=Math.min(W*0.32,H*0.36),cx=W*0.42,cy=H*0.54;S3.fb=[cx,cy,s];const i=s*0.36;
+    const reg={N:[[cx-s,cy-s],[cx+s,cy-s],[cx+i,cy-i],[cx-i,cy-i]],S:[[cx-s,cy+s],[cx+s,cy+s],[cx+i,cy+i],[cx-i,cy+i]],W:[[cx-s,cy-s],[cx-i,cy-i],[cx-i,cy+i],[cx-s,cy+s]],E:[[cx+s,cy-s],[cx+i,cy-i],[cx+i,cy+i],[cx+s,cy+s]],C:[[cx-i,cy-i],[cx+i,cy-i],[cx+i,cy+i],[cx-i,cy+i]]};
+    for(const k in reg){const p=reg[k];c.beginPath();p.forEach(([x,y],j)=>j?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fillStyle=rgb(FIVE[k][2]);c.fill();
+      const r=rng(k.charCodeAt(0));const xs=p.map(q=>q[0]),ys=p.map(q=>q[1]);for(let n=0;n<180;n++){const x=Math.min(...xs)+r()*(Math.max(...xs)-Math.min(...xs)),y=Math.min(...ys)+r()*(Math.max(...ys)-Math.min(...ys));c.fillStyle=rgb(mix(FIVE[k][2],r()<.5?[0,0,0]:[255,255,255],0.12),0.6);c.fillRect(x,y,2,2);}
+      c.strokeStyle=k===S3.sel?'#ffb02e':'rgba(255,255,255,.5)';c.lineWidth=k===S3.sel?4:1.5;c.stroke();}
+    c.strokeStyle='#e8d9b0';c.lineWidth=8;c.strokeRect(cx-s-8,cy-s-8,2*s+16,2*s+16);
+    const lab={N:[cx,cy-s*0.68],S:[cx,cy+s*0.68],W:[cx-s*0.68,cy],E:[cx+s*0.68,cy],C:[cx,cy]};
+    for(const k in lab){const [x,y]=lab[k];label(c,x,y,FIVE[k][0],'#fff',18);}
+    label(c,cx,cy-s-30,'北','#cfe0ff',16);label(c,cx,cy+s+30,'南','#cfe0ff',16);label(c,cx-s-30,cy,'西','#cfe0ff',16);label(c,cx+s+30,cy,'东','#cfe0ff',16);
+    const f=FIVE[S3.sel];$('fInfo').innerHTML=`<h3>🎨 ${f[0]} <span class="val" style="font-size:14px">主导：${f[4]}</span></h3><div style="font-size:15px;font-weight:700;color:#ffe9a0">${f[1]}</div><div style="font-size:14.5px;line-height:1.75;margin-top:4px">${f[3]}</div>`;
+    label(c,14,20,'社稷坛“五色土”：东青、西白、南红、北黑、中黄','#fff',17,'left');label(c,14,44,'点击方位，看看每种颜色背后的成土因素','#ffe2a0',13,'left',500);}
+}
+subSwitch('p3',S3,m3panel,m3);
+
+/* ================= 模块四：土壤养护 ================= */
+const S4={part:'erosion',slope:15,rain:40,cover:0,run:0,running:false,rec:[],season:'spring',m:{},im:{}};
+function eroModel(){const s=S4.slope*D2R,total=S4.rain*5/60*150;const coef=clamp(0.15+0.35*S4.rain/80+0.6*Math.sin(s)-0.5*S4.cover/100,0.05,0.9);
+  const runoff=total*coef,sed=120*Math.pow(S4.rain/40,1.6)*Math.pow(Math.sin(s)/Math.sin(15*D2R),1.3)*(1-0.92*S4.cover/100);return {total,runoff,sed,conc:sed/(runoff/1000)};}
+const SEASON={spring:['春季（旱季）',0.85,true,'蒸发强烈，盐分随水沿土壤孔隙上升到地表，水分蒸发后盐分积累 → <b>返盐</b>'],summer:['夏季（雨季）',0.3,false,'降水多，土壤表层的盐分被雨水淋洗 → <b>淋盐</b>'],autumn:['秋季',0.7,true,'降水减少、蒸发仍强 → 再次<b>返盐</b>'],winter:['冬季',0.55,false,'气温低、蒸发弱，盐分<b>相对稳定</b>']};
+const MEAS=[['lead','引淡淋盐','引淡水灌溉，降低作物根区含盐量'],['well','井灌井排','抽取咸水、补充淡水，降低地下水位'],['cover','覆盖','选择适当覆盖物，抑制蒸发返盐'],['bio','农业生物措施','营造防护林带，果、椿、棉间作']];
+function saltModel(){const s=SEASON[S4.season],m=S4.m;return {salt:clamp(s[1]-(m.lead?0.22:0)-(m.well?0.25:0)-(m.cover&&s[2]?0.18:0)-(m.bio?0.1:0),0.05,1),wt:m.well?2.5:1.2,evap:s[2]};}
+const IMP=[['lime','施石灰',{ph:1.3}],['green','种紫云英（绿肥）翻压',{om:0.8,clay:-0.12}],['manure','广施农家肥',{om:0.7,ph:0.2,clay:-0.1}],['sand','掺砂',{clay:-0.3}],['char','施生物炭',{ph:0.6,om:0.5}],['rot','轮作 / 休耕',{om:0.3}]];
+function impModel(){let ph=4.8,om=1.0,clay=0.8;for(const [k,,e] of IMP)if(S4.im[k]){ph+=e.ph||0;om+=e.om||0;clay+=e.clay||0;}
+  const phF=Math.exp(-Math.pow((ph-6.5)/2.2,2)),omF=clamp(0.3+om/4,0,1),tF=1-0.6*Math.max(0,clay-0.4);return {ph,om,clay:clamp(clay,0.1,1),y:phF*omF*tF};}
+function recTable(){return `<tr><th>#</th><th>坡度</th><th>降水强度</th><th>植被</th><th>径流</th><th>泥沙</th></tr>`+(S4.rec.length?S4.rec.map((r,i)=>`<tr><td>${i+1}</td><td>${r.slope}°</td><td>${r.rain}</td><td>${r.cover}%</td><td>${r.runoff.toFixed(0)} mL</td><td><b style="color:${r.sed>150?'#ff9b9b':'#ffe9a0'}">${r.sed.toFixed(0)} g</b></td></tr>`).join(''):'<tr><td colspan="6" style="color:var(--muted)">还没有实验记录</td></tr>');}
+function m4panel(){const P=$('m4panel');
+  if(S4.part==='erosion'){P.innerHTML=`
+    <div class="card"><h3>📐 坡度 <span class="val" id="eS"></span></h3><input type="range" id="eSR" min="5" max="35" step="1">
+      <h3 style="margin-top:8px">🌧 降水强度 <span class="val" id="eR"></span></h3><input type="range" id="eRR" min="10" max="80" step="5">
+      <h3 style="margin-top:8px">🌱 植被覆盖率 <span class="val" id="eC"></span></h3><input type="range" id="eCR" min="0" max="100" step="10">
+      <div class="row"><button class="btn acc" id="eGo">🌧 开始降雨（5 分钟）</button><button class="btn" id="eClr">清空记录</button></div></div>
+    <div class="card"><h3>📋 控制变量记录表</h3><table class="sm" id="eTab"></table></div>
+    <div class="tip stu"><span class="tag s">学生活动</span>小组分工，每组只改变<b>一个</b>因素（坡度 / 降水强度 / 植被覆盖），其他保持不变，各做 3 次，比较接水杯里的径流量和泥沙量，得出结论。</div>
+    <div id="m4qs"></div>`;
+    S4._u=()=>{};$("eSR").oninput=e=>{S4.slope=+e.target.value;S4.run=0;m4();};$("eRR").oninput=e=>{S4.rain=+e.target.value;S4.run=0;m4();};$("eCR").oninput=e=>{S4.cover=+e.target.value;S4.run=0;m4();};
+    $('eGo').onclick=()=>{if(!S4.running){S4.running=true;S4.run=0;}};$('eClr').onclick=()=>{S4.rec=[];m4();};
+    questions('m4qs',[
+      {t:'要探究“坡度”对水土流失的影响，实验应该怎样设计？',why:'<b>控制变量</b>：只改变坡度（如 10°、20°、30°），降水强度、植被覆盖、土壤种类、降雨时间都保持相同，比较径流量和泥沙量。'},
+      {t:'根据记录，水土流失最严重的组合是',opts:['坡度小、降水强度小、植被好','坡度大、降水强度大、植被差','坡度大、降水强度小、植被好'],ans:1,go:()=>{S4.slope=35;S4.rain=80;S4.cover=0;m4();},why:'相同情况下：<b>坡度越大、降水量与降水强度越大，侵蚀越严重；植被覆盖越好，侵蚀越小</b>。'},
+      {t:'植被为什么能减少水土流失？',why:'枝叶<b>截留降水</b>、减弱雨滴击溅；枯枝落叶层和根系使土壤疏松，<b>增加下渗、减少地表径流</b>；根系<b>固结土壤</b>。所以植被具有涵养水源、保持水土的作用。'}]);}
+  if(S4.part==='salt'){P.innerHTML=`
+    <div class="card"><h3>📅 季节</h3><div class="chips" id="sS"></div></div>
+    <div class="card"><h3>🛠 治理措施（可多选）</h3><div class="chips" id="sM"></div></div>
+    <div class="card"><h3>📊 状态</h3><dl class="read" id="sRead"></dl></div>
+    <div class="tip">📖 <b>案例</b>：山东禹城北丘洼曾是土壤盐碱化严重的地区，盐碱化土壤占耕地总面积的 91%，旱涝频繁。1986 年起，中国科学院在此建立综合试验站，调节和控制水盐运动，实现了粮食高产。</div>
+    <div class="tip stu"><span class="tag s">学生活动</span>①依次点四个季节，画出一年中“水”和“盐”的运动方向；②在“春季”逐个加上治理措施，说出每项措施是怎样控制水盐运动的。</div>
+    <div id="m4qs"></div>`;
+    const u1=chips('sS',Object.entries(SEASON).map(([k,v])=>[v[0],k]),v=>{S4.season=v;m4();},v=>v===S4.season);
+    const u2=chips('sM',MEAS.map(([k,n])=>[n,k]),v=>{S4.m[v]=!S4.m[v];m4();},v=>S4.m[v]);S4._u=()=>{u1();u2();};
+    questions('m4qs',[
+      {t:'北丘洼的土壤为什么“春秋返盐”？',opts:['降水多，盐分被带上来','蒸发强烈，盐分随水沿土壤孔隙上升到地表','灌溉水太咸'],ans:1,go:()=>{S4.season='spring';S4.m={};m4();},why:'旱季蒸发强烈，地下水和土壤水沿<b>毛管孔隙</b>上升到地表，水分蒸发后盐分留在表层积累。'},
+      {t:'“井灌井排”为什么能治理盐碱地？',go:()=>{S4.season='spring';S4.m={well:true};m4();},why:'抽取地下咸水用于灌溉排出，再补充淡水：①<b>降低地下水位</b>，盐分难以随毛管水上升到地表；②咸水逐渐淡化。'},
+      {t:'治理盐碱地的关键是什么？',why:'关键是<b>调节和控制水盐运动</b>：“盐随水来，盐随水去”。引淡淋盐、井灌井排让土体脱盐；覆盖抑制蒸发返盐；防护林等农业生物措施巩固水盐调节效果。'}]);}
+  if(S4.part==='improve'){P.innerHTML=`
+    <div class="card"><h3>🧑‍🌾 改良措施（可多选）</h3><div class="chips" id="iM"></div></div>
+    <div class="card"><h3>📊 土壤指标</h3><div id="iBars"></div></div>
+    <div class="tip">📖 南方<b>红壤</b>的问题：<b>酸、瘦、黏</b>。亚马孙河流域的居民几千年前就用农作物秸秆制成的<b>生物炭</b>改良贫瘠土壤；我国人民在改良土壤方面也积累了丰富经验。</div>
+    <div class="tip stu"><span class="tag s">学生活动</span>小组当“土壤医生”：先诊断红壤“酸、瘦、黏”，再开处方——每加一项措施，说出它对哪个指标有效。目标：产量指数超过 80。</div>
+    <div id="m4qs"></div>`;
+    S4._u=chips('iM',IMP.map(([k,n])=>[n,k]),v=>{S4.im[v]=!S4.im[v];m4();},v=>S4.im[v]);
+    questions('m4qs',[
+      {t:'红壤的“酸、瘦、黏”分别可以怎样改良？',why:'<b>酸</b> → 施石灰中和酸性；<b>瘦</b>（有机质少、养分少）→ 广施农家肥、种植绿肥、施生物炭；<b>黏</b> → 掺砂、增施有机肥，改善土壤结构。'},
+      {t:'紫云英为什么叫“绿肥”？',why:'绿肥作物是主要当作肥料种植的作物，养分含量丰富，<b>翻入土壤中</b>，可以丰富土壤营养物质、改良土壤物理性状。紫云英俗称红花草，是我国水稻种植区常见的<b>越冬绿肥</b>，一般与水稻轮作，还可兼作饲草。'},
+      {t:'即使是优良的土壤，人们为什么也要“种养结合”？',why:'只用不养，土壤肥力会逐渐下降。常用的方法有<b>休耕、种植绿肥、作物轮作、广施农家肥</b>等，以保持土壤持续提供高效肥力的能力——土壤功能的可持续性关系到人类社会的可持续发展。'}]);}
+}
+function m4(){const c=canvasCtx($('c4')),W=c.W,H=c.H;S4._u&&S4._u();
+  if(S4.part==='erosion'){const M=eroModel(),k=S4.running?ease(S4.run):(S4.run>=1?1:0);
+    $('eS').textContent=S4.slope+'°';$('eSR').value=S4.slope;$('eR').textContent=S4.rain+' mm/h';$('eRR').value=S4.rain;$('eC').textContent=S4.cover+'%';$('eCR').value=S4.cover;$('eTab').innerHTML=recTable();
+    const L=Math.min(W*0.62,560),px=W*0.74,py=H*0.72,a=S4.slope*D2R;
+    c.fillStyle='#2a2f4a';c.fillRect(0,py+2,W,H-py);
+    const tx=px-L*Math.cos(a),ty=py-L*Math.sin(a);c.strokeStyle='#8a90a8';c.lineWidth=5;c.beginPath();c.moveTo(tx+8,ty+12);c.lineTo(tx+8,py+2);c.stroke();
+    c.save();c.translate(px,py);c.rotate(a);
+    c.fillStyle='#5a4a7a';c.fillRect(-L,-2,L,10);c.fillStyle='#8a5e3a';c.fillRect(-L,-26,L,24);
+    const r=rng(8);for(let i=0;i<260;i++){c.fillStyle=rgb(mix([138,94,58],r()<.5?[0,0,0]:[255,230,190],0.2),0.8);c.fillRect(-L+r()*L,-26+r()*24,2,2);}
+    if(k>0&&M.sed>60){c.fillStyle='rgba(40,25,15,.55)';const n=Math.round(clamp(M.sed/60,1,8));for(let i=0;i<n;i++){const x=-L*(0.1+0.8*r()),d=4+k*clamp(M.sed/40,2,18);c.beginPath();c.moveTo(x-6,-26);c.lineTo(x,-26+d);c.lineTo(x+6,-26);c.fill();}}
+    const ng=Math.round(S4.cover/100*24);for(let i=0;i<ng;i++)grass(c,-L+L*(i+0.5)/ng,-26,12,'#6fcf5a');
+    if(k>0){c.fillStyle=rgb(mix([90,160,235],[140,100,60],clamp(M.conc/250,0,1)),0.75);c.fillRect(-L*Math.min(1,k*1.4),-30,L*Math.min(1,k*1.4),4+M.runoff/160);}
+    c.restore();
+    c.strokeStyle='#cfe0ff';c.lineWidth=1.5;c.beginPath();c.arc(px,py,52,Math.PI,Math.PI+a);c.stroke();label(c,px-64,py-14,`${S4.slope}°`,'#ffe9a0',14,'right');
+    // 接水杯
+    const cw=64,ch=96,cx0=px+18,cy0=py+10,cap=1000,fill=M.runoff*k/cap;c.fillStyle=rgb(mix([90,160,235],[140,100,60],clamp(M.conc/250,0,1)),0.8);c.fillRect(cx0,cy0+ch*(1-fill),cw,ch*fill);
+    c.strokeStyle='rgba(220,235,255,.85)';c.lineWidth=2.5;c.beginPath();c.moveTo(cx0,cy0);c.lineTo(cx0,cy0+ch);c.lineTo(cx0+cw,cy0+ch);c.lineTo(cx0+cw,cy0);c.stroke();
+    label(c,cx0+cw/2,cy0+ch+16,'接水杯','#cfe0ff',12.5);
+    if(S4.running){const nd=Math.round(S4.rain*1.5);for(let i=0;i<nd;i++){const x=tx+(px-tx)*((i*97)%1000/1000)-20,y=60+((i*53+S4.run*1400)%Math.max(60,(ty+(py-ty)*0.5)-80));c.strokeStyle='rgba(140,200,255,.7)';c.lineWidth=1.3;c.beginPath();c.moveTo(x,y);c.lineTo(x-2,y+9);c.stroke();}}
+    const bx=24,by=70;c.fillStyle='rgba(23,38,86,.9)';c.fillRect(bx,by,230,92);c.strokeStyle='#2c4185';c.strokeRect(bx,by,230,92);
+    label(c,bx+10,by+18,`降水总量 ${M.total.toFixed(0)} mL`,'#cfe0ff',13.5,'left');label(c,bx+10,by+42,`地表径流 ${(M.runoff*k).toFixed(0)} mL`,'#8fd0ff',13.5,'left');label(c,bx+10,by+66,`冲走泥沙 ${(M.sed*k).toFixed(0)} g`,'#ffb38a',13.5,'left');
+    label(c,14,20,'水土流失影响因素模拟实验','#fff',17,'left');label(c,14,44,'调好变量 → 开始降雨 → 比较接水杯中的径流与泥沙','#ffe2a0',13,'left',500);}
+  if(S4.part==='salt'){const M=saltModel(),SS=SEASON[S4.season];
+    $('sRead').innerHTML=`<dt>季节特点</dt><dd style="font-weight:400;color:#e8eeff">${SS[3]}</dd><dt>地下水位</dt><dd>地下约 ${M.wt} 米</dd><dt>根层含盐量</dt><dd style="color:${M.salt>.6?'#ff9b9b':M.salt>.35?'#ffb02e':'#5fd38a'}">${M.salt>.6?'高，作物难以生长':M.salt>.35?'偏高':'较低，作物正常生长'}</dd>`;
+    const x0=W*0.08,w=W*0.84,gy=H*0.32,bot=H*0.94,dep=3.2,Y=d=>gy+(bot-gy)*d/dep;
+    c.fillStyle='#1a2a5a';c.fillRect(x0,60,w,gy-60);
+    c.fillStyle='#8a7458';c.fillRect(x0,gy,w,bot-gy);const wy=Y(M.wt);c.fillStyle='rgba(60,120,200,.6)';c.fillRect(x0,wy,w,bot-wy);c.strokeStyle='#8fd0ff';c.lineWidth=2;c.setLineDash([6,4]);c.beginPath();c.moveTo(x0,wy);c.lineTo(x0+w,wy);c.stroke();c.setLineDash([]);
+    label(c,x0+w-70,wy+14,'地下水位','#8fd0ff',13,'right');
+    for(let d=0;d<=3;d++){label(c,x0-6,Y(d),d+' m','#9fb0dd',12,'right',400);}
+    const r=rng(17);for(let i=0;i<M.salt*240;i++){c.fillStyle='rgba(250,250,250,.9)';c.fillRect(x0+r()*w,gy+Math.pow(r(),2)*(bot-gy)*0.18,2.2,2.2);}
+    if(M.salt>0.4){c.fillStyle=`rgba(240,240,235,${(M.salt-0.4)*0.9})`;c.fillRect(x0,gy-3,w,4);}
+    const h=1-M.salt;for(let i=0;i<12;i++){const x=x0+w*(0.12+i*0.065),ph=10+h*46;c.strokeStyle=rgb(mix([190,170,90],[110,200,80],h));c.lineWidth=2;c.beginPath();c.moveTo(x,gy);c.lineTo(x,gy-ph);c.stroke();c.beginPath();c.moveTo(x,gy-ph*0.6);c.quadraticCurveTo(x+10,gy-ph*0.7,x+14,gy-ph*0.55);c.stroke();}
+    if(M.evap){for(let i=0;i<5;i++){const x=x0+w*(0.15+i*0.17);arrow(c,x,wy-6,x,gy+12,'rgba(255,255,255,.75)',2,8);}label(c,x0+w*0.5,(gy+wy)/2,'蒸发强 → 水沿毛管上升，盐分留在地表','#fff',14);
+      for(let i=0;i<4;i++){const x=x0+w*(0.2+i*0.2);c.strokeStyle='rgba(255,230,160,.6)';c.lineWidth=2;c.beginPath();c.moveTo(x,gy-6);c.quadraticCurveTo(x+8,gy-24,x,gy-40);c.stroke();}}
+    else if(S4.season==='summer'){for(let i=0;i<40;i++){const x=x0+r()*w,y=70+r()*(gy-90);c.strokeStyle='rgba(140,200,255,.7)';c.beginPath();c.moveTo(x,y);c.lineTo(x-2,y+9);c.stroke();}
+      for(let i=0;i<5;i++){const x=x0+w*(0.15+i*0.17);arrow(c,x,gy+8,x,wy-8,'rgba(140,200,255,.9)',2,8);}label(c,x0+w*0.5,(gy+wy)/2,'雨水下渗 → 把表层盐分淋洗下去','#fff',14);}
+    else label(c,x0+w*0.5,(gy+wy)/2,'蒸发弱，水盐相对稳定','#fff',14);
+    if(S4.m.cover){c.fillStyle='rgba(220,220,230,.55)';c.fillRect(x0,gy-6,w,6);label(c,x0+w*0.1,gy-16,'覆盖','#fff',12.5);}
+    if(S4.m.bio){for(let i=0;i<3;i++)tree(c,x0+20+i*26,gy,50,'#3f8f4a');}
+    if(S4.m.well){const x=x0+w-40;c.strokeStyle='#cfd8f0';c.lineWidth=5;c.beginPath();c.moveTo(x,gy-30);c.lineTo(x,wy+30);c.stroke();c.fillStyle='#5a6a9a';c.fillRect(x-14,gy-46,28,18);label(c,x,gy-58,'井灌井排','#fff',12.5);}
+    if(S4.m.lead){c.fillStyle='rgba(90,170,240,.85)';c.fillRect(x0+w*0.3,gy-4,w*0.4,5);label(c,x0+w*0.5,gy-16,'引淡水淋盐','#8fd0ff',12.5);}
+    label(c,14,20,`盐碱地的水盐运动 · ${SS[0]}`,'#fff',17,'left');label(c,14,44,'春秋返盐、夏季淋盐、冬季相对稳定','#ffe2a0',13,'left',500);}
+  if(S4.part==='improve'){const M=impModel();
+    $('iBars').innerHTML=bars([['酸碱度 pH',clamp((M.ph-4)/4,0,1),M.ph.toFixed(1)+(M.ph<5.5?' 酸':M.ph<7.5?' 适宜':' 偏碱'),M.ph<5.5?'#ff6b6b':'#5fd38a'],['有机质',clamp(M.om/3.2,0,1),M.om.toFixed(1)+'%',M.om<2?'#ff6b6b':'#5fd38a'],['黏重程度',M.clay,M.clay>.6?'黏重':M.clay>.35?'适中':'疏松',M.clay>.6?'#ff6b6b':'#5fd38a'],['产量指数',M.y,Math.round(M.y*100)+'','#ffb02e']]);
+    const x0=W*0.06,w=W*0.88,gy=H*0.5,bot=H*0.92;
+    const soil=mix(mix([176,70,42],[70,52,36],clamp((M.om-1)/2,0,1)),[150,120,80],clamp((0.8-M.clay)/0.7,0,1)*0.3);
+    c.fillStyle=rgb(soil);c.fillRect(x0,gy,w,bot-gy);const r=rng(23);
+    for(let i=0;i<500;i++){c.fillStyle=rgb(mix(soil,r()<.5?[0,0,0]:[255,230,200],0.18),0.7);c.fillRect(x0+r()*w,gy+r()*(bot-gy),2,2);}
+    if(M.clay>.55){c.strokeStyle='rgba(40,20,10,.5)';c.lineWidth=1.5;for(let i=0;i<14;i++){let x=x0+r()*w,y=gy;c.beginPath();c.moveTo(x,y);for(let j=0;j<3;j++){x+=(r()-.5)*16;y+=10;c.lineTo(x,y);}c.stroke();}}
+    const icon=(k,col,n,s)=>{if(!S4.im[k])return;for(let i=0;i<n;i++){c.fillStyle=col;c.beginPath();c.arc(x0+r()*w,gy+2+r()*20,s,0,7);c.fill();}};
+    icon('lime','#f4f4f0',60,2);icon('manure','#4a3220',30,4);icon('sand','#e8d090',70,1.6);icon('char','#111',50,2.2);
+    const hgt=20+M.y*130;for(let i=0;i<10;i++){const x=x0+w*(0.06+i*0.098);c.strokeStyle=rgb(mix([200,180,90],[90,190,70],M.y));c.lineWidth=3;c.beginPath();c.moveTo(x,gy);c.lineTo(x,gy-hgt);c.stroke();
+      for(let j=1;j<4;j++){c.beginPath();c.moveTo(x,gy-hgt*j/4);c.quadraticCurveTo(x+16,gy-hgt*j/4-12,x+24,gy-hgt*j/4-2);c.stroke();}
+      if(M.y>.5){c.fillStyle='#e8c860';c.beginPath();c.ellipse(x,gy-hgt-8,4,10*M.y,0,0,7);c.fill();}}
+    if(S4.im.green){for(let i=0;i<40;i++){c.fillStyle=i%2?'#c06ad8':'#e08ae8';c.beginPath();c.arc(x0+r()*w,gy-3-r()*8,2.6,0,7);c.fill();}label(c,x0+w*0.5,gy+30,'紫云英翻压入土','#fff',13);}
+    label(c,x0+w-6,gy+(bot-gy)/2,`pH ${M.ph.toFixed(1)} · 有机质 ${M.om.toFixed(1)}%`,'#fff',14,'right');
+    label(c,14,20,'红壤改良：给“酸、瘦、黏”开处方','#fff',17,'left');label(c,14,44,`产量指数 ${Math.round(M.y*100)}（示意）`,'#ffe2a0',13,'left',500);}
+}
+subSwitch('p4',S4,m4panel,m4);
+
+/* ================= 模块五：实验与调查 ================= */
+function expCard(id,title,body,go,goTxt){$(id).innerHTML=`<h3>${title}</h3>${body}${go?`<div class="row"><button class="btn on" id="${id}Go">▶ ${goTxt}</button></div>`:''}`;if(go)$(id+'Go').onclick=go;}
+function goTo(m,attr,state,part,panelFn,drawFn){document.querySelector(`[data-m="${m}"]`).click();setSub(attr,state,part,panelFn,drawFn);}
+expCard('expA','🧪 实验 A　土壤质地的测定',`<div class="sec"><b>原理</b>：土壤质地一般分砂土、壤土、黏土。砂土颗粒间孔隙大，通气透水好、保水性差；黏土孔隙较小，通气透水性差；壤土介于两者之间，是农业生产的理想土壤。<br>
+  <b>器材</b>：放大镜、水盆、水、干燥黏土和砂土、标签纸、烧杯。<br><b>步骤</b><ol><li>用肉眼或放大镜观察砂土和黏土；用手研磨，感受区别。</li><li>两个烧杯分别装入 1/2 杯砂土和黏土，同时倒入 50 mL 水，观察渗水速度和容量变化；继续注入等量的水，直至水高过土壤表面。</li><li>取适量砂土和黏土加水搅拌至充分湿润、挤不出水，揉搓成球、条、环，感受其特性。</li></ol>
+  <b>分析</b>：停止注水后，哪个烧杯更重？哪种土更适合泥塑？<br><b>注意</b>：学生操作，2～3 人一组。</div>`,()=>goTo('m1','p1',S1,'water',m1panel,m1),'打开虚拟渗水实验');
+expCard('expB','🌧 实验 B　水土流失的影响因素',`<div class="sec"><b>原理</b>：坡度、降水强度、植被覆盖都会影响土壤侵蚀。<br><b>器材</b>：带排水口的木槽（或塑料盒）2～3 个、土、草皮、喷壶（或带孔的瓶子）、接水杯、支架。<br>
+  <b>步骤</b><ol><li>木槽装等量的土，一组铺草皮，一组裸土；</li><li>用支架垫出不同坡度；</li><li>用喷壶以相同（或不同）强度“降雨”，收集流出的水和泥沙；</li><li>比较各组的径流量和泥沙量。</li></ol>
+  <b>结论</b>：相同情况下，坡度越大、降水强度越大，侵蚀越严重；植被覆盖越好，侵蚀越小。<br><b>注意</b>：水流速度可反映降水强度；要引导学生把坡度、植被覆盖、降水强度作为<b>变量</b>来观察。</div>`,()=>goTo('m4','p4',S4,'erosion',m4panel,m4),'打开虚拟水土流失实验');
+expCard('expC','🖐 活动 C　观察家乡的土壤（教材活动）',`<div class="sec"><b>准备</b>：在校园或附近空地清理地表植物和杂物，向下挖出边长 20 厘米的土壤立方块，放在白纸上称重。<br>
+  <b>观察</b><ol><li>土块颜色自上而下是否变化？为什么？</li><li>干纸巾贴表层和底层，比较湿度；比较疏松状况。</li><li>侧放土块轻轻捣碎（保持上下顺序），掂量、研磨表层和底层土壤；找找小动物。</li><li>捣碎的土壤晾晒一天后称重，与刚挖出时比较。</li><li>表层、底层分别加水搓土条，比较哪个更容易成条。</li></ol>
+  <b>交流</b>：整理结果，描述家乡土壤的特点。（长江中下游一带常见黄棕壤、水稻土）</div>`,()=>goTo('m2','p2',S2,'block',m2panel,m2),'打开虚拟土块观察');
+// 调查表
+(function(){const sel=(o)=>`<select>${['',...o].map(x=>`<option>${x}</option>`).join('')}</select>`;
+  $('expD').innerHTML=`<h3>📝 调查 D　土壤类型调查记录表</h3><div class="sec noprint"><b>步骤</b>：在当地找 4 个土壤不同的地方，取约 20 cm 深处的土样放入纸杯并标明取样点；倒在白纸上用放大镜观察孔隙、颜色和结构，用手判断质地和湿度，并与标准土壤标本对比；取部分土样浸泡于纯净水中，用 pH 试纸比色确定酸碱度。建议 4～5 人一组；应在<b>未受污染</b>的地区取土。</div>
+  <table class="sm"><tr><th>土样</th><th>取样地点</th><th>颜色</th><th>质地</th><th>结构</th><th>pH</th><th>孔隙</th><th>湿度</th></tr>
+  ${[1,2,3,4].map(i=>`<tr><td>土壤${i}</td><td><input type="text" placeholder="如：操场边"></td><td>${sel(['深','中','浅'])}</td><td>${sel(['砂质土','壤质土','黏质土'])}</td><td>${sel(['团粒','柱状','块状','片状'])}</td><td><input type="number" min="3" max="10" step="0.5"></td><td>${sel(['大','中','小'])}</td><td>${sel(['湿','中','干'])}</td></tr>`).join('')}</table>
+  <div class="sec"><b>分析</b>：①不同地点的土壤属于同一类型吗？②根据肉眼判断，采集的土壤接近哪一类土壤标本？<br><b>结论</b>：不同类型的土壤具有不同的特征；不同地方取的土样也可能属于同一类型；影响土壤类型的主要因素有生物、人为、气候和地形因素等。</div>
+  <div class="row noprint"><button class="btn acc" id="dPrint">📋 复制记录表</button><span id="dMsg" style="font-size:13px;color:var(--muted)"></span><button class="btn" id="dClr">清空</button></div>`;
+  $('dPrint').onclick=()=>{const rows=[...$('expD').querySelectorAll('table tr')].map(tr=>[...tr.children].map(td=>{const f=td.querySelector('input,select');return f?f.value:td.textContent;}).join('\t')).join('\n');try{navigator.clipboard.writeText(rows).then(()=>$('dMsg').textContent='已复制，可粘贴到 Excel / Word',()=>$('dMsg').textContent='复制失败，请手动截图');}catch(e){$('dMsg').textContent='复制失败，请手动截图';}};$('dClr').onclick=()=>$('expD').querySelectorAll('input,select').forEach(x=>x.value='');})();
+questions('m5qs',[
+  {t:'1. 土壤的四种组成物质是',opts:['矿物质、有机质、水分、空气','岩石、腐殖质、水分、生物','砂粒、粉粒、黏粒、水分'],ans:0,why:'土壤由<b>矿物质、有机质、水分和空气</b>四种物质组成。矿物质是土壤的“骨架”，来自成土母质。'},
+  {t:'2. 与砂土相比，黏土的特点是',opts:['通气透水性强','保水保肥性强，但不易耕作','有机质易分解'],ans:1,why:'黏土以黏粒占优势，孔隙小，通气透水差，蓄水保肥强，有机质分解缓慢、易积累，但质地黏重，不易耕作。'},
+  {t:'3. 森林土壤剖面中，质地黏重、呈棕色或红棕色的是',opts:['腐殖质层','淋溶层','淀积层'],ans:2,why:'上层淋失的物质在<b>淀积层</b>沉淀、积累，所以质地黏重紧实，呈棕色或红棕色。'},
+  {t:'4. 东北平原黑土有机质含量高，主要因为',opts:['成土母质富含有机质','气候冷湿，微生物分解慢','地势低平，流水堆积'],ans:1,why:'冷湿环境有利于土壤有机质积累。'},
+  {t:'5. 为保持土壤持续提供高效肥力，下列做法不合理的是',opts:['种植绿肥','作物轮作','连年种植同一种作物、只施化肥'],ans:2,why:'连作、只用化肥会使土壤肥力和结构变差。应<b>种养结合</b>：休耕、种植绿肥、作物轮作、广施农家肥。'},
+  {t:'6. （拓展·自学窗）缺碘引起的“大脖子病”这类地方病，发病率山区高于平原，主要原因是',opts:['山区气温低','山区相对封闭，土壤中的化学元素主要来自当地成土母质，食物来源单一','山区降水多'],ans:1,why:'山区相对封闭，土壤元素主要来自当地成土母质，易出现某种微量元素缺乏或过高；平原沉积物来源广，微量元素较均衡。食盐加碘、食物来源多样化可以预防。'}]);
+
+/* ================= 切换与循环 ================= */
+const MODS={m1,m2,m3,m4,m5:()=>{}};let cur='m1';
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{cur=b.dataset.m;document.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('.mod').forEach(s=>s.classList.toggle('on',s.id===cur));MODS[cur]();});
+addEventListener('resize',()=>MODS[cur]());
+m1panel();m2panel();m3panel();m4panel();
+let last=performance.now();
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(cur==='m1'&&S1.part==='water'){let act=false;for(const b of S1.B){const wp=wProp(b.t);if(b.anim>0){b.anim=Math.max(0,b.anim-dt*2);act=true;}
+      if(b.pond>0.01&&b.inf<wp.cap){const f=Math.min(b.pond,wp.rate*dt,wp.cap-b.inf);b.pond-=f;b.inf+=f;b.timer+=dt;act=true;if(b.pond<=0.01){b.pond=0;b.last=b.timer;}}}
+    if(act)m1();}
+  if(cur==='m2'&&S2.part==='profile'&&S2.rain.on){S2.rain.t=Math.min(1,S2.rain.t+dt/6);if(S2.rain.t>=1)S2.rain.on=false;m2();}
+  if(cur==='m2'&&S2.part==='form'&&S2.form.playing){S2.form.p=Math.min(100,S2.form.p+dt*9);if(S2.form.p>=100)S2.form.playing=false;m2();}
+  if(cur==='m3'&&S3.part==='relief'&&S3.storm.on){S3.storm.t=Math.min(1,S3.storm.t+dt/5);if(S3.storm.t>=1)S3.storm.on=false;m3();}
+  if(cur==='m4'&&S4.part==='erosion'&&S4.running){S4.run=Math.min(1,S4.run+dt/5);if(S4.run>=1){S4.running=false;const M=eroModel();S4.rec.push({slope:S4.slope,rain:S4.rain,cover:S4.cover,runoff:M.runoff,sed:M.sed});if(S4.rec.length>10)S4.rec.shift();}m4();}
+  requestAnimationFrame(loop);}
+m1();requestAnimationFrame(loop);
+window.__T={S1,S2,S3,S4,m1,m2,m3,m4};
+})();
+</script>
+<script src="lib/workbench-bar.js"></script>
+</body>
+</html>
